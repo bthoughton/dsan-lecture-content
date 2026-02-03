@@ -1,0 +1,10 @@
+## VGG Background
+
+- [VGG](https://arxiv.org/pdf/1409.1556v6) is a neural network architecture designed for image classification tasks
+- Developed by Visual Geometry Group at the University of Oxford
+- Demonstrated the effectiveness of deep networks with uniform architecture
+- Pioneered the use of small convolutional kernels $(3 \times 3)$ stacked on top of each other
+- VGG is a popular choice for transfer learning due to its robustness and feature extraction capabilities
+- Influenced the design of subsequent architectures, including ResNet and Inception
+
+![](./img/cnn-kernels-filters.png)
