@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Prof.&nbsp;Ben Houghton">
-<meta name="dcterms.date" content="2026-02-02">
+<meta name="dcterms.date" content="2026-02-03">
 
 <title>DSAN 6500: Week 04 - Modern CNN Fundamentals and Transfer Learning</title>
 <style>
@@ -177,6 +177,12 @@ window.Quarto = {
   <li><a href="#applications-and-advantages-of-transfer-learning" id="toc-applications-and-advantages-of-transfer-learning" class="nav-link" data-scroll-target="#applications-and-advantages-of-transfer-learning">Applications and Advantages of Transfer Learning</a></li>
   </ul></li>
   <li><a href="#transfer-learning-example" id="toc-transfer-learning-example" class="nav-link" data-scroll-target="#transfer-learning-example">Transfer Learning Example</a></li>
+  <li><a href="#study-guide" id="toc-study-guide" class="nav-link" data-scroll-target="#study-guide">Study Guide</a>
+  <ul class="collapse">
+  <li><a href="#cnn-fundamentals-1" id="toc-cnn-fundamentals-1" class="nav-link" data-scroll-target="#cnn-fundamentals-1">CNN Fundamentals</a></li>
+  <li><a href="#modern-cnn-architecture-fundamentals" id="toc-modern-cnn-architecture-fundamentals" class="nav-link" data-scroll-target="#modern-cnn-architecture-fundamentals">Modern CNN Architecture Fundamentals</a></li>
+  <li><a href="#transfer-learning-1" id="toc-transfer-learning-1" class="nav-link" data-scroll-target="#transfer-learning-1">Transfer Learning</a></li>
+  </ul></li>
   </ul>
 </nav>
 </div>
@@ -201,7 +207,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">February 2, 2026</p>
+      <p class="date">February 3, 2026</p>
     </div>
   </div>
   
@@ -2215,6 +2221,24 @@ tensor(0.2310)</code></pre>
 </div>
 </div>
 </div>
+</section>
+<section id="study-guide" class="level1">
+<h1>Study Guide</h1>
+<section id="cnn-fundamentals-1" class="level2">
+<h2 class="anchored" data-anchor-id="cnn-fundamentals-1">CNN Fundamentals</h2>
+<p><strong>Topics to review:</strong> - Convolution definition, learned parameters (weights + bias), multi‑channel formula - Output size formula and what <span class="math inline">H, W, K, P, S</span> mean - Feature maps, channels, and why multiple filters are used - Activation functions (ReLU, Leaky ReLU, GELU) and why nonlinearity matters - Pooling vs strided convolution (trade‑offs, when to use) - Receptive field growth with stacked small kernels - Parameter efficiency of conv layers vs fully connected layers</p>
+<p><strong>Example questions:</strong> - Given <span class="math inline">H=32, K=3, P=1, S=2</span>, what is <span class="math inline">H_{out}</span>? - Why do we usually use ReLU instead of sigmoid in CNN feature extractors? - What changes in the output when you increase stride from 1 to 2?</p>
+</section>
+<section id="modern-cnn-architecture-fundamentals" class="level2">
+<h2 class="anchored" data-anchor-id="modern-cnn-architecture-fundamentals">Modern CNN Architecture Fundamentals</h2>
+<p><strong>Topics to review:</strong> - VGG: small 3×3 kernels, deeper networks, why this works - ResNet: residual connections, why they help gradients - DenseNet: feature reuse via dense connections - MobileNet: depthwise separable convolutions and efficiency - How global average pooling differs from flatten + FC - The role of batch normalization in modern CNNs</p>
+<p><strong>Example questions:</strong> - What problem do residual connections solve? - How does DenseNet differ from ResNet in how features are combined? - Why are depthwise separable convolutions faster/cheaper?</p>
+</section>
+<section id="transfer-learning-1" class="level2">
+<h2 class="anchored" data-anchor-id="transfer-learning-1">Transfer Learning</h2>
+<p><strong>Topics to review:</strong> - Feature extractor vs fine‑tuning (frozen vs unfrozen backbone) - Why ImageNet pretrained weights work on other tasks - When to use a smaller learning rate for fine‑tuning - What layers should be replaced for a new dataset - Typical preprocessing for pretrained models (resize, normalize)</p>
+<p><strong>Example questions:</strong> - Why does fine‑tuning usually require a smaller learning rate? - What happens if you forget ImageNet normalization when using pretrained weights? - Which layers do you replace when adapting ResNet18 to CIFAR‑10?</p>
+</section>
 </section>
 
 </main>
