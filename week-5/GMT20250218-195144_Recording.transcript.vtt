@@ -1,0 +1,2654 @@
+WEBVTT
+
+1
+00:00:03.390 --> 00:00:08.320
+Benjamin Houghton: Hello and welcome to our 1st video on object detection.
+
+2
+00:00:08.450 --> 00:00:12.460
+Benjamin Houghton: So we'll call this the introduction to object detection.
+
+3
+00:00:15.590 --> 00:00:24.959
+Benjamin Houghton: So today, we want to understand the fundamental concept of oxygen detection. And
+
+4
+00:00:25.180 --> 00:00:30.639
+Benjamin Houghton: what that involves is kind of understanding what the task is.
+
+5
+00:00:30.780 --> 00:00:33.270
+Benjamin Houghton: How do we go about accomplishing that task?
+
+6
+00:00:33.430 --> 00:00:37.680
+Benjamin Houghton: How do we measure the success of our task? So on and so forth.
+
+7
+00:00:38.841 --> 00:00:42.930
+Benjamin Houghton: We wanna kind of understand what object detection is. Right? So
+
+8
+00:00:43.270 --> 00:00:47.879
+Benjamin Houghton: understanding the difference between object detection.
+
+9
+00:00:48.170 --> 00:00:56.820
+Benjamin Houghton: classification and segmentation. Right? These are all 3 very unique classes. Or, I'm sorry, unique tasks.
+
+10
+00:00:57.840 --> 00:01:05.300
+Benjamin Houghton: And we're gonna learn about some of the key architectures and modern object detection. Right? So we'll go into some of the, we'll say the
+
+11
+00:01:06.560 --> 00:01:29.099
+Benjamin Houghton: really the architectures, that kind of started it all with with modern object detection which might not be the most advanced and the most commonly used today. But it's good place to start, and we'll get into the more modern architectures and subsequent videos. And then, finally, I already mentioned this sort of but exploring the evaluation metrics for object detection models. Right? So
+
+12
+00:01:29.250 --> 00:01:31.229
+Benjamin Houghton: we kind of have to know
+
+13
+00:01:31.340 --> 00:01:38.929
+Benjamin Houghton: how to quantify how well our models are doing. So that'll also be a key part of what we talk about in this video.
+
+14
+00:01:39.560 --> 00:02:02.230
+Benjamin Houghton: So what is image classification? Well, quite simply, image classification is sort of like classification. You would do for maybe a more traditional machine learning problem, where you may have a set of data in tabular format. Right? So you have something like
+
+15
+00:02:03.360 --> 00:02:20.800
+Benjamin Houghton: variable one, which I'll call x 1, variable, 2 x 3 or x 2, and and variable. 3. Which and you're trying to predict some some class, right? I'll call Yc. For the Irish data set right. You might be predicting species of plants, for example.
+
+16
+00:02:21.010 --> 00:02:27.159
+Benjamin Houghton: So it's it's not much different when we talk about images now. So instead of
+
+17
+00:02:28.325 --> 00:02:31.250
+Benjamin Houghton: your input being tabular data.
+
+18
+00:02:31.740 --> 00:02:44.700
+Benjamin Houghton: so like a spreadsheet, your data might be an actual image. And so here's an example here of where we're predicting different classes of an image. So you know, you can define these classes. However, you want.
+
+19
+00:02:45.180 --> 00:02:49.830
+Benjamin Houghton: So in this example, like, we have a class that's cat, a class that's dog.
+
+20
+00:02:49.870 --> 00:03:13.149
+Benjamin Houghton: because we see a single cat and a single dog in these images. But then the question then becomes, What if we have a cat and a dog in an image? Well, does it become cat dog. I don't know. I guess you could make us. You could make a 3rd class right? You could certainly train an image classification model to predict these 3 classes, or any combination you could possibly think of.
+
+21
+00:03:13.150 --> 00:03:19.970
+Benjamin Houghton: you could have one that predicts maybe 2 cats and one dog. Right? So maybe a 4th class would be cat.
+
+22
+00:03:19.990 --> 00:03:29.460
+Benjamin Houghton: cat, dog class. I don't know, or or bird or car or plane, or whatever else you may be, but this is the essentially
+
+23
+00:03:29.670 --> 00:03:45.200
+Benjamin Houghton: the the thing to take away here is that when we're doing classification tasks, we have an in, we have an image. And that image is gonna get grouped into some category. And that category, obviously, is up to the the developer or the the data science to decide
+
+24
+00:03:45.340 --> 00:03:50.434
+Benjamin Houghton: what that these classes look like alright. So the output
+
+25
+00:03:51.350 --> 00:03:56.400
+Benjamin Houghton: is a single class label for an entire image. That's that's a key point of this right.
+
+26
+00:03:58.890 --> 00:04:25.339
+Benjamin Houghton: see, the models train on a day set of images and their corresponding class labels. Right? We know that. And finally, images with multiple objects can only be classified in one class. Right? So we talked about this already, too. We can't. You know we can't put this bottom image into 2 classes right? It can't be cat, and it can't be dog, or it can't be cat and dog. It has to be one or the other, or it can be a 3rd class cat dog class, right? So.
+
+27
+00:04:25.860 --> 00:04:38.689
+Benjamin Houghton: the, you know, this isn't. I don't wanna go too much more into detail here, because I think you guys probably have a pretty intuitive understanding of this point of what actual image classification task involves. And
+
+28
+00:04:39.090 --> 00:04:45.440
+Benjamin Houghton: we really want to kind of separate that from object detection. So object. Detection is a separate
+
+29
+00:04:46.570 --> 00:04:51.059
+Benjamin Houghton: task right in object detection. We want to know
+
+30
+00:04:52.530 --> 00:05:05.772
+Benjamin Houghton: if a certain, maybe certain class is present and and where it's located in the image. So we have that same image here where we have a cat and a dog looking at each other. And
+
+31
+00:05:06.280 --> 00:05:17.120
+Benjamin Houghton: obviously, what we want to see is over here on the right side we want to see. Well, we have these coordinates. XYW. And H. Standing for the
+
+32
+00:05:17.800 --> 00:05:31.119
+Benjamin Houghton: there's different schemes. X and y could be the top right corners. They could also be the center of the image. Here, in this illustration we can say it's the center. We see a red dot and a green.in the center of the images
+
+33
+00:05:31.120 --> 00:05:49.199
+Benjamin Houghton: representing the center of the bounding boxes, and then the width and the height is the width and the height of the bounding box, and then, finally, we have the probability of a cat and a probability of a dog. So for the red bounding box, we would expect the probability of dog be high, and for the green bounding box we'd expect the probability of a cat to be high.
+
+34
+00:05:49.360 --> 00:06:02.009
+Benjamin Houghton: And so this is the the task of object detection, where, no matter how many objects are in this particular image? And I guess I should I could say there could be a 3rd object in here like another cat. So
+
+35
+00:06:02.020 --> 00:06:31.669
+Benjamin Houghton: let's see if I can draw a little cat here. Here's its whiskers. It's a pretty bad drawing, I know, but let's pretend that's a cat, and I should have made him. I should have made it, maybe a different color. But and then we can. Maybe we have another abounding box here, right? So we would want to see a second cat bounding box, or a 3rd bounding box that tightly bounds this little cat I've drawn, and we also want to see the high probability of cat and the low probability of a dog. So this is
+
+36
+00:06:32.480 --> 00:06:37.319
+Benjamin Houghton: at its core what the task of object detection is.
+
+37
+00:06:38.630 --> 00:06:58.199
+Benjamin Houghton: And then, and last, you know, we want to talk about is segmentation, right? So which we're not gonna talk about yet. We'll we'll talk about segmentation in future videos. But there is it. It is slightly different from object detection, right? So an object detection. We we've we have these boxes.
+
+38
+00:06:58.700 --> 00:07:06.109
+Benjamin Houghton: right? We have these boxes that have coordinates associated with them. Okay? And we have probabilities associated with them
+
+39
+00:07:06.940 --> 00:07:16.050
+Benjamin Houghton: different from the base segmentation task where a segmentation task we're we're going to find the pixels.
+
+40
+00:07:16.330 --> 00:07:45.439
+Benjamin Houghton: And essentially, without getting into all the details is for every single pixel in this image. We're gonna we're gonna sign it as some class, right? So we see this this cat on the left hand side. He's been outlined essentially right or not outlined. But all the pixels that make up this cat have been predicted as probability of cat class. Right? So, in other words, we, we know the location, the physical location we have, we have
+
+41
+00:07:45.520 --> 00:08:04.019
+Benjamin Houghton: for all, every single, every single pixel in this image we know what class it belongs to. So if you have a bunch of pixels that are clumped together that are class cat, then we, you know, then we've segmented out the cat. We know where the cat is in the image, and and specifically.
+
+42
+00:08:04.330 --> 00:08:07.759
+Benjamin Houghton: which pixels right, you know, in object detection.
+
+43
+00:08:07.980 --> 00:08:27.188
+Benjamin Houghton: In this example we know where the cat and the dog are. But we see like there's these little portions, right? So like right here, like these portions are inside of the bounding box. But these pixels actually aren't cat pixels right there they'd be like background pixels. So that's how segmentation and object detection differ are different.
+
+44
+00:08:28.000 --> 00:08:28.575
+Benjamin Houghton: and
+
+45
+00:08:29.360 --> 00:08:41.379
+Benjamin Houghton: to go one step further, this is actually called semantic segmentation. So with semantic segmentation, what? What do we mean? Semantic segmentation means that we just have.
+
+46
+00:08:41.679 --> 00:09:07.830
+Benjamin Houghton: even though this is a cat over here, and then we know this is 2 separate cats. These pixels are more or less the same right? They get defined, they get lumped into the same class, and we're not differentiating from different instances of cats. So this isn't it? This is a cat, and this is a cat. But we don't know that this is cat one and cat 2, or at least the model is not trained to tell us. Hey, this is cat one over here, and hey.
+
+47
+00:09:07.830 --> 00:09:14.712
+Benjamin Houghton: this is Cat 2 over here, right? This is a a different task. That is a different task than semantic segmentation.
+
+48
+00:09:15.620 --> 00:09:25.049
+Benjamin Houghton: and so we don't really need to understand all the details of this right now, because again, we're going to talk about this in more detail in the coming videos and weeks.
+
+49
+00:09:26.000 --> 00:09:40.720
+Benjamin Houghton: And then, lastly, there is something called instance segmentation, right? So where it's the same as semantic segmentation, where we we still assign each pixel a class probability right. But now
+
+50
+00:09:41.370 --> 00:09:48.930
+Benjamin Houghton: we have different instances. So we notice, this is cat 1. 0, and this is cat 2. And this is dog one. And so
+
+51
+00:09:49.040 --> 00:09:56.089
+Benjamin Houghton: we now have differentiated between different between different
+
+52
+00:09:57.400 --> 00:10:07.619
+Benjamin Houghton: cat instances. And this is sort of instance. Segmentation is sort of similar to object detection. Right? What we're going to talk about today in the sense that not only do we know
+
+53
+00:10:08.700 --> 00:10:34.029
+Benjamin Houghton: in object detection we not only are concerning ourselves with, Hey, there's a cat here, and Hey, there's a cat here, but like we also know that you know, this is gonna Produce us 2 bounding boxes, one for this cat. Well, 3, really. And oh, I ideally like this is a well trained model. It would be pretty easy to get okay. We have 2 bounding boxes for the cats, and then we maybe have a 3rd bounding box here for the dog
+
+54
+00:10:34.160 --> 00:10:34.765
+Benjamin Houghton: and
+
+55
+00:10:35.480 --> 00:10:41.410
+Benjamin Houghton: So instance, segmentation is similar in the sense to object detection where it gives us
+
+56
+00:10:41.860 --> 00:11:04.400
+Benjamin Houghton: instances and locations, but we can see that we've clearly defined which pixels of the image belong to the cat, one which belong to cat 2, and which dog one as opposed to just a a square bounding box that tells us the location of the of the object, and and how tall and how wide it is right. It doesn't fully describe the image.
+
+57
+00:11:04.500 --> 00:11:09.179
+Benjamin Houghton: the the object kind of like instance segmentation does. Again.
+
+58
+00:11:09.690 --> 00:11:26.239
+Benjamin Houghton: these are more advanced topics that you know, we will be talking about in the coming weeks. And and today I'll go back to this slide is like, this is the task that we want to concern ourselves with object detection. Finding these vectors. This is what ultimately we want to understand today how to find these vectors
+
+59
+00:11:26.460 --> 00:11:30.930
+Benjamin Houghton: right, at least using some of the more
+
+60
+00:11:31.510 --> 00:11:35.631
+Benjamin Houghton: traditional object. I won't say traditional. But
+
+61
+00:11:36.410 --> 00:11:42.469
+Benjamin Houghton: some of the the more early versions of object detection models.
+
+62
+00:11:45.870 --> 00:11:50.789
+Benjamin Houghton: Okay, alright. So now that we understand the difference between
+
+63
+00:11:51.890 --> 00:11:54.550
+Benjamin Houghton: segmentate. So again, we talked about
+
+64
+00:11:54.910 --> 00:11:59.209
+Benjamin Houghton: classification. Right? You should understand the difference between classification.
+
+65
+00:11:59.600 --> 00:12:05.050
+Benjamin Houghton: object, detection, semantic segmentation and instance segmentation.
+
+66
+00:12:05.920 --> 00:12:07.506
+Benjamin Houghton: Alright. So
+
+67
+00:12:08.480 --> 00:12:23.039
+Benjamin Houghton: Now we'll talk about object detection in kind of more depth, and we'll start here and and talking about what it is, how it works. So localizing objects. Right? We know that now that we want to find where the objects are.
+
+68
+00:12:23.360 --> 00:12:28.109
+Benjamin Houghton: we also want to determine what the objects are classifying them.
+
+69
+00:12:29.110 --> 00:12:33.709
+Benjamin Houghton: And in order to do that we need bounding boxes with labels.
+
+70
+00:12:33.960 --> 00:12:44.890
+Benjamin Houghton: And you know, we say confidence scores here. Right? This could be a confidence score. You could also think of it as a probability. What's the probability that it's a cat, or a dog, or a bus, or a plane? And so on and so forth.
+
+71
+00:12:45.730 --> 00:13:00.769
+Benjamin Houghton: Some of the challenges associated with this are scale variation. So we're gonna see where objects can be smaller or bigger in an image. You might have a person that's, you know, really far away, or a person that's really close, right? And so they're gonna be bigger.
+
+72
+00:13:00.900 --> 00:13:09.460
+Benjamin Houghton: bigger and smaller occlusion. Right, this person might be hiding behind a tree. So here's a tree. It's blocking this person
+
+73
+00:13:09.869 --> 00:13:19.379
+Benjamin Houghton: viewpoint, which is pretty, you know, intuitive right? So, seeing a person from the side or the front of the back, and then background, clutter just what's out, what else is in the image?
+
+74
+00:13:20.410 --> 00:13:22.440
+Benjamin Houghton: Alright. And so these are the kind of the
+
+75
+00:13:22.580 --> 00:13:26.580
+Benjamin Houghton: the traditional key challenges of of object detection.
+
+76
+00:13:28.650 --> 00:13:44.919
+Benjamin Houghton: All right deep learning. And and you know, we're really gonna focus on deep learning object detection, of course. And there's kind of 2 broad families, right? We have 2 stage detectors and single stage detectors, right? And
+
+77
+00:13:45.230 --> 00:13:53.690
+Benjamin Houghton: a 2 stage detector is unique, and and these are the for. And and you can see by the dates right? These came first, st the 2 stage detectors where
+
+78
+00:13:54.000 --> 00:14:05.390
+Benjamin Houghton: you need a a region proposal meaning like, Hey, we need to find a bunch of bounding boxes. Find a bunch of we call them regions of interest. Right? Find a bunch of regions of interest
+
+79
+00:14:05.540 --> 00:14:10.859
+Benjamin Houghton: in the image that look intra, that like they could be objects. And then
+
+80
+00:14:11.050 --> 00:14:21.529
+Benjamin Houghton: so we look at the image, we find all the regions of interest. So that's the first.st That's why it's called the 2 stage. That's the 1st stage, and then the second stage is, we kind of say, yes, like
+
+81
+00:14:21.630 --> 00:14:24.400
+Benjamin Houghton: we, we narrow, we, we take
+
+82
+00:14:24.900 --> 00:14:44.530
+Benjamin Houghton: those regions of interest, and we determine which of those are actually objects that we're interested in. And we fine tune kind of where? What those bounding boxes look like? Right? Because at 1st it might be kind of a mess like we might have an object where like, if this is a person right? And we're doing object detection for people. And
+
+83
+00:14:44.530 --> 00:15:04.800
+Benjamin Houghton: you know, maybe there's a bounding box like this. There's 1 like this like there's there's several regions right, and we gotta kinda kind of combine those all into one unified bounding box, and with the best possible coordinates that we could come up with. So that's what I mean by like fine tuning the bounding box per se
+
+84
+00:15:05.235 --> 00:15:16.599
+Benjamin Houghton: so that's the for the 1st stage again finding the regions of interest, and the second stage is classifying them and fine tuning their the actual coordinates.
+
+85
+00:15:17.120 --> 00:15:31.979
+Benjamin Houghton: whereas a single stage is just like it sounds it. The image goes through the network, and out the other side comes the the bounding box court, the the vet, the the location of the bounding box, you know, it's width and height, or, again, like
+
+86
+00:15:32.650 --> 00:15:46.050
+Benjamin Houghton: it's always gonna be some combination of well, something along the lines of XY width and height. Right? You get both of these from you. Get this same pattern
+
+87
+00:15:46.520 --> 00:16:02.860
+Benjamin Houghton: from Sync, 2 stage and single stage you get the bounding box where you get these coordinates right? And so out pops the other side. You know, Yolo family gives us this, vector and then also tells us the class, like the probability of of the object.
+
+88
+00:16:03.100 --> 00:16:06.170
+Benjamin Houghton: for for all classes. Right?
+
+89
+00:16:07.170 --> 00:16:25.439
+Benjamin Houghton: So again, like it, it does that all in one pass where it doesn't need to look at the image twice, and then actually sneak preview. That's what Yolo stands for, meaning. You only look once, meaning you only look at the image once, whereas these other, these 2 stage detectors. You have to look at the image twice. Essentially
+
+90
+00:16:25.880 --> 00:16:36.470
+Benjamin Houghton: alright. And then, you know there. And that's a very, very simplistic explanation of how it works. And you know, we're going to talk about that and obviously much, much more detail
+
+91
+00:16:38.113 --> 00:16:42.359
+Benjamin Houghton: so this is just a little comparison for you guys, I mean.
+
+92
+00:16:42.520 --> 00:16:55.690
+Benjamin Houghton: So the single stage detectors are faster, right? Obviously, you know, you would think, or it's kind of intuitive, hey? If I only got to look at it once. Then it's gonna it's gonna be faster typically simpler architecture.
+
+93
+00:16:56.318 --> 00:17:15.740
+Benjamin Houghton: But we have to give. You know, the 2 stages are more complex, slower. And therefore, you know, typically higher accuracy. Okay? And so we can see the use case use cases high precision or real time fast applications. So they they both have their pros and cons. Okay.
+
+94
+00:17:18.579 --> 00:17:36.149
+Benjamin Houghton: alright components of a 2 stage detector. Right? Again, like today, I should mention, you know, today, we're gonna be focusing on, you know. I guess I should mention I didn't mention this before. But if I didn't today we're gonna be focused on 2 stage detectors, we will talk about
+
+95
+00:17:36.260 --> 00:17:52.680
+Benjamin Houghton: single stage detectors and and more in in subsequent videos, really and specifically, today, we're gonna focus on these 2 architectures. So Rcnn and fast. Rcnn, we're Gonna save faster Rcnn and Yolo
+
+96
+00:17:52.800 --> 00:17:57.329
+Benjamin Houghton: for our advanced object detection video or our subsequent videos.
+
+97
+00:18:00.120 --> 00:18:00.920
+Benjamin Houghton: All right.
+
+98
+00:18:02.930 --> 00:18:06.870
+Benjamin Houghton: So what makes up a two-stage detector. Well.
+
+99
+00:18:07.200 --> 00:18:13.240
+Benjamin Houghton: glad you asked. We need a backbone network which is our feature extraction network.
+
+100
+00:18:14.320 --> 00:18:15.000
+Benjamin Houghton: And
+
+101
+00:18:17.750 --> 00:18:29.800
+Benjamin Houghton: well, let's talk about this a little bit more. What is a a the backbone feature extraction? It's simply any. It's simply any Cnn this could be Vgg, and I can't remember which
+
+102
+00:18:29.900 --> 00:18:37.310
+Benjamin Houghton: one that fast. I think fast. I'm sorry. I think our Cnn uses
+
+103
+00:18:37.730 --> 00:18:46.289
+Benjamin Houghton: uses vgg okay, and that. But you know they could use something like resnet right? Like. So faster. Rcnn
+
+104
+00:18:46.440 --> 00:18:58.029
+Benjamin Houghton: uses a a modified version of resnet. Right? So, anyways, it's just some model that is designed to extract features. Okay? So
+
+105
+00:18:58.470 --> 00:19:07.279
+Benjamin Houghton: you know, I know in from our other videos, we talked about these modern architectures. We did classification tests. But that last layer
+
+106
+00:19:07.430 --> 00:19:20.549
+Benjamin Houghton: of fully connected neurons. We kind of get rid of that right? And and and you know, because we might have all these neurons like this final layer has many, many nodes, and we'd say, we're doing a 3 class.
+
+107
+00:19:21.280 --> 00:19:26.080
+Benjamin Houghton: I have 3 nodes here because this represents a 3 class
+
+108
+00:19:26.410 --> 00:19:38.929
+Benjamin Houghton: classification task right? And so connect my nodes here like my fully connected network, right? Something like this, where it's all interconnected. You see me draw this before but
+
+109
+00:19:39.430 --> 00:19:50.159
+Benjamin Houghton: essentially, what we're gonna do is we're just gonna get rid of this part of the network. And so now we have all these features right? That have been extracted from the images. So that's the.
+
+110
+00:19:50.330 --> 00:19:56.095
+Benjamin Houghton: That's what we mean by the backbone network. It's just some convolutional neural network that
+
+111
+00:19:57.142 --> 00:20:05.450
+Benjamin Houghton: has it gone through and extracted the feature maps. And actually, we might not even be at the fully connected part. Really, usually we'll stop.
+
+112
+00:20:05.849 --> 00:20:12.079
+Benjamin Houghton: You know, I'll show you guys in a little bit what a feature map looks like right. We we have some illustrations of them. But
+
+113
+00:20:12.210 --> 00:20:25.079
+Benjamin Houghton: you know, when we run our convolutional neural networks we take an image in, and we guess we get out all these channels right? So think of it that way. If if that part didn't make sense to you what I said before, think about it like this. Remember, when we do.
+
+114
+00:20:25.740 --> 00:20:27.100
+Benjamin Houghton: we have these
+
+115
+00:20:27.420 --> 00:20:48.880
+Benjamin Houghton: convolutional networks. We have 3 channels. So here's the blue channel. Right? That's our one. Input, we have our red channel. That's another input and then we have our green channel. So we have our 3 channels right? And these go into our Cnn, right? Here's our Cnn model, and out of that pops what? Well, out of that pops a bunch of
+
+116
+00:20:48.880 --> 00:21:01.449
+Benjamin Houghton: feature maps, or what we call them channels right. We call feature maps. We call them channels. We call them a bunch of different things right? But they've been. They're they're the outputs of a of a convolutional layer.
+
+117
+00:21:01.490 --> 00:21:25.209
+Benjamin Houghton: Right? It's all they are. Okay. So that's literally all we're doing is, you know, we might get. And I'm drawing red. But you know they're not necessarily represent. They don't represent a color anymore. Right? We might take, we have 3 channels in red, green, blue, and we have many, many channels out. Okay, maybe it's 64 or 32. However, many channels doesn't really matter. What matters here is that
+
+118
+00:21:25.870 --> 00:21:32.400
+Benjamin Houghton: we realize that when we say feature extraction, that's what we're after. We're after these these channels. Okay?
+
+119
+00:21:32.530 --> 00:21:35.250
+Benjamin Houghton: So we want, we want all these, these channels.
+
+120
+00:21:35.650 --> 00:21:37.878
+Benjamin Houghton: Okay, so those are the features.
+
+121
+00:21:38.680 --> 00:21:48.869
+Benjamin Houghton: the next portion is a region proposal network. You know, this doesn't necessarily need to be a network. Okay? So that's actually more of an advanced topic where
+
+122
+00:21:49.300 --> 00:22:02.859
+Benjamin Houghton: we use neural networks to propose the regions of interest. Remember, I remember, I said before, like we have to figure out, hey, where in this image is interesting, like, what do we need to classify? What are objects? Well.
+
+123
+00:22:02.940 --> 00:22:20.796
+Benjamin Houghton: that's where the region proposal comes in. And you know, you can use things like called selective search right? And so actually, what we'll talk about today is selective search this is what we'll use today. This is more roi whereas the region proposal network is more, a more advanced
+
+124
+00:22:22.120 --> 00:22:27.369
+Benjamin Houghton: more advanced way of doing it. Okay.
+
+125
+00:22:28.610 --> 00:22:34.110
+Benjamin Houghton: alright. So anyways, the whole idea here region proposal find out where in the image. We need to look
+
+126
+00:22:34.856 --> 00:22:39.410
+Benjamin Houghton: and then Roi pooling right again. This is.
+
+127
+00:22:39.710 --> 00:22:43.851
+Benjamin Houghton: We'll talk about this here in a little bit this is well.
+
+128
+00:22:44.920 --> 00:22:51.050
+Benjamin Houghton: this is not really used in our Cnn. It's used more in fast
+
+129
+00:22:51.440 --> 00:22:55.239
+Benjamin Houghton: our Cnn. And what this means is that
+
+130
+00:22:55.430 --> 00:23:14.350
+Benjamin Houghton: essentially Roi pooling has to deal with getting everything to be the same shape. Okay, just leave it at that, for now I'm going to talk about it in more depth, and there's no point in me, trying to explain it twice, especially without, like all the images and diagrams that I have associated with it and coming up so for now, just.
+
+131
+00:23:14.810 --> 00:23:17.980
+Benjamin Houghton: you know, just know that this deals with
+
+132
+00:23:18.290 --> 00:23:30.450
+Benjamin Houghton: getting things to be the right shape. Right? Right? We're basically they all need to be the right, the uniform shape, and then finally, classification and bounding box regression. And this is the part where I was talking about earlier, about fine
+
+133
+00:23:30.710 --> 00:23:36.049
+Benjamin Houghton: tuning our bounding boxes right? So
+
+134
+00:23:36.520 --> 00:23:43.510
+Benjamin Houghton: not only are we classifying them, but we're also saying, when we say regression, what we're mean. What we mean is that
+
+135
+00:23:43.620 --> 00:23:57.163
+Benjamin Houghton: you know, the bounding box might not perfectly fit the object, and we might have multiple bounding boxes over top of each other. We want to have a unified answer, essentially a final bounding box that is,
+
+136
+00:23:57.850 --> 00:24:15.009
+Benjamin Houghton: the best bounding box we can come up with. Right if it's the object, the best best we've got rid of all those duplicate bounding boxes. So that's the final stage, right? And we. There's a couple. There's a little bit more to it than that, obviously, and we'll talk about each step in more detail.
+
+137
+00:24:16.302 --> 00:24:17.780
+Benjamin Houghton: Just for comparison.
+
+138
+00:24:20.460 --> 00:24:36.493
+Benjamin Houghton: yeah. And I'm not gonna really talk about this a whole lot. But the Yolo architecture is a single network, right? As opposed to. I mean, if you were doing, if you were using a region proposal network and and a feature extraction network,
+
+139
+00:24:38.330 --> 00:24:40.520
+Benjamin Houghton: they're kind of separate in a sense.
+
+140
+00:24:40.990 --> 00:24:47.763
+Benjamin Houghton: So whereas Yolo just has a single network. It does like this grid based predictions with anchor boxes.
+
+141
+00:24:48.270 --> 00:24:50.669
+Benjamin Houghton: And you know, anyways,
+
+142
+00:24:52.540 --> 00:25:08.880
+Benjamin Houghton: we're gonna talk about Yolo more detail. But you know, so this slide will make more sense after you see that. But really I'm not really concerned with you understanding this right now, like, we wanna concern ourselves today with specifically just this portion, this part.
+
+143
+00:25:10.410 --> 00:25:14.590
+Benjamin Houghton: Okay, so
+
+144
+00:25:17.224 --> 00:25:42.885
+Benjamin Houghton: intersection or reunion, right? So before we get to the actual algorithm itself, and and how this works the last thing to kind of housekeeping thing, I guess, is intersection reunion. And this is kind of our metric, of how well we're doing or how well, I wouldn't. Necessarily, it's used for more than just saying how well, we're doing obviously. Well, not obviously
+
+145
+00:25:43.380 --> 00:25:51.939
+Benjamin Houghton: I guess it's obvious to me. But it's it's more. This metric tells us essentially how well 2 objects overlap.
+
+146
+00:25:52.240 --> 00:25:55.860
+Benjamin Houghton: So it's a pretty simple
+
+147
+00:25:56.640 --> 00:26:11.289
+Benjamin Houghton: calculation, right? And we just take the area of overlap and divide it by the area of union. So the area of union is both objects together, right? So in purple. Here we see the area of union at the bottom.
+
+148
+00:26:11.850 --> 00:26:14.450
+Benjamin Houghton: right? So here's the area of union here.
+
+149
+00:26:14.760 --> 00:26:19.609
+Benjamin Houghton: And so we can calculate that by
+
+150
+00:26:19.900 --> 00:26:30.620
+Benjamin Houghton: just summing together all the entire area of both objects. Obviously, you wouldn't want to count the center portion that overlaps twice so that gets subtracted off here. But
+
+151
+00:26:31.190 --> 00:26:41.271
+Benjamin Houghton: yeah, it's pretty intuitive. And this gives us some ratio anyways, and and tells us this intersection over union tells us,
+
+152
+00:26:42.580 --> 00:26:48.260
+Benjamin Houghton: sort of the percentage. I guess you can think of it almost as a percentage of the area that
+
+153
+00:26:48.420 --> 00:26:52.240
+Benjamin Houghton: matches versus everything else. Right? Okay?
+
+154
+00:26:53.086 --> 00:27:05.040
+Benjamin Houghton: So obviously, we want high areas of overlap. Or I'm sorry intersection that we want high. You often see this abbreviated as Iou for intersection over union. Okay?
+
+155
+00:27:05.620 --> 00:27:11.374
+Benjamin Houghton: And yeah, it's as simple as that.
+
+156
+00:27:11.970 --> 00:27:16.959
+Benjamin Houghton: we want this to be a large number for you know.
+
+157
+00:27:18.450 --> 00:27:25.040
+Benjamin Houghton: we want this to be a large number for for actual objects, or or if this was like graph, if we were comparing our bounding box.
+
+158
+00:27:25.150 --> 00:27:35.849
+Benjamin Houghton: say to the ground, truth, bounding box while we don't train it this way. It you know, we we actually use regression, which we'll we'll talk about later. But
+
+159
+00:27:36.930 --> 00:27:46.250
+Benjamin Houghton: the Iou. Tells us how well our our bounding box fits or matches the ground truth data. Okay? And this metric is used
+
+160
+00:27:46.660 --> 00:28:12.659
+Benjamin Houghton: quite a bit. Right? It's it's not only just used to tell us how well we're doing, which is why I introduce it now. If it was only used as a a metric for evaluating model performance, then I would probably save this towards the end of the presentation. Or after we've talked about the architecture. But this Iou concept is gonna get used actually, during the implementation details of of the model itself.
+
+161
+00:28:13.100 --> 00:28:22.869
+Benjamin Houghton: Okay, alright. So selective search. So remember, I, I mentioned earlier that
+
+162
+00:28:24.320 --> 00:28:27.180
+Benjamin Houghton: we need to determine our regions of interest.
+
+163
+00:28:27.290 --> 00:28:52.160
+Benjamin Houghton: Alright, our regions of interest. And we do that with an algorithm called selective search. Okay? Again, at least, when we're talking about our Cnn, right? We're talking about the beginning. Today, this is introduction video, right? So we're gonna use selective search. It's just an algorithm. It's not machine learning that that does this. This isn't doesn't have any meaning. It doesn't have any trainable parameters. Okay.
+
+164
+00:28:52.270 --> 00:29:01.559
+Benjamin Houghton: what this does is it does have some hyper parameters. Right? Just Fyi. But no trainable parameters. And actually, we'll see that in code here in a second.
+
+165
+00:29:01.690 --> 00:29:07.550
+Benjamin Houghton: And what selective search does is generates a set of bounding boxes or an image.
+
+166
+00:29:08.010 --> 00:29:09.020
+Benjamin Houghton: Okay.
+
+167
+00:29:09.130 --> 00:29:19.429
+Benjamin Houghton: the way this essentially works is. And and we don't really need to understand. I'm not gonna give you guys pseudo code for this. You can look up the pseudo code for selective search. But
+
+168
+00:29:20.780 --> 00:29:22.090
+Benjamin Houghton: essentially
+
+169
+00:29:22.400 --> 00:29:37.049
+Benjamin Houghton: pixels that are close, it recursively merges areas or pixels together that are similar. Okay? So if we had 2 pixels that were the same color, right? Had the same meaning. They had the same.
+
+170
+00:29:37.700 --> 00:29:50.470
+Benjamin Houghton: the RGB right? They had the same intensity values for all 3 channels, meaning. Essentially, they're the same color. They would get merged together faster than pixels that weren't the same color, right?
+
+171
+00:29:50.790 --> 00:29:57.723
+Benjamin Houghton: I mean, it's more to it than that. But that's kind of the way you kind of think about this. Right? So we have some examples here.
+
+172
+00:29:59.020 --> 00:30:02.259
+Benjamin Houghton: in this image below these images below where?
+
+173
+00:30:03.102 --> 00:30:04.969
+Benjamin Houghton: We kind of
+
+174
+00:30:05.290 --> 00:30:12.800
+Benjamin Houghton: progressively going from left to right, we get, we merge more and more and more. So in the 1st one
+
+175
+00:30:12.910 --> 00:30:20.909
+Benjamin Houghton: there are looks like 29 bounding boxes. Okay.
+
+176
+00:30:21.530 --> 00:30:25.320
+Benjamin Houghton: 29. Bounding boxes. That's what the number says there,
+
+177
+00:30:26.470 --> 00:30:35.460
+Benjamin Houghton: and and the scale the scale here. It's a hyper parameter. So this other number scale, and you'll see you can look at the code and and and
+
+178
+00:30:36.000 --> 00:30:43.039
+Benjamin Houghton: but this other number scale. So he says, this one says 2,500, whereas this one is 500, it it.
+
+179
+00:30:43.860 --> 00:30:51.770
+Benjamin Houghton: basically. The larger this number is, the fewer bounding boxes you get, and the more it's going to try and merge things together.
+
+180
+00:30:52.420 --> 00:30:58.728
+Benjamin Houghton: So let's kind of look at some of these, the results here. So we see the pixels.
+
+181
+00:30:59.210 --> 00:31:16.609
+Benjamin Houghton: Now, what you should note here that this is you actually get. When you do selective search, you're after the bounding boxes themselves. Okay, which we see down here. But it's I, this code. I I gave you guys this code so that you could kind of see what pixels it's grouping together. So
+
+182
+00:31:17.210 --> 00:31:31.019
+Benjamin Houghton: these are the pixels that group together, and then from these pixels the you can kind of see where how these bounding boxes are drawn. So let's look at this. Another good example, is this lime green bounding box here? So if you look here.
+
+183
+00:31:32.720 --> 00:31:53.450
+Benjamin Houghton: there's all this lime green one you see, these pixels are are clumped together, and down here we see the lime green bounding box. Okay, and so you can see these are all color coordinated. So for this particular, if we were doing like a dog classification task. We see that the scale of 1,000
+
+184
+00:31:53.580 --> 00:31:57.060
+Benjamin Houghton: gives us pretty good results. Because why? Well, because.
+
+185
+00:31:57.210 --> 00:31:59.200
+Benjamin Houghton: if you know, in the first.st
+
+186
+00:31:59.580 --> 00:32:02.400
+Benjamin Houghton: When the scale is 500,
+
+187
+00:32:02.540 --> 00:32:07.240
+Benjamin Houghton: the dog, it looks like the pixels haven't fully been merged. It's kind of looks like its feet
+
+188
+00:32:07.737 --> 00:32:18.040
+Benjamin Houghton: which are slightly different color than the rest of its body. The rest of its fur are a different bounding like haven't been merged together yet right? Whereas
+
+189
+00:32:18.220 --> 00:32:48.219
+Benjamin Houghton: on 1,000, you know, we see that more or less the object is almost can been completely segmented from the rest of the image. And then, as we go further. 1,500. The the dog is, which is a darker color dog, and a darker colored ground here looks like it gets completely merged with the background. And so we lose the dog bounding box actually, altogether. Which isn't good. So anyways, but yeah, you guys can take this code and you should be able to run it at home
+
+190
+00:32:48.630 --> 00:32:52.949
+Benjamin Houghton: and play around with these numbers and kind of see how this selective search
+
+191
+00:32:53.370 --> 00:33:00.489
+Benjamin Houghton: works. Right? So hopefully, this gives you an into it some intuition into how this.
+
+192
+00:33:02.210 --> 00:33:10.779
+Benjamin Houghton: how this functions? Right? Anyways. So yeah. But you can play around with the the scales. Using this selective search
+
+193
+00:33:10.900 --> 00:33:12.669
+Benjamin Houghton: function at home.
+
+194
+00:33:13.010 --> 00:33:13.720
+Benjamin Houghton: But
+
+195
+00:33:13.850 --> 00:33:31.870
+Benjamin Houghton: anyways, again, this is all I really would expect you guys to understand. I I wouldn't. If you're curious to know how the selective search algorithm works. By all means like you can do more reading and research on it. But for the for our purposes this is as deep as we really need to go. For this particular topic.
+
+196
+00:33:34.960 --> 00:33:40.190
+Benjamin Houghton: One of the reasons for that is because selective search is
+
+197
+00:33:40.660 --> 00:33:58.130
+Benjamin Houghton: a earlier method. And you know, we're going to look at more advanced methods like region proposal network in more detail. And how we'd actually implement that where we use a neural network to get these region proposals. And we're also gonna talk about things like Yolo, right? That don't even that don't even have that 1st stage
+
+198
+00:33:58.860 --> 00:34:18.460
+Benjamin Houghton: where they don't. They don't have the the 1st stage and second stage, or that, or they just do it all one pass. And we're gonna talk about that in more detail. Right? So that's why I feel selective. Search isn't quite as pertinent as some of the other things like region proposal network and Yolo, which we will talk about in more detail in future videos.
+
+199
+00:34:19.940 --> 00:34:21.140
+Benjamin Houghton: All right. So
+
+200
+00:34:21.300 --> 00:34:37.009
+Benjamin Houghton: with all that out of the way, I think we can finally talk about our Cnn, the actual region which stands for regions with convolutional neural networks, as you can see here. Okay, so this paper was in 2014.
+
+201
+00:34:38.880 --> 00:34:43.330
+Benjamin Houghton: it says, here, a 3 stage process. I I know that
+
+202
+00:34:43.850 --> 00:35:04.173
+Benjamin Houghton: not like this isn't some new category. I know I was. I was talking about one stage and 2 stage. It is a 2 stage process, but the paper themselves. When they wrote this paper they described it themselves. They described it as a 3 stage process at least pretty sure. They say that in the video or in the paper. Sorry. Let me let me look at this real fast.
+
+203
+00:35:05.970 --> 00:35:10.449
+Benjamin Houghton: it's not a, it's not a big deal. But I mean, and actually, they have
+
+204
+00:35:11.780 --> 00:35:23.780
+Benjamin Houghton: in this image here, they have looks like 4 where they well, input, yeah, okay? So the input image, right? They're counting as a stage. But really, I guess yeah, extract region proposals.
+
+205
+00:35:24.430 --> 00:35:31.949
+Benjamin Houghton: get the features and then classify the regions which also classify the regions. This part is gonna also include.
+
+206
+00:35:32.100 --> 00:35:34.039
+Benjamin Houghton: right is going to include
+
+207
+00:35:35.330 --> 00:35:42.679
+Benjamin Houghton: something called non Max suppression and bounding box regression to fine tune. Those bounding boxes.
+
+208
+00:35:45.120 --> 00:35:52.910
+Benjamin Houghton: Right? Anyways. Let's go back to our presentation, though, and let's go back here. So
+
+209
+00:35:53.420 --> 00:36:03.240
+Benjamin Houghton: like like we saw in the paper, right, we gotta get the regions, the region proposals using selective search. So Roi get our regions of interest, extract their features
+
+210
+00:36:04.530 --> 00:36:06.119
+Benjamin Houghton: and then, finally.
+
+211
+00:36:09.150 --> 00:36:14.190
+Benjamin Houghton: we're going to classify the objects within the bounding boxes and perform non-max suppression.
+
+212
+00:36:19.290 --> 00:36:27.550
+Benjamin Houghton: And I apologize. I'm going a little slower than normal, because, you can't tell. I have a little bit of a cough or a cold today. So
+
+213
+00:36:27.830 --> 00:36:37.529
+Benjamin Houghton: I apologize. I have to take breaks every so often and take a sip of water, so just bear with me. Hopefully, you guys can watch this on faster than one X speed.
+
+214
+00:36:40.260 --> 00:36:50.090
+Benjamin Houghton: So the selective search according to their paper, generates roughly 2,000 region proposals per image
+
+215
+00:36:50.500 --> 00:36:57.949
+Benjamin Houghton: quite a bit, all right, and Cnn feature extraction.
+
+216
+00:37:00.313 --> 00:37:05.230
+Benjamin Houghton: They say they use Alex net to extract the features, and
+
+217
+00:37:06.220 --> 00:37:13.780
+Benjamin Houghton: this laid the foundational work for subsequent detection models right? So our Cnn. Kind of started it all. In a sense, the deep learning
+
+218
+00:37:14.410 --> 00:37:23.336
+Benjamin Houghton: at era of object detection Rcnn did. And of course, you know, we get as you guys know, we get fast. Rcnn. And we get faster.
+
+219
+00:37:23.790 --> 00:37:33.408
+Benjamin Houghton: It's funny faster than faster. Rc, now I don't. I don't think there's a faster than faster. But there is Yolo, right? Which is even faster than faster. Okay,
+
+220
+00:37:35.230 --> 00:37:42.990
+Benjamin Houghton: right. So all these models come after our Cnn. Which we can think is like the grandfather of this technology, so to speak.
+
+221
+00:37:43.200 --> 00:37:44.930
+Benjamin Houghton: which is why it's important to
+
+222
+00:37:45.070 --> 00:37:48.760
+Benjamin Houghton: to understand it where we started and where where we're kind of going.
+
+223
+00:37:50.420 --> 00:37:51.229
+Benjamin Houghton: All right.
+
+224
+00:37:54.300 --> 00:37:59.509
+Benjamin Houghton: So here is the high level diagram of
+
+225
+00:38:02.590 --> 00:38:10.979
+Benjamin Houghton: hopefully, not too high level. This is the majority of the implementation details. Right? Of how this works. So
+
+226
+00:38:13.926 --> 00:38:19.390
+Benjamin Houghton: step one generate region proposals.
+
+227
+00:38:19.560 --> 00:38:24.310
+Benjamin Houghton: Okay, using selective search which we've we've talked about.
+
+228
+00:38:24.610 --> 00:38:26.380
+Benjamin Houghton: And then next step.
+
+229
+00:38:28.430 --> 00:38:29.370
+Benjamin Houghton: Well
+
+230
+00:38:29.840 --> 00:38:36.050
+Benjamin Houghton: for those of you who are familiar with deep learning and convolutional neural networks, which I know you probably all are.
+
+231
+00:38:37.010 --> 00:38:39.119
+Benjamin Houghton: You need to resize the images.
+
+232
+00:38:39.640 --> 00:38:46.220
+Benjamin Houghton: And because that's just the way neural networks work right?
+
+233
+00:38:47.410 --> 00:39:00.159
+Benjamin Houghton: if we don't resize them, then all of our I mean technically. Yes, you can take an image of any size, and and convolve it with any size kernel, right like.
+
+234
+00:39:00.280 --> 00:39:11.620
+Benjamin Houghton: I guess as long as the kernel is smaller than the image or the same size. Right? We can slide any kernel size across any size image. It doesn't have to be a uniform size, but
+
+235
+00:39:12.057 --> 00:39:18.909
+Benjamin Houghton: if they're not a uniform size. What happens? I'll pause. I'll let you think about it for a second, maybe pause the video.
+
+236
+00:39:19.220 --> 00:39:20.040
+Benjamin Houghton: But
+
+237
+00:39:20.770 --> 00:39:26.620
+Benjamin Houghton: what happens is, if they're not the same size going in. They're not going to be the same size coming out
+
+238
+00:39:26.730 --> 00:39:32.250
+Benjamin Houghton: right? So your extracted features or your your extracted feature maps
+
+239
+00:39:33.240 --> 00:39:44.960
+Benjamin Houghton: would not be the same size, the resulting channels, the output channels of the convolution would be a different size for each different size image. So you resize the images
+
+240
+00:39:45.540 --> 00:39:46.900
+Benjamin Houghton: in step 2.
+
+241
+00:39:48.090 --> 00:39:57.349
+Benjamin Houghton: Next thing is, you extract the features right? So. And and that's what these little colorful maps represent. Right? These are our feature maps. Okay?
+
+242
+00:39:57.700 --> 00:40:06.790
+Benjamin Houghton: So we do a couple. We do some convolutions, maybe you know Alexnet, or or at least what they they say they used in this paper.
+
+243
+00:40:08.590 --> 00:40:11.030
+Benjamin Houghton: or maybe it's Bgg
+
+244
+00:40:12.630 --> 00:40:18.600
+Benjamin Houghton: or resnet, whatever it is, doesn't matter per se. Usually this is a pre chain network
+
+245
+00:40:19.020 --> 00:40:22.459
+Benjamin Houghton: that is designed to excuse me. Extract
+
+246
+00:40:22.720 --> 00:40:29.189
+Benjamin Houghton: features, right? That's been trained on a large scale data set, like maybe like something like image net.
+
+247
+00:40:30.260 --> 00:40:37.610
+Benjamin Houghton: And it we see here that it extracts this, a 4,096, dimensional feature, vector
+
+248
+00:40:38.450 --> 00:40:39.710
+Benjamin Houghton: meaning that
+
+249
+00:40:40.090 --> 00:40:49.010
+Benjamin Houghton: if you take all these channels, Latin them all out and concatenate them all together, you know there'd be 496 features.
+
+250
+00:40:49.850 --> 00:40:58.709
+Benjamin Houghton: Okay, so good. So far, so good. Hopefully. All we all we're doing is using selective search.
+
+251
+00:40:59.528 --> 00:41:18.329
+Benjamin Houghton: You know, our regions that are generated might not be all uniform. So we resize them and we run them through convolutional layers. That's it. Okay? And then we flatten them. And we do something called, we do something called bounding box. We? Well, that's the second part. Okay? Well, the 1st part here
+
+252
+00:41:18.440 --> 00:41:29.020
+Benjamin Houghton: is score extracted features, and then the other one is is bounding box regression. So let's talk about these in a little bit more detail. Okay, the we'll do the
+
+253
+00:41:31.520 --> 00:41:48.059
+Benjamin Houghton: score extracted features part first.st So actually, Rcnn uses act is actually uses Svm, I know, right? So support vector machines. Right? And these support vector machine regression models.
+
+254
+00:41:48.440 --> 00:42:03.220
+Benjamin Houghton: They actually generate a a quote unquote score, and I guess you know if you were doing, and you know Sneak Preek in the future, this will be done with fully connected layers. And they'll use softmax
+
+255
+00:42:03.590 --> 00:42:07.100
+Benjamin Houghton: right to get a probability, vector
+
+256
+00:42:08.500 --> 00:42:14.420
+Benjamin Houghton: right? Probability vectors of of across all classes. Okay?
+
+257
+00:42:14.560 --> 00:42:37.500
+Benjamin Houghton: So whereas right now, we're using sport rector machines. It's the same idea. Right? So for every single class, you're gonna have a score. So in my example, you have a cat and a dog, but we also have a background class score, too. So we'll say, Sc for cat, Sd. For dog, and Sb. For background. So if we look at one of these little squares.
+
+258
+00:42:37.500 --> 00:42:52.110
+Benjamin Houghton: Right? Let's look at this one hopefully. You can see that this square is a picture of the cat and the dog, and so you might have a high score for cat. I don't know what that score is. Maybe it's 3. I don't know.
+
+259
+00:42:52.270 --> 00:42:56.930
+Benjamin Houghton: Dog is I don't know 2.5, because most of the dogs cut off
+
+260
+00:42:57.130 --> 00:43:04.050
+Benjamin Houghton: and then background is probably gonna be low 0 point 5. I don't know. I'm just making these numbers up. But the idea here is that
+
+261
+00:43:04.170 --> 00:43:10.050
+Benjamin Houghton: we we evaluate. We have some score from these support vector machine models, and they generally tell us
+
+262
+00:43:10.450 --> 00:43:23.689
+Benjamin Houghton: more or less a probability, not probability. I guess they I shouldn't use the word probability, because these don't sum to one right. They're not a probability. It's not a probability distribution, not a true one, because it doesn't.
+
+263
+00:43:23.830 --> 00:43:32.930
+Benjamin Houghton: doesn't equal one. But once we get the score, we've essentially classified that little bounding box.
+
+264
+00:43:33.140 --> 00:43:39.419
+Benjamin Houghton: all right. So we we think it's a cat, because it had the highest score in our pre in this example.
+
+265
+00:43:42.050 --> 00:43:53.180
+Benjamin Houghton: And of course, you know we do do that for every single bounding box. Right? You see here that in this example there's 6 bound, there's 6 regions of interest. So we do this for all 6 of these, these regions of interest.
+
+266
+00:43:53.610 --> 00:44:04.029
+Benjamin Houghton: Of of course, this would be closer to number, like 2,000. Okay, according to the Rcnn paper. So for all 2,000 of them. We classify them. And then.
+
+267
+00:44:05.100 --> 00:44:09.029
+Benjamin Houghton: on addition to that, those same features that get.
+
+268
+00:44:09.310 --> 00:44:19.159
+Benjamin Houghton: you know, that we use that get flattened and used to generate a score. They also get input into another regression model. This time, it's a l 2 regularized
+
+269
+00:44:19.390 --> 00:44:23.761
+Benjamin Houghton: Aka Ridge linear regression model to
+
+270
+00:44:25.050 --> 00:44:29.650
+Benjamin Houghton: predict the bounding box transformations. Okay. And so what is that?
+
+271
+00:44:30.060 --> 00:44:38.370
+Benjamin Houghton: Well, again, remember, I said, the bounding box aren't aren't perfect. So if we look at this little picture of this cat here
+
+272
+00:44:38.960 --> 00:44:48.750
+Benjamin Houghton: this one that I was using before this example. We see it's not like very well centered over the cat. So ideally. This bounding box would tell. This
+
+273
+00:44:49.130 --> 00:44:56.860
+Benjamin Houghton: transformation would tell us how much to adjust X, which was G of X, how much to adjust YG of y.
+
+274
+00:44:56.980 --> 00:45:03.570
+Benjamin Houghton: and then the width and the height. Okay, how much to adjust the height and width alright.
+
+275
+00:45:03.980 --> 00:45:08.849
+Benjamin Houghton: And we have to do that for all all classes, though, because
+
+276
+00:45:08.980 --> 00:45:14.910
+Benjamin Houghton: right now we don't. Necessarily, you know, we, the model, is designed to do this.
+
+277
+00:45:15.645 --> 00:45:18.680
+Benjamin Houghton: Of course, across all classes, because
+
+278
+00:45:19.940 --> 00:45:26.029
+Benjamin Houghton: it it just essentially, I mean it. It essentially has to be that way right? Each little.
+
+279
+00:45:26.500 --> 00:45:41.170
+Benjamin Houghton: each regressor is going to get trained for its its specific class. And actually, I should have said the same thing about when we're doing the the classes, the scores down here, right? We have an Svm. A little each. We have an Svm model that does a score
+
+280
+00:45:41.630 --> 00:45:45.830
+Benjamin Houghton: for for each class. So one, there's an Svm model
+
+281
+00:45:46.190 --> 00:45:55.300
+Benjamin Houghton: for the dog. Here's an Svm models for the cats, right? And they give us. They each give us a score. And then down here we have the Svm model.
+
+282
+00:45:55.650 --> 00:45:59.000
+Benjamin Houghton: Actually, it's a linear model. Sorry, linear regression model.
+
+283
+00:45:59.110 --> 00:46:11.650
+Benjamin Houghton: right for each class. So that's important to note here, and that's the way you'd want to do it. You're making it much easier on yourself and the model if each model is kind of specialized for its particular class.
+
+284
+00:46:12.490 --> 00:46:13.420
+Benjamin Houghton: So
+
+285
+00:46:13.540 --> 00:46:22.089
+Benjamin Houghton: that's what the this part 4 does. Once we've flattened the features, we've scored each box, and we've also predicted
+
+286
+00:46:22.200 --> 00:46:29.940
+Benjamin Houghton: how it should be, each box should be transformed to give us a better box that better fits the object.
+
+287
+00:46:33.010 --> 00:46:40.030
+Benjamin Houghton: and then the last step is what we call class-wise non-max oppression.
+
+288
+00:46:41.060 --> 00:46:44.749
+Benjamin Houghton: And this is the part where we we kind of keep only
+
+289
+00:46:44.860 --> 00:46:53.890
+Benjamin Houghton: the best boxes, right? Which we'll talk about on the next slide. But essentially for each class.
+
+290
+00:46:54.880 --> 00:46:55.690
+Benjamin Houghton: Right?
+
+291
+00:46:56.040 --> 00:46:58.630
+Benjamin Houghton: If ace.
+
+292
+00:46:59.900 --> 00:47:19.160
+Benjamin Houghton: we'll say, if a region is considered for a specific class, meaning, it meets as a specific score threshold. So, looking at this box here. It's gonna have a high cat score, but a low dog score. So it's only gonna be considered for the cat class right? And so then it's gonna be compared against all other
+
+293
+00:47:19.850 --> 00:47:24.320
+Benjamin Houghton: bounding boxes that are of that are the cat class.
+
+294
+00:47:25.420 --> 00:47:26.500
+Benjamin Houghton: So
+
+295
+00:47:27.260 --> 00:47:48.400
+Benjamin Houghton: what does that mean? Well, that means that when we compare them. If they have a high intersection over union, then we're gonna keep. We're gonna discard one of them right? So here's intersection over Union again. The metric we talked about. Where we're we're actually using that metric here to do our predictions. And
+
+296
+00:47:49.130 --> 00:47:53.891
+Benjamin Houghton: again, so let's let's look at some examples here.
+
+297
+00:47:54.700 --> 00:48:09.430
+Benjamin Houghton: This cat here has one bounding box that's kind of on its face, and then it has some other bounding boxes that are like above it right? So there's 1 that is pretty well fits it, and there's 1 that is only like the top portion of its body. Well.
+
+298
+00:48:10.090 --> 00:48:22.529
+Benjamin Houghton: this one that's like the top portion of his body, also has a part of the dog in it, so I would imagine that that would lower the score for that bounding box. And so we keep the bounding box that has the best score.
+
+299
+00:48:22.900 --> 00:48:24.370
+Benjamin Houghton: Okay? Meaning.
+
+300
+00:48:24.910 --> 00:48:33.510
+Benjamin Houghton: So let me rephrase. Let me reiterate what I just said. We have we found we have these bounding boxes. They've all been assigned scores right?
+
+301
+00:48:36.250 --> 00:48:42.930
+Benjamin Houghton: It's important to note that I guess I should note as well that we've we've also applied the bounding box transformations.
+
+302
+00:48:43.050 --> 00:48:45.399
+Benjamin Houghton: It's just very small detail. But
+
+303
+00:48:45.510 --> 00:48:51.787
+Benjamin Houghton: we have all these bounding boxes. They've had their their transformations applied. And
+
+304
+00:48:54.480 --> 00:48:58.249
+Benjamin Houghton: if they have a high score right for that.
+
+305
+00:48:58.490 --> 00:49:01.429
+Benjamin Houghton: Well, I guess I should say this. So
+
+306
+00:49:01.710 --> 00:49:17.229
+Benjamin Houghton: let's let me back up one step. We have all these bounding boxes. If they have a high score, right? Some threshold, then we're going to keep that bounding box. And for that particular class. And we're going to apply its transformation.
+
+307
+00:49:17.620 --> 00:49:24.010
+Benjamin Houghton: Okay, so we have all these but hopefully fine tuned bounding boxes
+
+308
+00:49:24.790 --> 00:49:28.010
+Benjamin Houghton: that are now associated with some class.
+
+309
+00:49:28.880 --> 00:49:29.750
+Benjamin Houghton: Right
+
+310
+00:49:31.890 --> 00:49:38.460
+Benjamin Houghton: now we compare each of those of the bounding boxes that are within the same class to each other.
+
+311
+00:49:39.040 --> 00:49:40.130
+Benjamin Houghton: So
+
+312
+00:49:40.920 --> 00:49:49.209
+Benjamin Houghton: if they have a high Iou, we can keep the one with the higher score, and we assume the one with the higher score is the better bounding box.
+
+313
+00:49:49.700 --> 00:49:57.390
+Benjamin Houghton: Well, I pointed to low Iou. But like, if they have a high. Iou intersection or reunion we keep.
+
+314
+00:49:58.700 --> 00:50:04.059
+Benjamin Houghton: we, we, we only keep the one with the higher score. They have a low intersection over union. We keep them both.
+
+315
+00:50:04.440 --> 00:50:09.800
+Benjamin Houghton: Okay? So we could potentially, yes, we could potentially have multiple
+
+316
+00:50:10.070 --> 00:50:32.369
+Benjamin Houghton: bounding boxes for the same object, but ideally, with the right threshold, right with the, with the right intersection of reunion score. We kind of reduce it down to what we want here at the bottom, and then this is the final output where we have 3 objects, 2 cats and a dog, and we have one bounding box for each object, and the bounding boxes match the objects really? Well.
+
+317
+00:50:33.930 --> 00:50:34.770
+Benjamin Houghton: all right?
+
+318
+00:50:34.940 --> 00:50:37.150
+Benjamin Houghton: So that's kind of what we want to see
+
+319
+00:50:40.380 --> 00:50:41.190
+Benjamin Houghton: right?
+
+320
+00:50:43.250 --> 00:50:45.499
+Benjamin Houghton: So hopefully, that makes sense.
+
+321
+00:50:48.860 --> 00:50:56.349
+Benjamin Houghton: But you know, to kind of go over the whole process again, the whole workflow, I guess to to kind of recap. We put the images in.
+
+322
+00:50:56.810 --> 00:51:00.470
+Benjamin Houghton: We get our region proposals. We resize the images.
+
+323
+00:51:00.840 --> 00:51:04.210
+Benjamin Houghton: Okay, because they have to be the same size, get the same number of features out.
+
+324
+00:51:04.570 --> 00:51:17.769
+Benjamin Houghton: We do our feature extraction with our convolutional neural network layers. We take those features, we put them into a class, we get a score, and we get a transformation for every single bounding box.
+
+325
+00:51:18.960 --> 00:51:42.090
+Benjamin Houghton: If that bounding, if a bounding box has a certain score threshold has a high, and and I guess I should mention here, like, if you had a bounding box that had a high enough dog and a high enough cat score. You would keep that bounding box for both classes. Right? I mean, I guess it probably depends on your implementation details, and that's a pretty minor detail. I'd imagine. You know you could probably make that how
+
+326
+00:51:42.670 --> 00:51:45.250
+Benjamin Houghton: you know. Probably put that
+
+327
+00:51:45.640 --> 00:51:51.289
+Benjamin Houghton: make that decision yourself. But I would keep the bounding box for each one.
+
+328
+00:51:52.240 --> 00:52:03.189
+Benjamin Houghton: and and so what I would do is I would have if it had a high cat score and a high dog score, I would apply the the transformation to that bounding box for both.
+
+329
+00:52:03.390 --> 00:52:09.950
+Benjamin Houghton: for so so so I take one box, and it would become 2, essentially because it would, it would get transformed into a dog
+
+330
+00:52:10.220 --> 00:52:24.110
+Benjamin Houghton: bounding box and transform to a cat bounding box right? And then what do we do? After that? We. We've applied our transformation, and we've scored all of our bounding boxes. Now we reduce them. We reduce down the number of bounding boxes by
+
+331
+00:52:24.120 --> 00:52:50.679
+Benjamin Houghton: only keeping bounding boxes that do not overlap right. We only keep them, both of them. If they have a lot low, I intersection or reunion, and remember, what do we do. If they have a high intersection or reunion, we keep the bounding box with the best score, and we do this on a class basis, right? Because it wouldn't make sense to compare. You know, you can have 2 objects that are in front of each other right? So like this dog and this cat. Maybe this isn't the best example in the world, but
+
+332
+00:52:50.680 --> 00:53:04.759
+Benjamin Houghton: you can imagine where I don't know. Maybe a mother is holding a baby where a baby bounding box is completely enclosed by the mother bounding box. Well, then, you wouldn't want to get rid of the baby bounding box
+
+333
+00:53:04.810 --> 00:53:13.569
+Benjamin Houghton: because it has a high intersection of reunion with the mother bounding box. If they're different classes, right? So that's why we we only do it on a class by class basis.
+
+334
+00:53:14.020 --> 00:53:16.159
+Benjamin Houghton: Okay? Well, that's 1 of the reasons why, at least.
+
+335
+00:53:16.710 --> 00:53:19.180
+Benjamin Houghton: And so this is Rcnn. In a nutshell.
+
+336
+00:53:21.000 --> 00:53:22.015
+Benjamin Houghton: So
+
+337
+00:53:23.850 --> 00:53:30.159
+Benjamin Houghton: yeah, I I guess. And I'll talk more. You know, we'll talk about more about training this in a little bit. But
+
+338
+00:53:31.950 --> 00:53:35.040
+Benjamin Houghton: yeah, typically, you know.
+
+339
+00:53:35.620 --> 00:53:59.029
+Benjamin Houghton: I would say I'd have to. I'd have to go back and read the Rcnn paper. To be 100, sure. But for the most part, like this, feature extraction network is is already a pre-trained network. What you're really going to be training here is these regression and the so this regression model. I guess they're both regression models, the Svm regression model and the the linear regression model.
+
+340
+00:53:59.540 --> 00:54:05.930
+Benjamin Houghton: Okay, these are the models you're really gonna be training. And so you're actually not really. I mean, you could.
+
+341
+00:54:06.790 --> 00:54:14.279
+Benjamin Houghton: I guess you could, especially if these were fully connected layers. It you would definitely you definitely could back propagate
+
+342
+00:54:15.811 --> 00:54:26.338
+Benjamin Houghton: if you're using fully connected layer to do, which is, you know, another fully connected meaning density for neural network layers to do your regression.
+
+343
+00:54:27.130 --> 00:54:34.199
+Benjamin Houghton: their input would be these convolutional layers. I mean, you could certainly back propagate. And you could update these layers right? You could do fine tuning.
+
+344
+00:54:34.580 --> 00:54:41.290
+Benjamin Houghton: But really, this is where you're gonna be. Your training is gonna be focused is is here and here.
+
+345
+00:54:41.430 --> 00:54:54.049
+Benjamin Houghton: But that's not really a major point of today's video. I really want you guys to understand how our Cnn works because we're gonna talk about training in more in depth for for more of the modern
+
+346
+00:54:54.340 --> 00:54:56.650
+Benjamin Houghton: and newer architectures.
+
+347
+00:55:00.900 --> 00:55:07.960
+Benjamin Houghton: Alright. So again, I know, I talked about this quite a bit on the other slide. But here's just another example of
+
+348
+00:55:08.220 --> 00:55:11.730
+Benjamin Houghton: class. Wise, personal. I guess I should say
+
+349
+00:55:13.050 --> 00:55:19.530
+Benjamin Houghton: I didn't mention this, though there is like something. There's kind of 2 flavors class wise, right
+
+350
+00:55:19.680 --> 00:55:31.049
+Benjamin Houghton: class, wise non max, suppression and class agnostic. Non max suppression. So I talked a lot about class wise non max suppression on the previous slide. Where we compare these.
+
+351
+00:55:31.920 --> 00:55:35.240
+Benjamin Houghton: we compare 2 bounding boxes together only if
+
+352
+00:55:35.440 --> 00:55:38.369
+Benjamin Houghton: they have, are assigned the same class.
+
+353
+00:55:39.180 --> 00:55:54.430
+Benjamin Houghton: But what if they're not right. So we see here that the purple box overlaps with the green box and the blue box. So look the green box, let's say at point 5. We consider it, you know
+
+354
+00:55:54.720 --> 00:56:05.280
+Benjamin Houghton: we we see the purple bottle. I guess what this this is trying to illustrate is, the purple box has a high intersection over union with the green and the blue boxes. So it goes away because it scores lower.
+
+355
+00:56:05.697 --> 00:56:15.702
+Benjamin Houghton: Then the dog, its dog score is lower than the green dog score, and its cat score is lower than the the blue cat score. So if you were to, if you had this bounding box.
+
+356
+00:56:17.490 --> 00:56:40.669
+Benjamin Houghton: If it was a cat or a dog bounding box, this purple one, and you compared it to the other ones, it would get reduced. It would get it would go away likewise the yellow bounding box, which is completely inside of the green bounding box, or almost completely inside. It's it stays because it's a cat bounding box. It is not. It was not assigned to be like a dog bounding box, all right.
+
+357
+00:56:41.580 --> 00:57:08.310
+Benjamin Houghton: And then, finally, another example is like we have a background, this red one, this red bounding box has a low score, and so it it doesn't even meet the threshold to be considered right. So, even though it has a low intersection over union with the other bounding boxes, it would disappear because it has a low score, right? It would never get considered so hopefully. This kind of gives you a more intuitive feel as to how non Max suppression works.
+
+358
+00:57:08.710 --> 00:57:15.350
+Benjamin Houghton: and then we also have this other flavor is called class wise. If we didn't necessarily know
+
+359
+00:57:16.590 --> 00:57:24.669
+Benjamin Houghton: what the objects were right. So let's say, we had a model that just had the probability of an object, but it didn't really know
+
+360
+00:57:25.154 --> 00:57:45.219
+Benjamin Houghton: it didn't really know what those objects were. So now we see the same results as on the left. But but the yellow bounding box is now gone, too, and that's because it had a lower score than the green bounding box. The green bounding box. Probability of an object was 90%. And the yellow one was 70%.
+
+361
+00:57:46.210 --> 00:57:52.290
+Benjamin Houghton: And I'm I'm saying I'm using. I apologize. I'm using probability in in score kind of interchangeably
+
+362
+00:57:52.881 --> 00:58:03.029
+Benjamin Houghton: because some of these models use scores and some of these models use probability distributions or a true probability versus a score. So
+
+363
+00:58:03.150 --> 00:58:06.450
+Benjamin Houghton: I apologize. I'm using them interchangeably, but
+
+364
+00:58:07.060 --> 00:58:09.249
+Benjamin Houghton: for our purposes it doesn't really matter.
+
+365
+00:58:09.960 --> 00:58:23.630
+Benjamin Houghton: so we see the probability of an object of the yellow box again lower than the green one. It disappears. The red one again. It it had. It does. It doesn't have a high intersection or reunion with the other boxes this red one over here.
+
+366
+00:58:23.970 --> 00:58:33.160
+Benjamin Houghton: but it disappears all the all the same, because it has a low score.
+
+367
+00:58:33.280 --> 00:58:38.329
+Benjamin Houghton: Okay, that's kind of the difference between.
+
+368
+00:58:39.640 --> 00:58:58.870
+Benjamin Houghton: I mean, you can kind of think of it like this when we're doing class wise on Max suppression. It's like all the other boxes that have been assigned to other classes. Don't even matter right. We only care about cats, or we only care about dogs, or we only care about back. Well, you're not going to do back, you know you're not going to do. Obviously, you're not going to do
+
+369
+00:58:59.130 --> 00:59:09.059
+Benjamin Houghton: bounding boxes for backgrounds. At least, I don't know why you'd want to do that it's not really object detection, but but yeah, if it was a 3rd object, like a bird, I don't know
+
+370
+00:59:09.370 --> 00:59:15.019
+Benjamin Houghton: bird bounding box like we only care about birds. We only care about dogs. Right? That's class wise.
+
+371
+00:59:15.380 --> 00:59:20.120
+Benjamin Houghton: Non, Max, not class agnostic. We then we're we're considering
+
+372
+00:59:20.590 --> 00:59:25.679
+Benjamin Houghton: all bounding boxes against each other, keeping the ones with the best scores that have high. Iou.
+
+373
+00:59:26.580 --> 00:59:27.420
+Benjamin Houghton: Alright.
+
+374
+00:59:29.790 --> 00:59:42.640
+Benjamin Houghton: So that is Rcnn. And so now we'll talk about fast. Rcnn and it builds upon
+
+375
+00:59:43.940 --> 00:59:45.920
+Benjamin Houghton: the ideas in our Cnn.
+
+376
+00:59:46.330 --> 00:59:49.899
+Benjamin Houghton: And it improves the accuracy and training over Rcnn.
+
+377
+00:59:53.390 --> 00:59:56.460
+Benjamin Houghton: Alright. And and so we'll kind of talk about
+
+378
+00:59:56.850 --> 01:00:04.070
+Benjamin Houghton: kind of how this does this, that really the key thing here is this Roi pooling layer right? And
+
+379
+01:00:07.800 --> 01:00:15.050
+Benjamin Houghton: this is gonna kind of sound weird@firstst But bear with me. It processes an entire image at once.
+
+380
+01:00:15.450 --> 01:00:23.440
+Benjamin Houghton: as opposed to Rcnn. Which processes each region proposal separately. Right? Remember that when we did our Cnn.
+
+381
+01:00:23.790 --> 01:00:29.680
+Benjamin Houghton: What does that mean well, we have all of these images, we have all these
+
+382
+01:00:30.120 --> 01:00:39.949
+Benjamin Houghton: res, we have all these region proposals, and we resize them, and we we run all of them through our neural, our neural network, every single one of them, no matter how all 2,000 of them.
+
+383
+01:00:40.900 --> 01:00:49.220
+Benjamin Houghton: whereas in this version we just process the image right now we're feeding images through. We're not feeding regions through.
+
+384
+01:00:49.790 --> 01:00:51.640
+Benjamin Houghton: That's kind of the key difference.
+
+385
+01:00:52.040 --> 01:00:56.900
+Benjamin Houghton: And the way they get around it is this Roi pooling layer which
+
+386
+01:00:58.260 --> 01:01:01.080
+Benjamin Houghton: it's really how they're getting. It's all about shapes.
+
+387
+01:01:01.360 --> 01:01:09.659
+Benjamin Houghton: It's how do they get around the Mismatch region shapes, and they do it with something called the region proposal region pooling layer
+
+388
+01:01:10.650 --> 01:01:16.110
+Benjamin Houghton: And again I I said, This is gonna sound funny because I was like, well, isn't this one stage, then?
+
+389
+01:01:17.470 --> 01:01:46.490
+Benjamin Houghton: Well, no, because we still have a separate. We still have a separate step that like the when they say the entire image at once. What what they really mean here is like, oh, they're just putting the entire. And actually, this is their dot. This is straight from their paper. What they're what they mean is, oh, we're just putting this entire image through the the convolutional neural network as opposed to every single roi separately. Okay.
+
+390
+01:01:46.650 --> 01:01:48.989
+Benjamin Houghton: as opposed to every Roi.
+
+391
+01:01:49.480 --> 01:01:51.490
+Benjamin Houghton: They just do the entire image.
+
+392
+01:01:54.870 --> 01:02:02.410
+Benjamin Houghton: and it's not the same as a single stage detector like Yolo.
+
+393
+01:02:02.830 --> 01:02:08.229
+Benjamin Houghton: And the reason why is because we still have to do an Roi stage
+
+394
+01:02:08.340 --> 01:02:16.780
+Benjamin Houghton: right? So the entire image still has to go in the Roi or the the Roi, which
+
+395
+01:02:17.010 --> 01:02:18.519
+Benjamin Houghton: we'll see how
+
+396
+01:02:19.530 --> 01:02:26.889
+Benjamin Houghton: we'll see how we get the region of interest with this algorithm, and then it still has to go through the Cnn, so it's still 2 stages.
+
+397
+01:02:27.770 --> 01:02:40.370
+Benjamin Houghton: The difference is again. This is a single image going through the Cnn as opposed to a bunch of little regions. So I know this is drawing is getting a little out of control. Let me see if I can make this better better here.
+
+398
+01:02:41.320 --> 01:02:49.620
+Benjamin Houghton: So in our Cnn you have all these little regions, and they all go through the Cnn
+
+399
+01:02:49.810 --> 01:02:51.679
+Benjamin Houghton: as opposed to the single image.
+
+400
+01:02:52.200 --> 01:03:01.400
+Benjamin Houghton: That's really that's the key difference here and again, the innovative idea, the way they do. That is what what allows them to do that is this Roi pooling layer
+
+401
+01:03:01.690 --> 01:03:14.919
+Benjamin Houghton: which it says right there. See, Roi pooling layer. Okay, don't worry. Better diagrams to follow, because this little diagram doesn't make a lot of sense
+
+402
+01:03:15.270 --> 01:03:21.030
+Benjamin Houghton: until you'd read their paper or or get, you know more in depth of what these little.
+
+403
+01:03:21.720 --> 01:03:27.299
+Benjamin Houghton: what ha! What's happening here? Right? Deep convolutional network. Yeah. And you can see, actually
+
+404
+01:03:28.980 --> 01:03:34.589
+Benjamin Houghton: the region of interest projection. Yeah. So you can see well in this diagram
+
+405
+01:03:35.280 --> 01:03:44.089
+Benjamin Houghton: what they're not showing you is that they've already done the art like they've taken this image, they fed it through their Roi, their region of interest generator.
+
+406
+01:03:44.360 --> 01:03:45.710
+Benjamin Houghton: And now
+
+407
+01:03:46.270 --> 01:03:58.940
+Benjamin Houghton: they're putting this image through the convolutional neural network. And guess what they're keeping track of this region like. So when we when we take an image, and we convolve it like the shapes might change
+
+408
+01:03:59.690 --> 01:04:07.150
+Benjamin Houghton: right? It might be a different size as before. So you kinda got to keep track right. So if the image was this big.
+
+409
+01:04:07.870 --> 01:04:12.989
+Benjamin Houghton: I don't know. 10 by 10, and this is the region of interest. Let's say.
+
+410
+01:04:13.440 --> 01:04:14.940
+Benjamin Houghton: let me draw this better.
+
+411
+01:04:15.130 --> 01:04:20.290
+Benjamin Houghton: This little blue area is the region of interest. Right? And let's say it's 2 by 2.
+
+412
+01:04:21.030 --> 01:04:28.780
+Benjamin Houghton: Well, and now, when the image comes out of the convolutional neural network, let's say it's this big 5 by 5.
+
+413
+01:04:29.780 --> 01:04:32.709
+Benjamin Houghton: Then here's the region of interest.
+
+414
+01:04:33.460 --> 01:04:38.029
+Benjamin Houghton: right? But it's now what it's been cut in half. It's 1 by one.
+
+415
+01:04:38.210 --> 01:04:39.080
+Benjamin Houghton: Okay?
+
+416
+01:04:41.310 --> 01:04:48.479
+Benjamin Houghton: So well, I guess it's been quartered. But the width and the height have been cut in half half.
+
+417
+01:04:49.390 --> 01:04:50.440
+Benjamin Houghton: So
+
+418
+01:04:50.600 --> 01:04:57.590
+Benjamin Houghton: that's what I mean by keeping track of the actual reach. That's what they mean by roi projection here.
+
+419
+01:04:58.740 --> 01:05:04.389
+Benjamin Houghton: and then they do their pooling layer, which again puts everything to the same size or shape.
+
+420
+01:05:04.660 --> 01:05:09.560
+Benjamin Houghton: Then we have some fully connected layers, and we do our bounding box regression. And we do, Softmax.
+
+421
+01:05:09.770 --> 01:05:14.979
+Benjamin Houghton: What the reason why we're doing Softmax here is.
+
+422
+01:05:15.110 --> 01:05:20.297
+Benjamin Houghton: I apologize. I'm going to have to pause the video real fast. I can stop my phone from ringing.
+
+423
+01:05:25.580 --> 01:05:40.830
+Benjamin Houghton: Okay, I apologize. My phone wasn't on silent. And it was ringing, and I couldn't find it so anyways, without any interruptions further interruptions. Hopefully, we can finish this. We're almost done so bear with me few more slides.
+
+424
+01:05:40.950 --> 01:05:46.550
+Benjamin Houghton: But yeah, we were talking about the
+
+425
+01:05:46.900 --> 01:06:04.160
+Benjamin Houghton: after the Roi layer, we how we have these fully connected layers, and we do our bounding box regression. Okay, so same thing as before, except now, we're using neural network to do our regression. And now we're using Softmax. And we're so instead of those that's set of an Svm
+
+426
+01:06:05.350 --> 01:06:14.699
+Benjamin Houghton: giving us a score, we're actually doing a probability distribution over all classes. And so that's the high level details of of fast R. Cnn.
+
+427
+01:06:15.340 --> 01:06:19.150
+Benjamin Houghton: And now we'll look at in more detail on the next slide.
+
+428
+01:06:24.120 --> 01:06:33.030
+Benjamin Houghton: Alright. So the Rcnn. Fast Rcnn. Workflow alright. So again
+
+429
+01:06:33.190 --> 01:06:36.480
+Benjamin Houghton: like, I said, we still have to generate regions.
+
+430
+01:06:36.970 --> 01:06:42.490
+Benjamin Houghton: Okay, we still need to know what's important regions of interest.
+
+431
+01:06:42.880 --> 01:06:45.363
+Benjamin Houghton: So we generate our regions.
+
+432
+01:06:47.180 --> 01:06:51.770
+Benjamin Houghton: well, actually, that's kind of like one a right, I guess, and and down here we have one B.
+
+433
+01:06:53.150 --> 01:07:05.390
+Benjamin Houghton: So in parallel, I guess you could think, or asynchronously, asynchronously, we are generating our regions of interest
+
+434
+01:07:05.630 --> 01:07:14.929
+Benjamin Houghton: up here in one A and then one B, we're feeding them through a neural network. Okay? And it looks like, here we're using Vgg. 16.
+
+435
+01:07:15.110 --> 01:07:16.990
+Benjamin Houghton: Okay? So I believe that is.
+
+436
+01:07:17.170 --> 01:07:34.102
+Benjamin Houghton: you could double check that. But in the paper I believe that is what they, the authors mentioned that they use as their as their backbone again. That doesn't really matter. I mean, you could use really any network you want or any convolutional neural network I think you want here right as long as
+
+437
+01:07:35.920 --> 01:07:37.910
+Benjamin Houghton: as long as what? Well.
+
+438
+01:07:38.020 --> 01:07:54.490
+Benjamin Houghton: as long as it was trained, or you trained it yourself. Yeah, there's there's really no, there's, you know you can. There's more to it than that. But, you know, talk to me more about that. If you're interested to know like how you might use resnet instead of Vgg, that's not really the focus of today's video.
+
+439
+01:07:55.950 --> 01:07:58.420
+Benjamin Houghton: So we generate our rois
+
+440
+01:08:00.120 --> 01:08:09.808
+Benjamin Houghton: and we generate our features down here. Our feature maps. So here are our features. Right down here are nice colorful maps and
+
+441
+01:08:11.040 --> 01:08:19.900
+Benjamin Houghton: Then, after we've done that right? So this is nothing new notice that we don't resize our feature, our our region proposals this time.
+
+442
+01:08:22.560 --> 01:08:41.390
+Benjamin Houghton: Now, what we do is we do something called roi pooling right? So from our feature maps. Remember, I said before, that the images get resized, then we need to kind of keep track of where, in the image that region of interest was. So that's kind of what this little graphic is showing which
+
+443
+01:08:41.560 --> 01:08:57.220
+Benjamin Houghton: don't squint too hard like. If you're trying to look at that like, I know it's small. There's a much bigger version on the next slide of this, and we'll talk about the Roi pooling in more detail. But essentially, what Roi pooling does for us, is
+
+444
+01:08:57.620 --> 01:08:58.590
+Benjamin Houghton: we?
+
+445
+01:08:58.990 --> 01:09:06.329
+Benjamin Houghton: Essentially, you're gonna split, we we've we had. So in this example, there's 2 regions of interest that I've I've drawn on this picture here.
+
+446
+01:09:06.439 --> 01:09:08.170
+Benjamin Houghton: the dog and the cat one.
+
+447
+01:09:08.510 --> 01:09:12.069
+Benjamin Houghton: So for each of these they're different shapes and sizes.
+
+448
+01:09:12.660 --> 01:09:16.910
+Benjamin Houghton: but we can still split them essentially into the same.
+
+449
+01:09:18.000 --> 01:09:27.260
+Benjamin Houghton: we can split them into equal portions. Or how am I? What am I trying to say here? What I'm saying is, we take each of these, and we divide them up. So here's the cat one.
+
+450
+01:09:27.950 --> 01:09:38.649
+Benjamin Houghton: and then here's the dog, one alright. So the cat, one smaller than the dog one. But we can do something like this, we can split them. I don't know how many area. How many is that? 9?
+
+451
+01:09:39.189 --> 01:09:46.890
+Benjamin Houghton: So then this has to be 9, 2. 0, that was a bad line. It's let me draw this a little bit better like this, something like that.
+
+452
+01:09:47.010 --> 01:09:54.240
+Benjamin Houghton: And so we have 9 regions, 1, 2, 3, you know, 4, 5, 6, 7, 8, 9,
+
+453
+01:09:54.850 --> 01:09:56.510
+Benjamin Houghton: 9 little areas.
+
+454
+01:09:57.690 --> 01:10:04.299
+Benjamin Houghton: And from each of these areas we're just going to do map, we're just gonna take the the pixel that has the largest value.
+
+455
+01:10:04.650 --> 01:10:08.400
+Benjamin Houghton: and we're gonna do the same thing to this, to this region.
+
+456
+01:10:09.510 --> 01:10:14.640
+Benjamin Houghton: right? So when we do this, what are we left with? Well, we're left with little.
+
+457
+01:10:15.020 --> 01:10:20.529
+Benjamin Houghton: Each one of these is going to be what they're going to be, little 3 by 3 boxes.
+
+458
+01:10:22.500 --> 01:10:25.610
+Benjamin Houghton: or with a total of 9 values.
+
+459
+01:10:27.010 --> 01:10:35.950
+Benjamin Houghton: And so that's all Roi pooling is is it's taking these regions of interest that are different shapes and condensing them down into some smaller
+
+460
+01:10:36.070 --> 01:10:40.340
+Benjamin Houghton: feature set that are now the same shape, right?
+
+461
+01:10:40.510 --> 01:10:49.560
+Benjamin Houghton: And really it's not so much about the number. It's not so much about the shape as it is, total number of features, because we're going to feed this into a fully connected layer, anyways, on the next step.
+
+462
+01:10:49.910 --> 01:10:50.770
+Benjamin Houghton: But
+
+463
+01:10:52.290 --> 01:11:10.289
+Benjamin Houghton: and again we'll it's like, I said. We'll talk about this a little bit more like hot, a little bit more detail on the next slide. But for now now just ex, except that we've taken these feature maps. And we've we've now take. Now they're all the same shape again. Okay? So now that we have our features.
+
+464
+01:11:11.630 --> 01:11:15.369
+Benjamin Houghton: for every single, essentially for every single object.
+
+465
+01:11:16.450 --> 01:11:31.589
+Benjamin Houghton: for every single roi, not object, every single region of interest we have, we. We've taken their feature, we've taken their features. And we've done Roi pooling across them, or that we've taken the area right?
+
+466
+01:11:31.860 --> 01:11:39.800
+Benjamin Houghton: That so we have the features maps, and whatever area of those feature maps corresponds to those rois. We've done the Roi pooling.
+
+467
+01:11:41.410 --> 01:11:50.709
+Benjamin Houghton: and we've we flatten those. That's what this purple part represents is the R is the feature maps, the the pool feature maps, we flatten those and we feed them in these fully connected layers
+
+468
+01:11:52.170 --> 01:11:57.219
+Benjamin Houghton: and the fully connected layers. Now we we know what's how many
+
+469
+01:11:57.480 --> 01:12:05.840
+Benjamin Houghton: weights you know. Number of? We know. We now know how many input features are gonna have. So we can define what these Fc layers look like.
+
+470
+01:12:07.250 --> 01:12:15.760
+Benjamin Houghton: and we can do a couple of things here. We can do our our softmax classification.
+
+471
+01:12:16.010 --> 01:12:18.570
+Benjamin Houghton: and we can do bounding box regression.
+
+472
+01:12:21.510 --> 01:12:22.700
+Benjamin Houghton: And
+
+473
+01:12:23.268 --> 01:12:39.619
+Benjamin Houghton: we should talk about what the outputs of these layers are. Right. So again, after you know, these feature maps come in. They go in. They go through a couple of fully connected layers. And then we have then this, actually, this blue one is called the Roi feature. Vector it's the final
+
+474
+01:12:39.980 --> 01:12:54.380
+Benjamin Houghton: feature vector and then it gets used as an input into one last layer, the softmax layer and it gets used as an input into the bounding box regression layer. And so the softmax classification. It produces a vector
+
+475
+01:12:54.830 --> 01:12:56.719
+Benjamin Houghton: for every single bounding box.
+
+476
+01:12:58.030 --> 01:13:03.279
+Benjamin Houghton: It produces what it produces, a a class probability. Vector
+
+477
+01:13:03.590 --> 01:13:06.320
+Benjamin Houghton: so which would be the probability of a cat.
+
+478
+01:13:06.650 --> 01:13:16.379
+Benjamin Houghton: probability of a dog, so on and so forth, for all classes, plus the probability of background. Okay, so it's going to be n plus one classes.
+
+479
+01:13:17.880 --> 01:13:26.349
+Benjamin Houghton: and for every single bounding box. I'm sorry every single region of interest. It's gonna produce the bounding box transformation
+
+480
+01:13:26.560 --> 01:13:32.820
+Benjamin Houghton: which is our Delta X or Delta y delta width and delta height
+
+481
+01:13:33.310 --> 01:13:37.439
+Benjamin Houghton: across for every single class. Because, remember, I said before.
+
+482
+01:13:37.730 --> 01:13:40.319
+Benjamin Houghton: you want to have, like a specialized
+
+483
+01:13:41.230 --> 01:13:43.760
+Benjamin Houghton: process for every single different class.
+
+484
+01:13:44.570 --> 01:13:55.080
+Benjamin Houghton: right? So if this was a cat right, if it had a high probability of a cat, then we would go down to this this output, and we'd say, Okay, well, this row
+
+485
+01:13:55.180 --> 01:13:57.460
+Benjamin Houghton: is the transformation for cat.
+
+486
+01:13:57.770 --> 01:14:06.169
+Benjamin Houghton: Okay? Whereas this row down here I don't know. It's the transformation. For, say, I don't know bird like. So we would ignore that one. We what we don't want.
+
+487
+01:14:06.340 --> 01:14:11.600
+Benjamin Houghton: We wouldn't want this one. We would want this one for cat.
+
+488
+01:14:11.870 --> 01:14:14.380
+Benjamin Houghton: Okay, it says.
+
+489
+01:14:14.530 --> 01:14:25.400
+Benjamin Houghton: if you look at that, the subscript, it says, Delta xc. One, meaning class one, and the next one says, Delta xc. 2, meaning class 2.
+
+490
+01:14:26.070 --> 01:14:26.615
+Benjamin Houghton: Okay.
+
+491
+01:14:27.310 --> 01:14:29.320
+Benjamin Houghton: So they, they're class specific.
+
+492
+01:14:30.040 --> 01:14:33.440
+Benjamin Houghton: So we get the with the transformation for that class.
+
+493
+01:14:33.640 --> 01:14:38.780
+Benjamin Houghton: And yeah, that that would be our our final out. That would be our final output. Okay?
+
+494
+01:14:38.880 --> 01:14:39.840
+Benjamin Houghton: But
+
+495
+01:14:40.010 --> 01:14:49.649
+Benjamin Houghton: well, that is the final output of the neural network. But we still have to do. We still have to do our non Max suppression. So we still do our class. Wise. Non, max suppression.
+
+496
+01:14:49.910 --> 01:14:50.670
+Benjamin Houghton: Right?
+
+497
+01:14:52.760 --> 01:14:59.139
+Benjamin Houghton: So for every single bounding box, you know, we might say.
+
+498
+01:15:00.550 --> 01:15:05.539
+Benjamin Houghton: for every single region of interest, right or and and or and or bounding box.
+
+499
+01:15:05.650 --> 01:15:10.639
+Benjamin Houghton: we might say we assign it a class based upon its class probability score.
+
+500
+01:15:11.290 --> 01:15:15.980
+Benjamin Houghton: When, then, we might apply its transformation after the fact.
+
+501
+01:15:19.990 --> 01:15:20.970
+Benjamin Houghton: Okay?
+
+502
+01:15:21.470 --> 01:15:22.430
+Benjamin Houghton: Or
+
+503
+01:15:23.070 --> 01:15:29.850
+Benjamin Houghton: we might do. That's you know, that's 1 way to do it. You might just keep the bounding box. You might just say the probability.
+
+504
+01:15:30.060 --> 01:15:31.990
+Benjamin Houghton: We've kind of talked about this before.
+
+505
+01:15:33.660 --> 01:15:41.609
+Benjamin Houghton: Well, we did talk about this before, where we say, if the probability of cat is high, assign that box, do its
+
+506
+01:15:41.950 --> 01:15:45.859
+Benjamin Houghton: go and get its transformation, and keep that bounding box.
+
+507
+01:15:46.920 --> 01:15:50.150
+Benjamin Houghton: But what if the probability for dog is high too?
+
+508
+01:15:50.310 --> 01:15:52.500
+Benjamin Houghton: Then we keep them both. That's kind of
+
+509
+01:15:52.920 --> 01:16:02.209
+Benjamin Houghton: that's I think that's probably going to be up to the whoever the implementation details. And I've kind of have to look at the paper to see exactly.
+
+510
+01:16:02.850 --> 01:16:10.029
+Benjamin Houghton: not sure that matters, but how, what exactly they specifically did in this specific paper.
+
+511
+01:16:10.290 --> 01:16:12.569
+Benjamin Houghton: But again, like, you can do this both ways.
+
+512
+01:16:13.360 --> 01:16:21.269
+Benjamin Houghton: If the probability of cat is greater than the probability of dog. Just keep. Just keep the bounding box for class cat. But if they're both
+
+513
+01:16:21.790 --> 01:16:28.659
+Benjamin Houghton: probability cat and the probability of dog is high are both greater than some threshold. T.
+
+514
+01:16:28.780 --> 01:16:30.530
+Benjamin Houghton: Then maybe you keep them both.
+
+515
+01:16:30.720 --> 01:16:35.520
+Benjamin Houghton: You apply the class specific transformation.
+
+516
+01:16:36.560 --> 01:16:42.589
+Benjamin Houghton: and then you compare that bounding box to all other bounding boxes of the same class.
+
+517
+01:16:44.280 --> 01:16:51.600
+Benjamin Houghton: If the bounding box is the same class, and has a high.
+
+518
+01:16:52.810 --> 01:17:04.130
+Benjamin Houghton: a high Iou with another bounding box, and you keep the one that has the higher score, or in this case the higher probability right? So the probability.
+
+519
+01:17:04.310 --> 01:17:11.679
+Benjamin Houghton: You know, you're gonna have 2 bounding boxes that are both class cat with a high probability, and quite simply.
+
+520
+01:17:12.070 --> 01:17:16.370
+Benjamin Houghton: whichever one has the higher probability of a class like the higher Softmax score.
+
+521
+01:17:16.890 --> 01:17:19.070
+Benjamin Houghton: or the higher probabilities one you would keep.
+
+522
+01:17:21.490 --> 01:17:27.979
+Benjamin Houghton: And and that's it. And that's that's the full end to end implementation of our Cnn.
+
+523
+01:17:28.790 --> 01:17:31.029
+Benjamin Houghton: The only thing I guess I didn't.
+
+524
+01:17:31.250 --> 01:17:42.210
+Benjamin Houghton: That I still owe you is is the Roi pooling and and and one more quick note about training after this. But so here's the Roi pooling in a little bit more more detail.
+
+525
+01:17:44.170 --> 01:17:52.039
+Benjamin Houghton: so remember, I said, that you know, for each region of interest. You're gonna do the this Max pooling and so
+
+526
+01:17:52.930 --> 01:17:55.599
+Benjamin Houghton: it's important to note that in the paper
+
+527
+01:17:55.990 --> 01:17:59.939
+Benjamin Houghton: they say, W. Equals H, which equals 7,
+
+528
+01:18:00.050 --> 01:18:04.989
+Benjamin Houghton: meaning that you're gonna have 7 a 7 by 7 grid.
+
+529
+01:18:05.960 --> 01:18:12.269
+Benjamin Houghton: Right? So each of these boxes you're gonna split into a 7 by 7 grid, which gives you 49 features.
+
+530
+01:18:14.440 --> 01:18:21.870
+Benjamin Houghton: The reason why they chose 49 was because once you flatten that
+
+531
+01:18:22.830 --> 01:18:30.279
+Benjamin Houghton: that 49 dimensional, vector and you you had for all for all end channels.
+
+532
+01:18:32.000 --> 01:18:36.660
+Benjamin Houghton: What do I I use? I guess I use lowercase C in this graphic for channels
+
+533
+01:18:36.910 --> 01:18:45.370
+Benjamin Houghton: right? So I don't know how many channels would be in this. I I can't remember now some probably like something like 512 channels.
+
+534
+01:18:47.710 --> 01:18:55.289
+Benjamin Houghton: I I'll we'll just do it real fast. We'll let's see what that that number is. I'm curious now, Cal, so if I do 49
+
+535
+01:18:55.460 --> 01:18:59.249
+Benjamin Houghton: times 512, that's your total features.
+
+536
+01:18:59.410 --> 01:19:02.010
+Benjamin Houghton: 25. That sounds familiar.
+
+537
+01:19:02.490 --> 01:19:12.140
+Benjamin Houghton: 25, 0, 8, 8. I believe that is the number of input, features. The 1st fully connected layer expects. Okay, in in the Vgg, 16. Architecture.
+
+538
+01:19:13.010 --> 01:19:32.657
+Benjamin Houghton: Anyways, that's why they chose this number this. Yeah, I I if you did like a different architecture. And let's say, this was 6 or 5 or 11. I I don't really think it'd make any difference right? As long as your network was complex enough to handle the complexity of your task, it probably would not matter at all.
+
+539
+01:19:34.240 --> 01:19:42.909
+Benjamin Houghton: I'm sure there's some numbers that are better than others like you wouldn't want to do something crazy here like 2 or one that, but that wouldn't work, probably. But
+
+540
+01:19:43.050 --> 01:19:54.009
+Benjamin Houghton: 7, 6, 5. That's probably enough. Comp, like enough features right? And so long as that your your fully connected layer is the right shape to accept those number of features. Okay.
+
+541
+01:19:54.290 --> 01:19:55.470
+Benjamin Houghton: but anyways.
+
+542
+01:19:55.610 --> 01:20:09.120
+Benjamin Houghton: they chose 7, for for whatever reason, for to fit with their architecture. And that means that you're gonna divide up again these little regions of interest into into a 7 by 7 grid.
+
+543
+01:20:10.390 --> 01:20:19.680
+Benjamin Houghton: And so let's look at like, that's what these little grids here represent. Okay, so that's 1 of the here. I did a 3 by 3, right? I just here. I say
+
+544
+01:20:20.430 --> 01:20:30.759
+Benjamin Houghton: it's a 3 by 3 W. Equals H equals 3. So here I do. I end up with a a little 3 by 3 grid versus a 7 by 7, just because, you know.
+
+545
+01:20:31.280 --> 01:20:34.060
+Benjamin Houghton: just for illustration purposes, right?
+
+546
+01:20:34.640 --> 01:20:37.110
+Benjamin Houghton: But for
+
+547
+01:20:38.710 --> 01:20:49.409
+Benjamin Houghton: each of these little regions, right? Remember, these regions of interest correspond to some area and the output, these little channel maps and these little channel maps.
+
+548
+01:20:49.740 --> 01:20:57.189
+Benjamin Houghton: we're gonna do, basically, Max, pooling across each of those little regions. So for this region.
+
+549
+01:20:57.750 --> 01:20:59.970
+Benjamin Houghton: For example, this little region
+
+550
+01:21:00.490 --> 01:21:12.519
+Benjamin Houghton: we're going to find its Max value. And that's the value we're going to keep. And then we're going to do the same thing for this one and this one until we're done. And what we get out is this little 3 by 3 Max pooling block here.
+
+551
+01:21:14.100 --> 01:21:23.789
+Benjamin Houghton: And we're gonna do that across all output channels right now, remember, Vgg has something like 512 output channels. So
+
+552
+01:21:25.300 --> 01:21:27.359
+Benjamin Houghton: here in this dot, like I have
+
+553
+01:21:27.550 --> 01:21:36.879
+Benjamin Houghton: one channel and then Channel C, but that that could be any number of channels like that could be like 512 channels. So you're gonna do that for every single region of interest.
+
+554
+01:21:37.170 --> 01:21:45.530
+Benjamin Houghton: every Roi, you're gonna do this, Max, pooling. You're gonna go to the feature map for that channel. Find which area of the channel
+
+555
+01:21:45.900 --> 01:22:11.330
+Benjamin Houghton: of the feature map court. And I'm again, I'm using the words Channel feature map interchangeably. But you're gonna go to that feature map and or channel. You're gonna find out, hey? This region of interest. This part of the channel corresponds to this, to the, to the region of interest. And you're gonna do. You're gonna split it up into a 7 by 7 grid. And you're gonna do Max, pooling for each of those grids. Find that for each grid find the Max value.
+
+556
+01:22:11.630 --> 01:22:13.850
+Benjamin Houghton: And you're gonna do that for every single channel
+
+557
+01:22:15.080 --> 01:22:17.730
+Benjamin Houghton: for that region of interest. Right? So
+
+558
+01:22:18.100 --> 01:22:25.460
+Benjamin Houghton: you can see this purple region of interest. We do it for Channel one. Then we do channel 3, 4, 5, 6, all the way down to Channel N,
+
+559
+01:22:27.180 --> 01:22:33.480
+Benjamin Houghton: and we see. Let's see, let's follow these little arrows. Right? So
+
+560
+01:22:37.840 --> 01:22:41.799
+Benjamin Houghton: Once we've done that, we collect them all. So the yellow.
+
+561
+01:22:42.350 --> 01:23:08.589
+Benjamin Houghton: the yellow region of interest. Once you've done Max, pooling across all the channels. It goes up here, and we see that there's 1, 2, 3 down to see different channels. Okay, that have these little. Each one of these little boxes. So this one says, 1, 2, and this one says, see, each of these little boxes would be either a 3 by 3 or a 7 by 7 grid. Right? There are these little Max pooling grids.
+
+562
+01:23:09.330 --> 01:23:10.630
+Benjamin Houghton: They're these things.
+
+563
+01:23:14.010 --> 01:23:18.259
+Benjamin Houghton: So these these guys go up here and get put into here.
+
+564
+01:23:19.310 --> 01:23:20.320
+Benjamin Houghton: All right.
+
+565
+01:23:21.386 --> 01:23:28.610
+Benjamin Houghton: So now we would have a collection of 512 by 7 by 7.
+
+566
+01:23:28.870 --> 01:23:33.250
+Benjamin Houghton: Right? Which is that number, I said earlier, which is like 25,088.
+
+567
+01:23:35.810 --> 01:23:46.570
+Benjamin Houghton: And so each region of interest would have 5 would have this dimensionality right?
+
+568
+01:23:47.340 --> 01:23:50.560
+Benjamin Houghton: That would be the dimensionality of every single region of interest.
+
+569
+01:23:51.950 --> 01:23:55.839
+Benjamin Houghton: And so then, this vector, is going to go into your fully connected layers.
+
+570
+01:23:56.380 --> 01:23:59.160
+Benjamin Houghton: But no matter what size the region of interest is.
+
+571
+01:23:59.610 --> 01:24:03.800
+Benjamin Houghton: that's the key concept. Here. Do you see? The yellow one is smaller than the purple one.
+
+572
+01:24:04.730 --> 01:24:31.910
+Benjamin Houghton: At 1st the yellow one has less features than the purple one, right? Whatever the size of this box is. Right. This box, let's say, this box down here is something like I don't know. 15 by 15 across 512 like that's that's that's a lot more features than than this, too. Right? It's it's too big for the fully connected layer and this purple one. It's even bigger, right? It's let's say it's like something like, I don't know 30 by 15,
+
+573
+01:24:32.360 --> 01:24:34.090
+Benjamin Houghton: by 512.
+
+574
+01:24:34.660 --> 01:24:42.689
+Benjamin Houghton: And so we had to get these down in the same shape. This 5, 12 by 7, by 7, again, 7 by 7 is what they use in the paper.
+
+575
+01:24:43.350 --> 01:24:52.360
+Benjamin Houghton: I did not mean to erase that apologize, but you could also do like in this example. I'm saying 3 by 3. So in this example, it's 5, 12 by 3 by 3.
+
+576
+01:24:53.600 --> 01:25:02.470
+Benjamin Houghton: So, anyways, that's how you you take these regions of interest that are different shapes and sizes, and and get them all down to the same shape.
+
+577
+01:25:03.910 --> 01:25:06.269
+Benjamin Houghton: And so this is the key innovation.
+
+578
+01:25:06.790 --> 01:25:11.590
+Benjamin Houghton: This Roi pooling is the key innovation and fast
+
+579
+01:25:13.140 --> 01:25:17.660
+Benjamin Houghton: our Cnn. Of course I I should mention, too. You know
+
+580
+01:25:18.670 --> 01:25:31.300
+Benjamin Houghton: we it also, I wouldn't say this is like a groundbreaking innovation. But they were just like, Oh, yeah, we can use fully connected layers, too. We don't have to use Svm or linear regression. Right? So
+
+581
+01:25:33.340 --> 01:25:40.150
+Benjamin Houghton: so I mean, this also makes it easier to to fine tune these convolutional layers right? So you could.
+
+582
+01:25:40.720 --> 01:25:43.090
+Benjamin Houghton: You could back propagate the gradient
+
+583
+01:25:44.690 --> 01:25:54.280
+Benjamin Houghton: which we'll talk about here in a second. On the very last slide a little bit. You could back prop the gradient from these output layers all the way back through to the convolution layers
+
+584
+01:25:57.110 --> 01:26:02.280
+Benjamin Houghton: if you wanted to right like, if your Vgg backbone was like
+
+585
+01:26:02.830 --> 01:26:08.179
+Benjamin Houghton: pre trained, but you wanted to fine tune it, or maybe you could. You could even train it from scratch. You wanted to.
+
+586
+01:26:10.090 --> 01:26:10.869
+Benjamin Houghton: All right.
+
+587
+01:26:11.530 --> 01:26:13.689
+Benjamin Houghton: Last, but not least the
+
+588
+01:26:15.650 --> 01:26:21.370
+Benjamin Houghton: alright. So this is yeah, the Roi pooling slide. And this is the last slide, the the fast Rcnn training.
+
+589
+01:26:22.710 --> 01:26:27.330
+Benjamin Houghton: So in order to train this model.
+
+590
+01:26:28.225 --> 01:26:32.730
+Benjamin Houghton: What? What exactly are we doing here? Right? So it's maybe not.
+
+591
+01:26:34.350 --> 01:26:36.749
+Benjamin Houghton: It might not be super obvious,
+
+592
+01:26:38.060 --> 01:26:45.620
+Benjamin Houghton: or arbitrary. How this is, how this is done. So it's it's good to think about, like how you would, how you would train one of these models right?
+
+593
+01:26:46.591 --> 01:26:58.100
+Benjamin Houghton: Because you might actually have to do that. You might not be just utilizing it right? You might actually have to train one yourself. So how? How do you do that? Well, the 1st step is, do a forward pass in the model. Right?
+
+594
+01:26:58.220 --> 01:26:59.180
+Benjamin Houghton: So
+
+595
+01:27:00.520 --> 01:27:14.110
+Benjamin Houghton: you would do afford. And that's assuming you have this ground truth data. Right? So obviously, you need training data to do this. But assume you did like these are hand, say, these are these are hand labeled images. Right? They've been labeled by a human
+
+596
+01:27:14.912 --> 01:27:39.079
+Benjamin Houghton: To that is gone and drawn these bounding boxes around all these objects? Right? So we do. We do our output. We do our forward pass. And what do we get? Well, we get a bunch of stuff. We get all these bounding boxes, and we haven't. You know. It's it's important we have not. We have not done non Max suppression yet. And the reason why is because we want to use all these bounding boxes as training examples.
+
+597
+01:27:39.890 --> 01:27:41.720
+Benjamin Houghton: That's that's the main reason.
+
+598
+01:27:42.560 --> 01:27:51.869
+Benjamin Houghton: So we get all these bounding boxes. And every single bounding box has a probability vector of classes. And it has a
+
+599
+01:27:52.070 --> 01:27:58.840
+Benjamin Houghton: transformation for all for every class. So for end classes, it's gonna have a transformation.
+
+600
+01:27:59.040 --> 01:28:03.640
+Benjamin Houghton: all right. So this represents a single bounding box output right?
+
+601
+01:28:04.630 --> 01:28:21.459
+Benjamin Houghton: Whereas the training data is a little bit different. Right? It might come. You could structure in different ways. But essentially, you just need to know the class of every bounding box. And you need to know the coordinates of every box. So you need to know the XY and the width and the height of every box.
+
+602
+01:28:23.090 --> 01:28:23.980
+Benjamin Houghton: Okay?
+
+603
+01:28:25.300 --> 01:28:28.420
+Benjamin Houghton: So if you know this information, then
+
+604
+01:28:29.330 --> 01:28:31.949
+Benjamin Houghton: you you have everything you need to train one of these models.
+
+605
+01:28:32.950 --> 01:28:44.370
+Benjamin Houghton: So that's what that's what we get. So we get the forward, we get the forward pass, and then we get the We Comp, we and we have the the training data. So then what do we do? Well, we compare each output to the ground truth data.
+
+606
+01:28:46.090 --> 01:28:53.260
+Benjamin Houghton: If a bounding box, if an output or an Roi, a bounding box, an output, whatever you want to call it.
+
+607
+01:28:53.470 --> 01:28:57.190
+Benjamin Houghton: An output from the model has a high Iou.
+
+608
+01:28:58.180 --> 01:29:11.699
+Benjamin Houghton: So this one is a high Iou with one of the ground truth, bounding boxes. So we see that this this particular bounding box, or this particular red box, which is an output from the model.
+
+609
+01:29:11.880 --> 01:29:15.450
+Benjamin Houghton: has a high Iou with this magenta box.
+
+610
+01:29:15.760 --> 01:29:22.070
+Benjamin Houghton: this magenta box, which was the ground truth data of this, this or this light orange cat.
+
+611
+01:29:22.440 --> 01:29:37.039
+Benjamin Houghton: Then we we say, Okay, we can use this bounding box and train it as compared to it, gets basically, this bounding box gets labeled as a cat. Okay? And so then we can take its
+
+612
+01:29:37.800 --> 01:29:40.800
+Benjamin Houghton: transformation. So we'll do the
+
+613
+01:29:41.560 --> 01:29:50.310
+Benjamin Houghton: we'll do the transformation first, st I guess. So we take the transformation. Here's the transformation right? That's this, this row. So this row
+
+614
+01:29:51.040 --> 01:29:53.469
+Benjamin Houghton: is the the transformation for cat.
+
+615
+01:29:54.200 --> 01:30:00.710
+Benjamin Houghton: We get the transformation for cat. And and then from the training data, we get the the coordinates
+
+616
+01:30:01.260 --> 01:30:04.009
+Benjamin Houghton: of the of the bounding box.
+
+617
+01:30:04.480 --> 01:30:25.320
+Benjamin Houghton: and we put them into the the bounding box loss, which is just smooth. l. 1. Right? It's regression, right. If you're not familiar with L. What L. Smooth one is. It's it's kind of like, mean, absolute error. It's it's a little bit different, right? So it's well, it's it's common. I'm sorry. It's not like mean absolute. It's a combination of Mae and Msc.
+
+618
+01:30:25.500 --> 01:30:30.300
+Benjamin Houghton: okay, depending on the size of
+
+619
+01:30:30.860 --> 01:30:39.560
+Benjamin Houghton: the and depending on the size of X right or the not, not the size of X, depending on the size of the error
+
+620
+01:30:40.280 --> 01:30:45.060
+Benjamin Houghton: which in this they're saying, it's X, right. X represents the error in this little
+
+621
+01:30:45.930 --> 01:30:51.699
+Benjamin Houghton: not to be confused with X. The coordinate X. Like not to be confused with the coordinate, the bounding box.
+
+622
+01:30:51.990 --> 01:30:57.739
+Benjamin Houghton: It's here X is equal to y hat minus y right?
+
+623
+01:30:58.230 --> 01:31:03.690
+Benjamin Houghton: Or it's just the error. Okay? So if the error is large, you use
+
+624
+01:31:06.460 --> 01:31:12.320
+Benjamin Houghton: you. If the error is large, you'll use mean absolute error. And if the error is small.
+
+625
+01:31:12.730 --> 01:31:16.200
+Benjamin Houghton: then you'll use a mean, squared error. Okay?
+
+626
+01:31:16.470 --> 01:31:33.550
+Benjamin Houghton: So it, you know, it's not really today. Purpose of this day is, understand? l. 1 smooth loss, this L. Smooth, this smooth l. 1 loss does come up a lot in deep learning. You should be aware of it. Okay, so be familiar with this. It's it's a relatively straightforward concept.
+
+627
+01:31:34.353 --> 01:31:40.010
+Benjamin Houghton: Very relatively straightforward loss. And essentially what this does is.
+
+628
+01:31:40.540 --> 01:31:50.150
+Benjamin Houghton: it doesn't make the it doesn't. It makes it so. Outliers don't. The outliers can have a huge effect with Msc. Outliers can be a problem.
+
+629
+01:31:51.040 --> 01:32:03.680
+Benjamin Houghton: So you'd like to use mae on with outliers, and but Mse doesn't, but it doesn't de-emphasize the small changes like this like but you. But this still allows for
+
+630
+01:32:04.300 --> 01:32:07.679
+Benjamin Houghton: changes, even if the even if the error is small.
+
+631
+01:32:09.770 --> 01:32:14.540
+Benjamin Houghton: Then you use msc, okay, anyways.
+
+632
+01:32:18.750 --> 01:32:22.150
+Benjamin Houghton: this is gonna essentially, you know.
+
+633
+01:32:27.040 --> 01:32:32.090
+Benjamin Houghton: this is gonna train our regressor right? Our our bounding box regression.
+
+634
+01:32:33.470 --> 01:32:37.970
+Benjamin Houghton: All right. So again, here X would be equal to what it would be equal to.
+
+635
+01:32:38.260 --> 01:32:48.969
+Benjamin Houghton: Well, here I'm saying I I know I have Delta XC. 1. Right? What you would do is you would apply that transformation. Right? So let's say.
+
+636
+01:32:49.680 --> 01:32:55.359
+Benjamin Houghton: you know, Delta X gives us some new X hat. Right?
+
+637
+01:32:57.110 --> 01:33:04.990
+Benjamin Houghton: And so then you could calculate your error right? So your error would be equal to
+
+638
+01:33:06.550 --> 01:33:11.959
+Benjamin Houghton: what would be like X hat minus X, where X came from the the ground truth data.
+
+639
+01:33:13.580 --> 01:33:21.129
+Benjamin Houghton: And and so you. And then you would do that for X, you do that for Y, and you do that for the width and the height as well.
+
+640
+01:33:21.580 --> 01:33:22.360
+Benjamin Houghton: Okay?
+
+641
+01:33:23.440 --> 01:33:25.600
+Benjamin Houghton: And so you would use all of these.
+
+642
+01:33:26.420 --> 01:33:33.119
+Benjamin Houghton: They would all, you know, they it'd be it. It's it's basically multiple variable regression. Okay.
+
+643
+01:33:33.550 --> 01:33:35.309
+Benjamin Houghton: which you should be familiar with.
+
+644
+01:33:36.180 --> 01:33:39.130
+Benjamin Houghton: So we're using multiple variable regression
+
+645
+01:33:40.310 --> 01:33:45.080
+Benjamin Houghton: to to train this regressor, this bounding box progressor.
+
+646
+01:33:45.310 --> 01:33:50.240
+Benjamin Houghton: And then finally, we just, we can use cross entropy
+
+647
+01:33:50.370 --> 01:33:55.719
+Benjamin Houghton: for the classification. So again, we have this probability vector.
+
+648
+01:33:57.190 --> 01:34:07.869
+Benjamin Houghton: and let's say, this particular box is is indeed a cat. Well, then, you know, the input, would be this probability, vector maybe it's something like this, 0 point 8.
+
+649
+01:34:08.100 --> 01:34:26.139
+Benjamin Houghton: This is for cat. And then, let's say, the probability of dog is 0 point 1, and then the background is 0 point 1. That would be one of the that would be one piece of the input, the other would be, what if it was one? If it was one hot encoded, it would be like this 1 0 0 meaning class
+
+650
+01:34:26.430 --> 01:34:27.340
+Benjamin Houghton: cat.
+
+651
+01:34:28.430 --> 01:34:53.810
+Benjamin Houghton: And whereas it's in the 0 for for dog and background, right? Of course, the apple, the actual implementation of pi torch might not need one hot encoded vectors, it might just need to know, like ordinal, like class one class, 2 or class 3, or whatever, or maybe just class one or class 2 doesn't really matter the point is is that it's just a simple classification
+
+652
+01:34:54.420 --> 01:34:56.839
+Benjamin Houghton: like you've done. You've probably done before
+
+653
+01:34:57.000 --> 01:35:05.629
+Benjamin Houghton: where we have the. We know the the true class cat, and we know that we know we can get the probability vector from our model.
+
+654
+01:35:05.750 --> 01:35:11.070
+Benjamin Houghton: Again, we would only do this for the cat, because this box, this in this example.
+
+655
+01:35:12.240 --> 01:35:15.499
+Benjamin Houghton: like it, wouldn't be fair like you wouldn't want to train the model
+
+656
+01:35:15.780 --> 01:35:35.450
+Benjamin Houghton: to to compare like the the dog class right? Because this box only intersects with the with the cat object. So we're only going to compare the cat vectors right? So this is the cat like this is one of the cat vex. So when I say, cat vectors here, the cat transformation vector.
+
+657
+01:35:36.040 --> 01:35:40.550
+Benjamin Houghton: and we're only gonna compare it with the bounding box that it overlaps. With.
+
+658
+01:35:40.660 --> 01:35:41.659
+Benjamin Houghton: Which is this
+
+659
+01:35:41.790 --> 01:35:55.620
+Benjamin Houghton: the coordinates for this one, and then for the classes? Here's the probability of the classes. We're only going to compare like we're gonna we're gonna say, obvious, since it overlaps with the cat. Obviously, then we should say we should train it to say, predict class cat.
+
+660
+01:35:55.860 --> 01:36:03.060
+Benjamin Houghton: So that's how you train you. You train these models once you define these loss functions and you can.
+
+661
+01:36:03.740 --> 01:36:13.500
+Benjamin Houghton: And and you, if you guys understand neural networks and back propagation. Then you should understand how from here we can propagate the gradient
+
+662
+01:36:13.700 --> 01:36:16.539
+Benjamin Houghton: back through the network from these loss functions.
+
+663
+01:36:17.870 --> 01:36:22.899
+Benjamin Houghton: And so that is the conclusion of today's video. Thank you.
+

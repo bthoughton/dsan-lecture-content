@@ -125,7 +125,10 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul class="collapse">
-  <li><a href="#cnn-fundamentals" id="toc-cnn-fundamentals" class="nav-link active" data-scroll-target="#cnn-fundamentals">CNN Fundamentals</a>
+  <li><a href="#video-modern-cnn-architectures-part-1-vgg-and-resnet" id="toc-video-modern-cnn-architectures-part-1-vgg-and-resnet" class="nav-link active" data-scroll-target="#video-modern-cnn-architectures-part-1-vgg-and-resnet">Video: Modern CNN Architectures Part 1 VGG and ResNet</a></li>
+  <li><a href="#video-modern-cnn-architectures-part-2-densenet-mobilenet-and-transfer-learning" id="toc-video-modern-cnn-architectures-part-2-densenet-mobilenet-and-transfer-learning" class="nav-link" data-scroll-target="#video-modern-cnn-architectures-part-2-densenet-mobilenet-and-transfer-learning">Video: Modern CNN Architectures Part 2 DenseNet, MobileNet and Transfer Learning</a></li>
+  <li><a href="#video-transfer-learning" id="toc-video-transfer-learning" class="nav-link" data-scroll-target="#video-transfer-learning">Video: Transfer Learning</a></li>
+  <li><a href="#cnn-fundamentals" id="toc-cnn-fundamentals" class="nav-link" data-scroll-target="#cnn-fundamentals">CNN Fundamentals</a>
   <ul class="collapse">
   <li><a href="#convolution-intuition" id="toc-convolution-intuition" class="nav-link" data-scroll-target="#convolution-intuition">Convolution Intuition:</a></li>
   <li><a href="#definition-of-a-convolutional-layer" id="toc-definition-of-a-convolutional-layer" class="nav-link" data-scroll-target="#definition-of-a-convolutional-layer">Definition of a Convolutional Layer</a></li>
@@ -219,6 +222,51 @@ window.Quarto = {
 </header>
 
 
+<section id="video-modern-cnn-architectures-part-1-vgg-and-resnet" class="level2">
+<h2 class="anchored" data-anchor-id="video-modern-cnn-architectures-part-1-vgg-and-resnet">Video: Modern CNN Architectures Part 1 VGG and ResNet</h2>
+<p>The following is a recording on this topic, I hope you find it useful!</p>
+<p>Feel free to watch at 1.5x or 2x speed.</p>
+<p><strong>Note</strong>: If you find something missing or incorrect in the recording, then please let me know!</p>
+<video id="myVideo" width="750" height="500" controls="controls" preload="none">
+<source src="video-1.mp4" type="video/mp4">
+<p>Your browser does not support the video tag. </p>
+<script>
+    window.onload = function() {
+        const video = document.getElementById('myVideo');
+        video.playbackRate = 1.5; // Sets playback speed to 1.5x
+    };
+</script>
+</video></section>
+<section id="video-modern-cnn-architectures-part-2-densenet-mobilenet-and-transfer-learning" class="level2">
+<h2 class="anchored" data-anchor-id="video-modern-cnn-architectures-part-2-densenet-mobilenet-and-transfer-learning">Video: Modern CNN Architectures Part 2 DenseNet, MobileNet and Transfer Learning</h2>
+<p>The following is a recording on this topic, I hope you find it useful!</p>
+<p>Feel free to watch at 1.5x or 2x speed.</p>
+<p><strong>Note</strong>: If you find something missing or incorrect in the recording, then please let me know!</p>
+<video id="myVideo" width="750" height="500" controls="controls" preload="none">
+<source src="video-2.mp4" type="video/mp4">
+<p>Your browser does not support the video tag. </p>
+<script>
+    window.onload = function() {
+        const video = document.getElementById('myVideo');
+        video.playbackRate = 1.5; // Sets playback speed to 1.5x
+    };
+</script>
+</video></section>
+<section id="video-transfer-learning" class="level2">
+<h2 class="anchored" data-anchor-id="video-transfer-learning">Video: Transfer Learning</h2>
+<p>The following is a recording on this topic, I hope you find it useful!</p>
+<p>Feel free to watch at 1.5x or 2x speed.</p>
+<p><strong>Note</strong>: If you find something missing or incorrect in the recording, then please let me know!</p>
+<video id="myVideo" width="750" height="500" controls="controls" preload="none">
+<source src="video.mp4" type="video/mp4">
+<p>Your browser does not support the video tag. </p>
+<script>
+    window.onload = function() {
+        const video = document.getElementById('myVideo');
+        video.playbackRate = 1.5; // Sets playback speed to 1.5x
+    };
+</script>
+</video></section>
 <section id="cnn-fundamentals" class="level1">
 <h1>CNN Fundamentals</h1>
 <p>Most of you have seen CNNs before, but we will quickly align on the core ideas so everyone is on the same page.</p>
@@ -233,7 +281,7 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="convolution-intuition">Convolution Intuition:</h2>
 <p><strong>Sliding Dot Product</strong></p>
 <p>Below is a toy example of a filter scanning the input. The highlighted input patch produces the highlighted output cell.</p>
-<div id="cell-2" class="cell">
+<div id="cell-5" class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
@@ -291,7 +339,7 @@ window.Quarto = {
 <span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="cell-3" class="cell">
+<div id="cell-6" class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array(</span>
@@ -424,7 +472,7 @@ Y_{i,j,f} = \sum_{c=1}^{C}\sum_{m=1}^{K}\sum_{n=1}^{K} X_{i+m-1,\,j+n-1,\,c}\,W_
 <li>Each filter has a bias term.</li>
 </ul>
 <p>Below: one input channel, two different filters, two different feature maps.</p>
-<div id="cell-7" class="cell" data-execution_count="19">
+<div id="cell-10" class="cell" data-execution_count="19">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.zeros((<span class="dv">7</span>, <span class="dv">7</span>), dtype<span class="op">=</span><span class="bu">int</span>)</span>
@@ -512,7 +560,7 @@ Y_{i,j,f} = \sum_{c=1}^{C}\sum_{m=1}^{K}\sum_{n=1}^{K} X_{i+m-1,\,j+n-1,\,c}\,W_
 \mathrm{GELU}(x)=x\,\Phi(x)
 </span></p>
 <p>Practical notes: - Saturating activations (sigmoid/tanh) can cause vanishing gradients in deep CNNs. - ReLU‑family activations usually work best for convolutional feature extractors.</p>
-<div id="cell-12" class="cell" data-execution_count="14">
+<div id="cell-15" class="cell" data-execution_count="14">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.special <span class="im">import</span> erf</span>
@@ -585,7 +633,7 @@ Y_{i,j}=\max_{(m,n)\in\mathcal{W}} X_{i+m,\,j+n}
 <li>Too much pooling can remove fine details needed for localization (e.g., segmentation).</li>
 <li>For classification, moderate downsampling improves robustness and reduces compute.</li>
 </ul>
-<div id="cell-14" class="cell" data-execution_count="15">
+<div id="cell-17" class="cell" data-execution_count="15">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Pooling visualization as GIF (same grid style)</span></span>
@@ -655,7 +703,7 @@ Y_{i,j}=\max_{(m,n)\in\mathcal{W}} X_{i+m,\,j+n}
 Y_{i,j} = \sum_{m=1}^{K}\sum_{n=1}^{K} X_{i\cdot S + m - 1,\, j\cdot S + n - 1}\, K_{m,n}
 </span></p>
 <p>Below is an animated example of <strong>stride = 2</strong>. Each step highlights the input window and the corresponding output cell.</p>
-<div id="cell-17" class="cell" data-execution_count="17">
+<div id="cell-20" class="cell" data-execution_count="17">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Strided convolution animation (stride=2)</span></span>
@@ -770,7 +818,7 @@ H_{out}=W_{out}&amp;=\left\lfloor\frac{32+2\cdot1-3}{2}\right\rfloor+1 \\
 \end{aligned}
 </span></p>
 <p>The <strong>number of output channels</strong> equals the number of filters <span class="math inline">F</span> used in the layer.</p>
-<div id="cell-22" class="cell" data-execution_count="18">
+<div id="cell-25" class="cell" data-execution_count="18">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># X = np.arange(1, 17).reshape(4, 4)</span></span>
@@ -805,7 +853,7 @@ H_{out}=W_{out}&amp;=\left\lfloor\frac{32+2\cdot1-3}{2}\right\rfloor+1 \\
 <li>Strided convolution can replace pooling by downsampling while still learning the weights.</li>
 </ul>
 <p>Below is a small example comparing max pooling with a strided convolution (using a simple 2x2 sum kernel).</p>
-<div id="cell-24" class="cell" data-execution_count="43">
+<div id="cell-27" class="cell" data-execution_count="43">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> np.array(</span>
@@ -867,7 +915,7 @@ H_{out}=W_{out}&amp;=\left\lfloor\frac{32+2\cdot1-3}{2}\right\rfloor+1 \\
 <li>The chart below contrasts a small convolutional layer with a fully connected layer on the same input size.</li>
 </ul></li>
 </ul>
-<div id="cell-26" class="cell" data-execution_count="57">
+<div id="cell-29" class="cell" data-execution_count="57">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # Receptive field visualization</span></span>
@@ -1077,7 +1125,7 @@ H_{out}=W_{out}&amp;=\left\lfloor\frac{32+2\cdot1-3}{2}\right\rfloor+1 \\
 </section>
 <section id="torchvision-densenet" class="level2 scrollable">
 <h2 class="scrollable anchored" data-anchor-id="torchvision-densenet">Torchvision DenseNet</h2>
-<div id="cell-41" class="cell" data-execution_count="20">
+<div id="cell-44" class="cell" data-execution_count="20">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
@@ -1739,7 +1787,7 @@ cost \ ratio &amp;= \frac{1}{N} + \frac{1}{D^2_k} \\
 </section>
 <section id="transfer-learning-example" class="level1">
 <h1>Transfer Learning Example</h1>
-<div id="cell-53" class="cell" data-execution_count="1">
+<div id="cell-56" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
@@ -1751,7 +1799,7 @@ cost \ ratio &amp;= \frac{1}{N} + \frac{1}{D^2_k} \\
 <span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="cell-54" class="cell" data-execution_count="2">
+<div id="cell-57" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check if GPU is available</span></span>
@@ -1762,7 +1810,7 @@ cost \ ratio &amp;= \frac{1}{N} + \frac{1}{D^2_k} \\
 <pre><code>Using device: cuda</code></pre>
 </div>
 </div>
-<div id="cell-55" class="cell" data-execution_count="3">
+<div id="cell-58" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define CIFAR100 dataset, resize to 224x224 and normalize</span></span>
@@ -1801,7 +1849,7 @@ cost \ ratio &amp;= \frac{1}{N} + \frac{1}{D^2_k} \\
 <pre><code>torch.Size([64, 3, 224, 224])</code></pre>
 </div>
 </div>
-<div id="cell-56" class="cell" data-execution_count="4">
+<div id="cell-59" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Number of images in the dataset</span></span>
@@ -1817,7 +1865,7 @@ cost \ ratio &amp;= \frac{1}{N} + \frac{1}{D^2_k} \\
 Number of batches in the dataloader: 782</code></pre>
 </div>
 </div>
-<div id="cell-57" class="cell" data-execution_count="5">
+<div id="cell-60" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Inspect a single image</span></span>
@@ -1844,7 +1892,7 @@ labels: tensor([54, 96, 99, 58, 95, 37, 90, 32, 78, 82, 48, 44, 21, 86, 81, 66, 
          8, 20, 50, 24, 70, 38, 12,  6, 67, 79])</code></pre>
 </div>
 </div>
-<div id="cell-58" class="cell" data-execution_count="6">
+<div id="cell-61" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> unnormalize(tensor, mean, std):</span>
@@ -1892,7 +1940,7 @@ tensor(0.4334)
 tensor(0.2310)</code></pre>
 </div>
 </div>
-<div id="cell-59" class="cell" data-execution_count="7">
+<div id="cell-62" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get CIFAR100 class names</span></span>
@@ -1903,7 +1951,7 @@ tensor(0.2310)</code></pre>
 <pre><code>['apple', 'aquarium_fish', 'baby', 'bear', 'beaver', 'bed', 'bee', 'beetle', 'bicycle', 'bottle', 'bowl', 'boy', 'bridge', 'bus', 'butterfly', 'camel', 'can', 'castle', 'caterpillar', 'cattle', 'chair', 'chimpanzee', 'clock', 'cloud', 'cockroach', 'couch', 'crab', 'crocodile', 'cup', 'dinosaur', 'dolphin', 'elephant', 'flatfish', 'forest', 'fox', 'girl', 'hamster', 'house', 'kangaroo', 'keyboard', 'lamp', 'lawn_mower', 'leopard', 'lion', 'lizard', 'lobster', 'man', 'maple_tree', 'motorcycle', 'mountain', 'mouse', 'mushroom', 'oak_tree', 'orange', 'orchid', 'otter', 'palm_tree', 'pear', 'pickup_truck', 'pine_tree', 'plain', 'plate', 'poppy', 'porcupine', 'possum', 'rabbit', 'raccoon', 'ray', 'road', 'rocket', 'rose', 'sea', 'seal', 'shark', 'shrew', 'skunk', 'skyscraper', 'snail', 'snake', 'spider', 'squirrel', 'streetcar', 'sunflower', 'sweet_pepper', 'table', 'tank', 'telephone', 'television', 'tiger', 'tractor', 'train', 'trout', 'tulip', 'turtle', 'wardrobe', 'whale', 'willow_tree', 'wolf', 'woman', 'worm']</code></pre>
 </div>
 </div>
-<div id="cell-60" class="cell" data-execution_count="8">
+<div id="cell-63" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a function to plot the first 10 images</span></span>
@@ -1931,7 +1979,7 @@ tensor(0.2310)</code></pre>
 </div>
 </div>
 </div>
-<div id="cell-61" class="cell" data-execution_count="9">
+<div id="cell-64" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a function to get a resnet model</span></span>
@@ -2035,7 +2083,7 @@ tensor(0.2310)</code></pre>
 )</code></pre>
 </div>
 </div>
-<div id="cell-62" class="cell" data-execution_count="10">
+<div id="cell-65" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># A function to plot training and validation loss and accuracy</span></span>
@@ -2067,7 +2115,7 @@ tensor(0.2310)</code></pre>
 <span id="cb28-27"><a href="#cb28-27" aria-hidden="true" tabindex="-1"></a>    display.clear_output(wait<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="cell-63" class="cell" data-execution_count="12">
+<div id="cell-66" class="cell" data-execution_count="12">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> nn.CrossEntropyLoss()</span>
@@ -2082,7 +2130,7 @@ tensor(0.2310)</code></pre>
 <span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="cell-64" class="cell" data-execution_count="13">
+<div id="cell-67" class="cell" data-execution_count="13">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># define a function to train and plot training progress</span></span>
@@ -2145,7 +2193,7 @@ tensor(0.2310)</code></pre>
 <span id="cb30-58"><a href="#cb30-58" aria-hidden="true" tabindex="-1"></a>        plot_training(train_loss, test_loss, train_acc, test_acc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="cell-65" class="cell" data-execution_count="14">
+<div id="cell-68" class="cell" data-execution_count="14">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># define a function to train and plot training progress</span></span>
@@ -2208,7 +2256,7 @@ tensor(0.2310)</code></pre>
 <span id="cb31-58"><a href="#cb31-58" aria-hidden="true" tabindex="-1"></a>        plot_training(train_loss, test_loss, train_acc, test_acc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div id="cell-66" class="cell" data-execution_count="15">
+<div id="cell-69" class="cell" data-execution_count="15">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a>train_and_plot(model, trainloader, testloader, loss, optimizer, num_epochs<span class="op">=</span><span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
