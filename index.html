@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Benjamin Houghton</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: system-ui, -apple-system, sans-serif; background: #f8f9fa; color: #1a1a2e; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 3rem 1.5rem; }
+      h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+      .subtitle { color: #555; margin-bottom: 2.5rem; }
+      .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; max-width: 700px; width: 100%; }
+      .card { background: #fff; border-radius: 10px; padding: 1.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-decoration: none; color: inherit; transition: transform 0.15s, box-shadow 0.15s; }
+      .card:hover { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.12); }
+      .card h2 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+      .card p { color: #555; font-size: 0.95rem; line-height: 1.5; }
+    </style>
+  </head>
+  <body>
+    <h1>Benjamin Houghton</h1>
+    <p class="subtitle">Georgetown University</p>
+    <div class="cards">
+      <a class="card" href="501/">
+        <h2>DSAN 501 Portfolio</h2>
+        <p>Data science portfolio including clustering, decision trees, NLP, and time series analysis.</p>
+      </a>
+      <a class="card" href="computer-vision/">
+        <h2>Computer Vision Analytics & Generative Image Modeling</h2>
+        <p>Weekly lecture slides covering CNNs, Fourier analysis, object detection, and more.</p>
+      </a>
+    </div>
+  </body>
+</html>

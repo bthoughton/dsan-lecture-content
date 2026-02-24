@@ -1,0 +1,1186 @@
+WEBVTT
+
+1
+00:00:02.680 --> 00:00:23.970
+Benjamin Houghton: Hello, and welcome to the lecture video on advanced object detection. So, this video is going to assume that you already have some working knowledge of convolutional neural networks as well as some introductory level understanding of object detection.
+
+2
+00:00:24.739 --> 00:00:45.939
+Benjamin Houghton: So if you, if you do not know, there is a video on introduction to Ops detection as well as you should definitely review that as well as review any type of convolutional neural network and any deep learning frameworks in general right? You should have a pretty solid understanding of all those things so deep learning in general.
+
+3
+00:00:46.180 --> 00:00:51.999
+Benjamin Houghton: how convolutional neural networks function, as well as an introductory understanding of of object detection
+
+4
+00:00:56.800 --> 00:01:07.100
+Benjamin Houghton: alright. So getting right into it where we left off. If you remember, in introduction, we left off with what's called fast. We left off with the the fast Rcnn. And
+
+5
+00:01:07.480 --> 00:01:14.900
+Benjamin Houghton: you should real fast think about like. Ask yourself, what did fast? What did fast
+
+6
+00:01:15.420 --> 00:01:33.670
+Benjamin Houghton: Rcnn. Implement right over over the traditional right. We talked about Rcnn. And we talked about fast. Rcnn, so what what new implementation did did fast? Rcnn. Well, it introduced this idea of roi pooling right? And roi pooling meant that we could process
+
+7
+00:01:34.170 --> 00:01:36.090
+Benjamin Houghton: basically meant that we could
+
+8
+00:01:36.440 --> 00:01:45.469
+Benjamin Houghton: do all of our feature extraction in one pass of the network. Okay? So all, all feature extraction
+
+9
+00:01:47.010 --> 00:02:13.250
+Benjamin Houghton: in the single pass of the network. Right? So that's that was the key innovation. So faster, our Cnn improves upon this, and like its predecessors, it is a 2 stage, 2 stage object detection model. Right? You should be familiar with. That means now, meaning that we have to do 2 things. We have to get proposals, and then we have to classify those proposals. So 2 different stages. However, faster. Rcnn is going to
+
+10
+00:02:13.600 --> 00:02:29.369
+Benjamin Houghton: significantly reduce detection. Time compared to its predecessors, and it eliminates the need for external region proposal methods like selective search right so fast Rcnn as does Rcn. They both use selective search right, some external region proposal.
+
+11
+00:02:29.370 --> 00:02:45.670
+Benjamin Houghton: And the key innovation here in Faster Rcnn is this idea of a region proposal network. And so we still have our backbone here, right? Our backbone that does our heavy lifting does our feature extraction, and we have a small neural network that does the region proposals.
+
+12
+00:02:46.030 --> 00:03:03.370
+Benjamin Houghton: And and we also have, of course, a classifier network as well. So it's still 2 stages. But it's it's more unified than it was before. And this idea here of this region proposal network using a neural network to to generate our region proposals is the the new innovation here.
+
+13
+00:03:08.260 --> 00:03:09.910
+Benjamin Houghton: So the faster
+
+14
+00:03:10.550 --> 00:03:17.400
+Benjamin Houghton: our Cnn architecture. Well, like I already mentioned it, it has a backbone, right? This is inherent to real to all
+
+15
+00:03:17.740 --> 00:03:39.470
+Benjamin Houghton: all object detection models. You know, it's little. It's definitely students. 2 stage one stage architectures do have a backbone, but it's it's more like a unified network where the backbone and what we might call sometimes, if there's a neck and that classification heads are all kind of one network, right? But here
+
+16
+00:03:40.040 --> 00:03:46.780
+Benjamin Houghton: and we're talking about 2 stage networks. And and we're we are. Gonna talk about one stage networks today, too, when we get to Yolo. But it just
+
+17
+00:03:46.810 --> 00:04:07.269
+Benjamin Houghton: to be concerned to concern ourselves with faster. Rcnn. There is a 2 stages, and we're gonna have a backbone. Right? Does the feature extraction does kind of all the heavy lifting, and that's its only job is to take images right? So it takes images of 3 channels, and it converts them to smaller. You know usually smaller images. This might be
+
+18
+00:04:07.280 --> 00:04:24.229
+Benjamin Houghton: 512 channels, right? Or 256, or maybe even more, or 1,028. This depends right? So big images to smaller images with higher, more context. Right? So there's more the image, the spatial dimensions are smaller. Well, the space, the
+
+19
+00:04:24.330 --> 00:04:42.619
+Benjamin Houghton: the image. The actual image size is smaller, right? This might be like 14 by 14, right. But there's more channels, and there's more contextual what we call higher con context. And actually, we'll talk about that more. When we talk about feature or feature pyramid networks.
+
+20
+00:04:43.980 --> 00:04:47.059
+Benjamin Houghton: which is a special type of backbone, or what we might.
+
+21
+00:04:47.440 --> 00:05:05.099
+Benjamin Houghton: what sometimes people refer to as the neck, or how you might implement a neck? All right. So the backbone is like, right? Yeah, these architectures you should be familiar with by now, resnet and Vgg, and then we have the region proposal network. So this is the new thing right? And we're so we're going to talk about this quite a bit, the region proposal network
+
+22
+00:05:05.100 --> 00:05:28.430
+Benjamin Houghton: and what it does. But essentially, it proposes potential object locations in the image. So it takes the featured maps right? It takes the feature maps. And it says, Hey, these areas over here. Right? So here's the feature maps and says, Hey, this area is interesting, or this area or this area. And it finds this little areas in the maps of the fee of the feature maps, and it says, This is in which, you know, we can map back to the original image.
+
+23
+00:05:28.430 --> 00:05:35.709
+Benjamin Houghton: like the original spatial dimensions of the image. And we say, Oh, yeah, these these regions look look interesting. So we'll talk about that in more detail.
+
+24
+00:05:36.380 --> 00:06:01.590
+Benjamin Houghton: It uses anchors which are predefined boxes. Basically, an anchor is just a bounding box of different size and scale. The word anchor comes into it because, meaning that the box is centered or anchored at a certain location. Again, we'll talk about this in a little bit more detail. But for now, just just realize that these regional proposing networks do have this this idea of anchor boxes, which is a new idea
+
+25
+00:06:01.590 --> 00:06:10.920
+Benjamin Houghton: which kind of allows us to do this, this regional proposed network. And then the Roi Pooling classification. And so we we know what Roi pooling is. We saw that in fast Rcnn
+
+26
+00:06:11.226 --> 00:06:17.039
+Benjamin Houghton: where we take different, essentially what we do here, what do we do in roi pooling. Well, we take.
+
+27
+00:06:17.040 --> 00:06:46.470
+Benjamin Houghton: if we have a bunch of region proposals from feature maps that are different shapes, right? So maybe this one's long and skinny. This one looks like a square. Maybe this one's really small. And this one's like really big, right? So what we do is we split them up into equal size grids. So usually 7 by 7. But let's say 3 by 3 in this example. So I'm gonna split this into 3 by 3, little, 3 by 3 sections, right? Each one gets split into so 9 different grids that are all equally sized. And then we do Max, pooling right? So for each one of these grids.
+
+28
+00:06:46.470 --> 00:06:48.699
+Benjamin Houghton: like, for example, this grid.
+
+29
+00:06:48.770 --> 00:06:57.425
+Benjamin Houghton: Here we find the largest value, and then in this grid we find the largest value, and then we just take that value. Right? So again, we talked about that in the introduction to
+
+30
+00:06:57.680 --> 00:07:20.079
+Benjamin Houghton: object detection. So go back and review that and more if you, if you need more details on that. But that's just a quick reminder of what Roi Pooling does. And then, finally, we have the classification head which classifies the regions and also does bounding box finds the bounding boxes. I shouldn't mention, too, that the Rpn. Actually does do a bonding backs transformation as well. So actually, both this
+
+31
+00:07:20.080 --> 00:07:25.890
+Benjamin Houghton: and this both do some type of bounding box regression or refinement, I should say.
+
+32
+00:07:27.380 --> 00:07:53.610
+Benjamin Houghton: All right. Some more details about the this classification head right? So the top k proposals. I use Nonmax expression, right? So we get all these proposals out of the Rpn. But we only take the top k usually that number is 2,000. Could be 300 if you're doing inference if you want to do it faster right, but usually, I think you know, I think the authors of the paper mentioned. They use 2,000 for training, and then 3,000 for inference mode. But we take those
+
+33
+00:07:53.610 --> 00:08:06.449
+Benjamin Houghton: proposals we resize them to a fixed size, using the Roi pooling or you could use Roi line, which this is introduced in later papers after fast. Rcnn. Roi align is just a more
+
+34
+00:08:06.570 --> 00:08:15.210
+Benjamin Houghton: precise version of Roi pooling where, instead of integer division, it uses something called inner. It uses interpolation
+
+35
+00:08:15.473 --> 00:08:39.479
+Benjamin Houghton: in the because if you try to divide an image into which is a, you know, a fixed number of, you know, fixed number of pixels, which is an integer. There's going to be chances where the number it's not divisible by, you know, if you're dividing it into 7 by 7 grid. That number is not divisible by 7. Then you get like this misalignment. Right? So, Roi align, that's all I really need you to understand about Roi align. But it's a just a more advanced version of Roi
+
+36
+00:08:39.480 --> 00:08:43.110
+Benjamin Houghton: cooling. Yeah. So we resize the proposals
+
+37
+00:08:43.110 --> 00:09:01.450
+Benjamin Houghton: into a fixed size. And then we classify the proposed regions and refine the bonding boxes. Okay, great. And this should be like these 2 steps should be familiar. Actually, all 3 of these steps. Right. So the non, max suppression, the roi pooling and the classification, should we? We've seen all that before. And then
+
+38
+00:09:01.800 --> 00:09:18.798
+Benjamin Houghton: another thing I should also mention is, I know that we says we do. Non, max suppression here, but we're also going to do it again at the end, right? So after we do the classification and regression, like, separate from, separate from the network architecture, or separate from this process? Right? Then we'll do. You know, we'll do another round of Non Max suppression.
+
+39
+00:09:19.650 --> 00:09:30.575
+Benjamin Houghton: again. Alright, so we'll we'll talk about this in more detail in the coming slides, though. Alright. But 1st let's talk about anchor boxes. And this introduce this idea of like, what is an anchor box, and and how they kind of work.
+
+40
+00:09:31.420 --> 00:09:37.559
+Benjamin Houghton: kind of a good way to understand it is to understand how you would train a network to. You know this. This
+
+41
+00:09:37.830 --> 00:09:53.870
+Benjamin Houghton: slide talks about anchor boxes, and it also talks about kind of the training of the the region proposal network or the Rpn, okay, so this is a good way to to kind of think about how anchor boxes work. And so I'll kind of walk you through this. So
+
+42
+00:09:54.510 --> 00:10:17.870
+Benjamin Houghton: we have this ground truth, data, right, that are color. And you see these images. So we have pink boxes for cats, green for dogs, and blue for cars. All right. Great. That's just some hand labeled You. Maybe some human went through this and they labeled this data, okay, and then from that we can kind of get an idea what the anchor boxes look like. Right? So basically, you could take all the anchor boxes, and you could do k-means clustering.
+
+43
+00:10:17.870 --> 00:10:25.380
+Benjamin Houghton: and that would give you an idea of like what and and all you do came. You could do K-means clustering, and then take like the average
+
+44
+00:10:26.210 --> 00:10:38.289
+Benjamin Houghton: aspect, ratio and scale of all the boxes. So for those of you who don't know aspect ratio is, it's it's just like it's. It's probably what you're familiar with like this would be an aspect ratio of 3 by one.
+
+45
+00:10:38.660 --> 00:10:39.420
+Benjamin Houghton: right.
+
+46
+00:10:39.690 --> 00:11:07.065
+Benjamin Houghton: 3 by one. So the width is 3 times the height. That's aspect. Ratio scale is the size of the box, right? Or you know, here's a 1 by one aspect ratio. And then maybe here's a let's do a 2 by one, right? Or let's do a 1 by 2, right? So one by 2. Okay, so that's aspect ratio. But anyways, you could figure out from your data set what aspect ratios make the most sense, and what scales make the most sense?
+
+47
+00:11:07.750 --> 00:11:27.500
+Benjamin Houghton: of course you don't have to do that. You don't have to do clustering. You could just pick boxes right? So in the faster our the faster Rcn. Paper. They have a set or K equals 9, meaning 9 different anchor boxes of varying aspect ratios, and actually what they use is they use one by 1, 2 by one
+
+48
+00:11:28.020 --> 00:11:37.900
+Benjamin Houghton: and then they use one by 2. Okay, right? And that's all that you and oh, and they have 3 different scales. So they have medium. I'm sorry they have. They have. Actually, they have small.
+
+49
+00:11:38.090 --> 00:11:40.970
+Benjamin Houghton: medium and large right for each one of these.
+
+50
+00:11:41.600 --> 00:11:48.176
+Benjamin Houghton: So for that gives you a total of 9 different anchor boxes. So that's what they did in in the paper.
+
+51
+00:11:49.500 --> 00:11:53.718
+Benjamin Houghton: is. They just pick these these aspect ratios and these sizes, and we'll we'll talk.
+
+52
+00:11:54.310 --> 00:12:16.774
+Benjamin Houghton: you know. Probably we obviously, we're gonna talk more about the paper. But anyways, so once you have your anchor boxes selected, you can do like what these 2 pictures are trying to illustrate. Below, you can basically take the anchor box and you see how there's a red dot right? Meaning that the center of all the anchor boxes are going to be centered at that location.
+
+53
+00:12:17.410 --> 00:12:21.860
+Benjamin Houghton: so one second, I need to pause. Video, I'll be right back.
+
+54
+00:12:29.460 --> 00:12:33.735
+Benjamin Houghton: Okay, so we're back. I apologize for the interruption.
+
+55
+00:12:34.630 --> 00:12:39.429
+Benjamin Houghton: so what are we doing here in in Step 3. Well, we're taking this anchor box and
+
+56
+00:12:40.100 --> 00:12:47.270
+Benjamin Houghton: we're putting the center of these 9 anchor boxes. Let's pretend let's pretend there's 9. There might not be 9 in this illustration. But let's pretend there's our
+
+57
+00:12:47.440 --> 00:12:50.190
+Benjamin Houghton: and we're sliding it across the image. And
+
+58
+00:12:50.420 --> 00:12:53.960
+Benjamin Houghton: we're going to put the center of the boxes at every single pixel in this image.
+
+59
+00:12:54.525 --> 00:13:08.089
+Benjamin Houghton: And and every single time we put it the box, the center of the boxes at a at a certain location, and I think you know this is the word where the word anchor comes in right where the boxes are anchored to a certain pixel. The center is at least
+
+60
+00:13:08.310 --> 00:13:24.129
+Benjamin Houghton: we're gonna look and see and say, Well, how many like do we have? Good Iou. Right? Did any of the boxes match up with the ground? Truth? Bounding boxes? Well, in this one they don't let me change colors, so we can see this a little bit better. This one they don't, but this one they do
+
+61
+00:13:25.800 --> 00:13:27.990
+Benjamin Houghton: on the right. And so if
+
+62
+00:13:28.800 --> 00:13:36.070
+Benjamin Houghton: if a certain anchor box for each of the anchor boxes, if it has a high Iou intersection over union
+
+63
+00:13:36.950 --> 00:13:38.809
+Benjamin Houghton: with the ground truth data.
+
+64
+00:13:38.930 --> 00:13:45.350
+Benjamin Houghton: Well, then, we could classify that as we could classify that as that area having
+
+65
+00:13:45.970 --> 00:14:04.430
+Benjamin Houghton: a true pot like a positive match, right? If we were doing some type of classification, right? Or we're predicting, you know, if we're predicting, if and that's what we're going to do, we're going to predict if there should be an image in these objects. And so that's what the Rpn is designed to do. It's designed to predict
+
+66
+00:14:05.700 --> 00:14:07.520
+Benjamin Houghton: predict if
+
+67
+00:14:08.250 --> 00:14:17.890
+Benjamin Houghton: for for each anchor box, and actually for every location, for every location in the image and for every m, for every possible location and every possible anchor box.
+
+68
+00:14:18.350 --> 00:14:20.300
+Benjamin Houghton: Is there an object present?
+
+69
+00:14:20.480 --> 00:14:22.270
+Benjamin Houghton: Yes or no right?
+
+70
+00:14:23.460 --> 00:14:32.289
+Benjamin Houghton: So in a sense, it's doing just binary classification right now, it also is gonna output, some bonding box transformations right
+
+71
+00:14:34.410 --> 00:14:37.889
+Benjamin Houghton: delta y delta x delta width delta height.
+
+72
+00:14:38.170 --> 00:14:42.979
+Benjamin Houghton: In addition to this, which we'll we'll talk about more here in a second. But
+
+73
+00:14:43.390 --> 00:14:55.979
+Benjamin Houghton: that's essentially what we're trying to do with these anchor boxes. We're just trying to see if they line up with an object, and if they do, what should the what should the transformation be to get the best possible bounding box. Right?
+
+74
+00:14:56.170 --> 00:15:08.279
+Benjamin Houghton: And it's it should be worth noting that, you know, just because one of the anchored boxes lines up doesn't mean they all do so. If we look at this illustration down here, we see that the big one, like some of these, like rectangular.
+
+75
+00:15:08.820 --> 00:15:24.108
+Benjamin Houghton: but like this box lines up really well, it probably has a very high Iou. But this box in the center, the smaller one probably has a poor Iou, because there's all this area outside of it. Right? That isn't matched up. Okay, so just keep that in mind.
+
+76
+00:15:24.450 --> 00:15:48.950
+Benjamin Houghton: that's why we do this for every single. That's why we have these different anchor box sizes and of different scales, different aspect ratios, because some of them might match up, and some of them not. And once we have that data. Right? We can train our Rpn like we have our ground truth data, and we've compared our anchor boxes to all these locations. Now, we can. We can train, and and if it does match up, I guess I should say if it does match up well, then, we can also go in there and manually determine
+
+77
+00:15:49.010 --> 00:15:57.439
+Benjamin Houghton: what the transformation should be. So now we have a full set of training data. We have classification and regression data to train our Rpn. With, all right.
+
+78
+00:15:58.280 --> 00:16:02.200
+Benjamin Houghton: So that's the idea of what anchor boxes are. And and now we'll talk about.
+
+79
+00:16:03.430 --> 00:16:10.810
+Benjamin Houghton: how? How does you know? What does the Rpn's outputs look like. And you know, how does this network function? Right?
+
+80
+00:16:11.440 --> 00:16:12.729
+Benjamin Houghton: All right. So
+
+81
+00:16:15.840 --> 00:16:22.149
+Benjamin Houghton: moving on to the next slide if it'll let me here. Okay, there we go. Alright. So but before, yeah. So
+
+82
+00:16:22.310 --> 00:16:39.960
+Benjamin Houghton: that was the idea of anchor boxes. I guess. Yeah. So we have a, we'll talk really quickly about the backbone in a little bit more detail already talked about this a little bit. There's not much to this. I mean, it is what it is right. It just does. Feature. Extraction extracts the feature maps from the input image and extracted features are shared
+
+83
+00:16:39.960 --> 00:16:53.890
+Benjamin Houghton: right. And this should be, we. We kind of saw this on this graphic here, right? The feature maps get shared, if to the classifier. And so that the classifier yeah, and the Rpm uses the feature maps right? So that's what the backbone does.
+
+84
+00:16:53.890 --> 00:17:16.039
+Benjamin Houghton: Extracts features. Does all the hard work. The original paper use these 2 networks again. You know, these aren't the most advanced architectures, but they're good apples to apples, comparison to faster to fast. Rcnn. And Rcnn. Because if the original Rcnn. Use Vgg, it's not really fair to use resnet, because Resnet's going to give you more expressive
+
+85
+00:17:16.040 --> 00:17:40.618
+Benjamin Houghton: power right? It's gonna get you better feature maps than the than Vgg, this. But in a modern implementation you would use something like resnet. Or you might use even something even better. Feature pyramid network, which is really good for small objects. Right? If you just had large objects, you might not see a great improvement using a feature pyramid network going from resnet to feature pyramid
+
+86
+00:17:41.180 --> 00:17:52.930
+Benjamin Houghton: But if you do have small objects, and you should see a pretty good in enhancement. And we'll talk about feature pyramid network later on in this presentation. And then the efficient net is it's like, it sounds, it's efficient. Right? So
+
+87
+00:17:53.060 --> 00:17:55.969
+Benjamin Houghton: maybe like a mobile application or something like that.
+
+88
+00:17:59.160 --> 00:18:15.649
+Benjamin Houghton: Okay, so we already talked about this a little bit, but we'll start kind of diving into more of the details here. about the the actual region proposal network. So what is it? Right? It's a small Cnn right? Meaning that it's a 3 by 3 convolution.
+
+89
+00:18:16.670 --> 00:18:23.790
+Benjamin Houghton: followed by one by one. And it's sexual. Yeah. So followed by with, yeah. So 3 by 3, with a stride of one.
+
+90
+00:18:23.890 --> 00:18:31.280
+Benjamin Houghton: Right? And this is important that the stride is one here, because,
+
+91
+00:18:36.200 --> 00:18:57.730
+Benjamin Houghton: yeah, it's it's gonna make more sense here in a minute. But the stride of one we have to do a stride of one because we need to. We need to kind of check every single location in the image. All right. So that's why we have a stride of one the 3 by 3 represents the size of the receptive field. So the authors say that you slide this. You can think of it kind of like sliding a network.
+
+92
+00:18:58.670 --> 00:19:22.706
+Benjamin Houghton: sliding a network across the feature map which you know, what we're really doing is just doing 3 by 3 convolution with a stride of one. But followed by these 2 parallel, one by one convolutions, and each of these parallel, one by one convolutions, one of them is going to do our regression, and the other one is gonna our bounding box regression. The other one's gonna do our classification. Okay? So we'll see more about that here in a minute. This, I have several slides. Kind of detailing how this Rpn works.
+
+93
+00:19:23.630 --> 00:19:52.905
+Benjamin Houghton: yeah. And so the 3 by 3 sliding window actually has a receptive field, effective, receptive field of 228 pixels using the original image size and bgg. So here's a link to that in the paper where they, the authors, mentioned that right? So because the images get down sampled right sometimes by as much as 16, right? 1 16, th the same size. So if your image was originally 16 by 16. Then it's going to be one by one image. So 3 by 3 is much bigger in size than it sounds right. And that's this, that's anyways
+
+94
+00:19:54.050 --> 00:20:01.770
+Benjamin Houghton: so just keep that in mind right that. That's this receptive field is is bigger than it than it sounds. So
+
+95
+00:20:03.836 --> 00:20:07.379
+Benjamin Houghton: let's see here, at each position.
+
+96
+00:20:07.510 --> 00:20:22.620
+Benjamin Houghton: right? The anchors, predefined boxes, the different scales are considered. If an object is present, right, we already talked about that, and the network predicts the object score the object score whether or not an object, whether an anchor contains an object or not, and then the bounding box offsets. All right?
+
+97
+00:20:26.890 --> 00:20:40.000
+Benjamin Houghton: yeah. And down here just tells you like how many. And they mentioned this in the patron in the paper as well. So there's W. By H. Spatial. Look, you know, if we slide this this network across the the in the feature maps.
+
+98
+00:20:40.110 --> 00:21:04.470
+Benjamin Houghton: there's going to be W. By H. Spatial locations with by height. Of. So whatever size the feature maps are is the size of how many different locations you're to consider. And there's K anchor boxes. So it's actually going to be W. Times, H. Times, K. Boxes are going to be considered essentially right, because each box can be can be moved one pixel at a time all the way across and down, all the way across the image, giving you a total of WHK.
+
+99
+00:21:06.020 --> 00:21:11.620
+Benjamin Houghton: W. Times H. Times K. Possible considerations right? So like.
+
+100
+00:21:12.510 --> 00:21:36.750
+Benjamin Houghton: let's look at the let's look at the the the out, the the outputs, and and this will make maybe start to make a little more sense of of how this works. Right? So first, st we'll talk about the objectness score. Right? So we do this 3 by 3 convolution. Right? We do this 3 by 3 convolution. And and we've and all we've done right is taken. We do a 3 by 3 convolution. What we're doing right. We're taking information
+
+101
+00:21:36.920 --> 00:21:37.910
+Benjamin Houghton: from
+
+102
+00:21:38.030 --> 00:21:50.219
+Benjamin Houghton: right. We do a 3 by 3, convolution. 3 by 3 we take information from a 3 by 3 grid, and we put it in all that value and code it into a single value, a single pixel in the image, right?
+
+103
+00:21:50.550 --> 00:22:08.000
+Benjamin Houghton: Right? Because it's the dot product, right? Essentially of the kernel times the image. And so we can code that. And that's why, when I was saying here, the 3 by 3 is is important, because it's that it's your spatial dimension, right? And we're encoding all that information into a single pixel.
+
+104
+00:22:08.000 --> 00:22:20.839
+Benjamin Houghton: Okay? And so then what we can do is we can follow that up with a 1 by one convolution right? And the one by one convolution looks across, looks at that single pixel, but it looks across all channels.
+
+105
+00:22:21.210 --> 00:22:27.789
+Benjamin Houghton: And then it. And it basically can encode whatever we want it to encode for that single pixel location. So
+
+106
+00:22:29.430 --> 00:22:32.340
+Benjamin Houghton: what we're gonna do is we're gonna output
+
+107
+00:22:33.610 --> 00:22:41.589
+Benjamin Houghton: the number of channels that we have. So actually, let's see, let's look at this. We have we're gonna output 2 K channels.
+
+108
+00:22:41.760 --> 00:22:44.376
+Benjamin Houghton: meaning we're gonna output.
+
+109
+00:22:45.770 --> 00:22:53.100
+Benjamin Houghton: right? So the one by one convolution, let's let me step back and kind of explain this a little bit more detail, right? So if we do a 3 by 3, right?
+
+110
+00:22:53.180 --> 00:23:16.409
+Benjamin Houghton: And we do the. Here's the feature maps. We do a 3 by 3 convolution, and out comes new feature maps same size. But now, yeah, let's say it was 512. And there's also 512 channels. Okay, great. And then we take those 512 channels, and we put them into a 1 by one convolution, and out pops what? Well, we have the same
+
+111
+00:23:16.540 --> 00:23:25.920
+Benjamin Houghton: same size, same size, feature maps. But now there's 2 k channels. And what are those 2 K channels represent? Well, every each channel
+
+112
+00:23:27.123 --> 00:23:29.209
+Benjamin Houghton: represents the
+
+113
+00:23:30.270 --> 00:23:49.810
+Benjamin Houghton: let's see, what does it say in this graphic right? Each channel, every pair of channel here says here represents the objectness scores for spatial equations for a single anchor box, and that's because we output the probability of a anchor box containing an object and the probability of background. So each anchor gets 2 channels.
+
+114
+00:23:49.810 --> 00:24:02.590
+Benjamin Houghton: and the spatial locations in these are are representative of the original feature map. Right? So it says, here, what am I trying? What do I mean by that? So it says here, a little bit more eloquently than what I just said
+
+115
+00:24:02.590 --> 00:24:30.320
+Benjamin Houghton: was, the scores are arranged, the scores are arranged in the original original spatial order of the feature map, and each channel is associated with a specific inker boxes, object, background or probability. So hopefully, that makes sense. Right? And I'm gonna go to the paper now, real fast, and I want to show you guys what what the how the authors word this right. They are very vague, but they're kind of say the same thing here, right? So
+
+116
+00:24:30.320 --> 00:24:35.040
+Benjamin Houghton: they say, oh, and here's what they're mentioning the the
+
+117
+00:24:35.210 --> 00:24:38.370
+Benjamin Houghton: right. So if you read this paragraph or.
+
+118
+00:24:39.270 --> 00:24:57.880
+Benjamin Houghton: yeah, this entire paragraph, I guess, starting here, you should really under you should. This is kind of where they talk about the details. They slide the small network over the convolution layer, which meaning which meaning they just do a 3 by 3. They just do. There's, they say, end by end, which they they use a 3 by 3 convolution. Okay.
+
+119
+00:24:58.593 --> 00:25:04.056
+Benjamin Houghton: usually it's 512 dimensions. Right? We said that 512 channels. And then
+
+120
+00:25:05.250 --> 00:25:07.349
+Benjamin Houghton: what does it say here? Note that
+
+121
+00:25:07.970 --> 00:25:17.310
+Benjamin Houghton: the Mini network is a single okay. Note that because the Mini network operates on a sliding window fashion, the fully connected layers are shared across all spatial locations.
+
+122
+00:25:17.360 --> 00:25:39.360
+Benjamin Houghton: The architecture is naturally implemented by end by end convolution followed by 2 sibling, one by one convolution layers. Right? So it's a really roundabout way of saying like, well, we could have done a 3 by 3 and then flattened it, and then, you know, it'd be kind of weird you'd have to flatten it, and then but you'd have to arrange by the same spatial location. Right? So because
+
+123
+00:25:39.510 --> 00:25:44.239
+Benjamin Houghton: if we're considering a single Pixel, a single location. Right? So if we have an image
+
+124
+00:25:44.530 --> 00:25:46.788
+Benjamin Houghton: right, we have an image.
+
+125
+00:25:47.870 --> 00:25:50.490
+Benjamin Houghton: let me go back to the presentation real fast.
+
+126
+00:25:56.310 --> 00:26:19.390
+Benjamin Houghton: We have an image right? And we need to consider a single this single pixel right? Then we only care about that pixel value, but across all channels, so we'd have to flatten it and then group by channel and then feed it into a fully connected network. Or you could just do a 3 by 3, followed by a 1 by one. That's what they're saying, and that's what the authors mean by
+
+127
+00:26:19.780 --> 00:26:27.950
+Benjamin Houghton: that's what the authors mean by this sentence here, right here 2.
+
+128
+00:26:28.910 --> 00:26:31.360
+Benjamin Houghton: This architecture is naturally implemented
+
+129
+00:26:33.860 --> 00:26:46.820
+Benjamin Houghton: trying to highlight the one I'm talking about naturally implemented by one by one follow, or N by N. Sorry, which means 3 by 3, followed by 2 sibling, one by one convolutions, one for regression and one for classification.
+
+130
+00:26:48.360 --> 00:27:01.103
+Benjamin Houghton: Alright so hopefully that makes sense to you, and and how this Rpn functions right? And and why they chose a specific architecture. And it's a little bit different than we're used to. Right? We're we're used to.
+
+131
+00:27:01.980 --> 00:27:16.449
+Benjamin Houghton: We're used to seeing 3 by like 3 by 3 convolutions, followed by some flattening layer or Max pooling. And they get full, you know. Maybe we do a max pooling right like in resnet. And then we we follow that up with something like
+
+132
+00:27:16.520 --> 00:27:37.460
+Benjamin Houghton: a a fully connected layer. But here we're just going directly from 3 by 3 to one by one, and so here's another yet another. You know, I know you you guys have asked me before. What? What is the purpose of one by one convolution? So you know, they do have their place in deep learning, obviously in in object detection and in computer vision. And so.
+
+133
+00:27:37.670 --> 00:27:40.044
+Benjamin Houghton: oh, all right, all right. So,
+
+134
+00:27:42.200 --> 00:28:00.329
+Benjamin Houghton: yeah, that is, this is the object again, like to reiterate. So this is the object next score, the output of the object. Next score is W. Times H. By 2 K. Right where these boxes are are W. By H. And we have 2 K channels which 2 K usually is going to be equal to 1818 channels.
+
+135
+00:28:00.850 --> 00:28:01.750
+Benjamin Houghton: All right
+
+136
+00:28:02.190 --> 00:28:27.260
+Benjamin Houghton: and and we can look inside of these feature, these output, which they were feature maps. I guess they still kind of are feature maps, but now they represent probabilities. Right? So this represents. Let's look at this one. This represents Pixel 2, 2. So at Pixel, at Pixel. Location? 2. 2. What's the probability of there being an object? It? What's the probability that
+
+137
+00:28:28.170 --> 00:28:36.149
+Benjamin Houghton: There's an object in anchor box one right? And so then here we have anchor box, these these rep, these 2. You know these 2
+
+138
+00:28:36.630 --> 00:28:37.700
+Benjamin Houghton: channels
+
+139
+00:28:38.860 --> 00:28:46.440
+Benjamin Houghton: right? It's that's what this is showing right here. These 2 channels. Right anchor box one. These are anchor box 2, and these are anchor box K,
+
+140
+00:28:48.160 --> 00:28:51.140
+Benjamin Houghton: anchor box K, anchor box 2 and anchor box one
+
+141
+00:28:52.700 --> 00:28:59.633
+Benjamin Houghton: alright. So that's the output of the of the Rpn. Objectness score. And then so the regression is pretty simple.
+
+142
+00:29:00.370 --> 00:29:26.960
+Benjamin Houghton: if you understand this? It's not much of an extension to the regression, right? So now now, instead of W, before, we had something like WH. Times 2 K. Now we have W. Times H. Times 4 K. Because now, instead of a probability of object and probability background, we have 4. We have 4 features right. And those features are the horizontal transformation, the vertical, the width and the height. Okay?
+
+143
+00:29:28.640 --> 00:29:32.240
+Benjamin Houghton: So now we have to.
+
+144
+00:29:34.390 --> 00:29:51.070
+Benjamin Houghton: Oh, I just realized there's a mistake here bounding box transformations for each spatial location with 1st single anchor box. So this, this should be like this, actually, right, this little, this, this just shows 2 channels. But it's actually 4 channels now, right? So now we have an output of 4 K channels which
+
+145
+00:29:51.380 --> 00:29:57.492
+Benjamin Houghton: alright. So now, which is what that's gonna be something like 36, right? 18, yeah.
+
+146
+00:29:58.930 --> 00:30:04.220
+Benjamin Houghton: 36 channels, and each channel represents, you know, a single
+
+147
+00:30:04.830 --> 00:30:16.009
+Benjamin Houghton: feet, a single transformation for a single anchor box for every single pixel. Right? All right. So same idea. That's the bounding box Rpn out outputs.
+
+148
+00:30:16.520 --> 00:30:21.330
+Benjamin Houghton: So that gives you some intuition of how the now of how the Rpm functions.
+
+149
+00:30:21.710 --> 00:30:26.956
+Benjamin Houghton: Alright. And then, lastly, yeah, we have the classification head, right? So
+
+150
+00:30:27.710 --> 00:30:51.469
+Benjamin Houghton: real fast. We've we've kind of seen all these details. Before right, Roi, we have the. We have the Roi pooling classification, as is another small network. Right? It's going to be fully connected. Layers, classifies proposed regions and refines bounding boxes. Right? So we take the top k proposals all right. The proposals are, the proposals are all resized to a fixed size using roi pooling
+
+151
+00:30:52.042 --> 00:30:54.789
+Benjamin Houghton: and then they're fed through the classifier.
+
+152
+00:30:55.120 --> 00:31:00.320
+Benjamin Houghton: All right. Proposals are classified and bounding boxes are refined, using fully connected layers.
+
+153
+00:31:02.810 --> 00:31:24.219
+Benjamin Houghton: And then, last, but not least we do. We do class wise non, Max. Suppression? Oh, I guess. And that's a pretty important distinction. Actually, I should mention here. So we noticed that there was no classes. It was object or not, object or back object versus background. That's what the Rpn. Gives us the object versus background. So we have to do class agnostic. Non max suppression here.
+
+154
+00:31:24.220 --> 00:31:35.560
+Benjamin Houghton: because we just say, is there an object or not? We don't know what classes. And then down here we can do class wise and on Max suppression class agnostic, meaning that we don't know meaning we're ignoring classes. It's just object or not.
+
+155
+00:31:37.680 --> 00:31:41.460
+Benjamin Houghton: So that's the Roi pooling and classification head.
+
+156
+00:31:42.784 --> 00:31:51.610
+Benjamin Houghton: So here's the overall diagram. Hopefully, this makes sense to you now. We've kind of talked about all these steps and kind of details. Right? So we have the backbone.
+
+157
+00:31:52.490 --> 00:31:55.330
+Benjamin Houghton: 1st feature extraction
+
+158
+00:31:55.917 --> 00:32:16.240
+Benjamin Houghton: the next is to do the region proposal network. Right? So here we we take those feature maps. We run them through a 3 by 3 convolution, and then we use these one by one, convolutions to kind of, in a sense, do regression. Right? So we predict the objectness score and the bounding box offsets with these, one by one, convolutions that map
+
+159
+00:32:16.400 --> 00:32:39.400
+Benjamin Houghton: basically from a feature, they map from a feature maps. Into what will they map? Into a spatial location probabilities, and or where the probabilities are arranged in the original spatial location, right? And the the bounding box offsets, and so the the matrices I've given you here. Just show the probabilities, for.
+
+160
+00:32:39.420 --> 00:32:53.429
+Benjamin Houghton: for you know these these are a little bit misleading, which is why I have the. You know, these 2 slides are what the outputs gonna actually look like when you implement this in practice on this slide. It just shows you these little matrices that say the probability of object
+
+161
+00:32:53.790 --> 00:33:07.080
+Benjamin Houghton: and the probability background for all the anchor boxes. And then the same thing for the the probability of or not the probability, but the bounding box offsets for every single bounding box.
+
+162
+00:33:07.340 --> 00:33:10.750
+Benjamin Houghton: all K. Bounding boxes in all W. Times. H.
+
+163
+00:33:11.550 --> 00:33:14.829
+Benjamin Houghton: All W. Times, H. Spatial locations.
+
+164
+00:33:15.670 --> 00:33:21.900
+Benjamin Houghton: So that's what the outputs look like of the Rpn. And then once we have that we perform
+
+165
+00:33:22.080 --> 00:33:36.680
+Benjamin Houghton: class agnostic mom, Max suppression, which we've talked about mommax suppression quite a bit to reduce redundant boxes. We do our Roi pooling where we take right? So you know. I guess we should mention here. I guess it's good time to talk about this.
+
+166
+00:33:38.390 --> 00:34:00.819
+Benjamin Houghton: The Rpn is gonna suggest all these different locations. But they're gonna be different sizes like, not only are the anchor boxes different sizes and shapes, but they're also gonna have these transformations as well. So we get all these different size areas like all these, all these, we have to go back to our feature maps. Right? We have to go back to here. Step one and look at these feature maps.
+
+167
+00:34:01.180 --> 00:34:15.990
+Benjamin Houghton: and we have to determine well what part of the feature map is relevant to the classification network. So we we wanna we want to take that area of the feature map that the Rpn. Identified. Whatever shape it was, reshape it into a uniform shape.
+
+168
+00:34:16.550 --> 00:34:19.360
+Benjamin Houghton: Right? Usually this is something like 7 by 7.
+
+169
+00:34:20.179 --> 00:34:36.759
+Benjamin Houghton: So reshapes and into something that's 7 by 7, and that gets flattened and fed into the fully connected or the classification network. And it. We just do a softmax classification, right? Probability across all classes. And then we do the bounding box transformations.
+
+170
+00:34:42.730 --> 00:34:57.550
+Benjamin Houghton: and so well, we do our final bonding back transformations right? Because we've already done it once. But the the classification gets the final say. And then, last, but not least, we do our class wise. Non, Max, suppression. And that gives us our final final answer. Right?
+
+171
+00:34:57.810 --> 00:35:03.600
+Benjamin Houghton: Okay, all right. And so that is faster. Rcnn, that is the overview
+
+172
+00:35:05.620 --> 00:35:09.289
+Benjamin Houghton: real fast on the training of faster Rcnn.
+
+173
+00:35:09.360 --> 00:35:35.830
+Benjamin Houghton: So notice that we have this multitask loss function. Right? We have the loss because we need to know the loss of the region proposal network, as well as the detection which the loss of the detection is, what is that? That would be the class that the detection is the the classification head? Right? So we have these. So we needed. We need to train on both. Right. So the Rpn loss is gonna be
+
+174
+00:35:36.790 --> 00:35:50.819
+Benjamin Houghton: I apologize. The format is a little funky here. This is supposed to be a new bullet points, but the Rpn. Loss has the classification loss for object versus background using binary cross entropy.
+
+175
+00:35:52.135 --> 00:36:00.680
+Benjamin Houghton: Actually, this is let me. This is a typo. Let me fix that real fast
+
+176
+00:36:00.990 --> 00:36:02.420
+Benjamin Houghton: one second.
+
+177
+00:36:06.190 --> 00:36:12.518
+Benjamin Houghton: Okay. So I I just wanted to update this slide real fast. I didn't feel like it was very clear.
+
+178
+00:36:14.270 --> 00:36:21.613
+Benjamin Houghton: And so let me just fix this real fast? Okay, here we go.
+
+179
+00:36:24.410 --> 00:36:31.079
+Benjamin Houghton: So what was I saying, where were we? Right? Yeah. So we were talking about how the Rpn.
+
+180
+00:36:31.504 --> 00:36:54.449
+Benjamin Houghton: has these 2 components. Right? Well, first, st we said, we have to worry about the loss from Rpn and the classification head, and we say that that we have this classification loss right? And that could actually be. And and actually, I think I had. I had binary cross entropy. But what I wanted to put on here was is that we? It could be either that or cross entropy, right? Because there are implementations that use sigmoid.
+
+181
+00:36:56.380 --> 00:36:59.154
+Benjamin Houghton: And there's implementations that use
+
+182
+00:36:59.870 --> 00:37:04.670
+Benjamin Houghton: that use softmax. So it depends on your activation function here. Which
+
+183
+00:37:04.830 --> 00:37:07.810
+Benjamin Houghton: loss you would use. I can tell you that
+
+184
+00:37:09.060 --> 00:37:15.429
+Benjamin Houghton: the original paper used softmax, but the sigmoid has been used more
+
+185
+00:37:16.090 --> 00:37:21.309
+Benjamin Houghton: lately. Okay, or in more recent implementations. Alright. And so.
+
+186
+00:37:22.050 --> 00:37:25.689
+Benjamin Houghton: since the background vastly outnumbers objects in Rpn
+
+187
+00:37:25.960 --> 00:37:31.756
+Benjamin Houghton: Binary cross entropy is usually better due to the imbalance. All right.
+
+188
+00:37:33.620 --> 00:38:01.089
+Benjamin Houghton: it allows for independent probabilities. And and you can use like something like class waiting. Right? So you know, it doesn't. Just otherwise, if you kind of let the network run wild, it's gonna predict all background. So you have to kind of worry about. You know, those those class imbalances. And there's there's ways to get around that right. And then we have the bounding box regression, which is smooth loss right? Which is a combination of of mean squared error, and, mean absolute error.
+
+189
+00:38:01.490 --> 00:38:25.898
+Benjamin Houghton: You should be aware of what this is. It's a pretty important, pretty important loss. Function in in deep, in many places, in deep learning. Okay? And then we have the detection or the classic, the classification head. Again, we have. We have all these classes right? We have to predict all whatever many classes of objects you want to detect. Right? You said, to predict all those. So we have. We have Softmax cross entropy, and then we have
+
+190
+00:38:26.590 --> 00:38:29.659
+Benjamin Houghton: for the bounding box again we have the smooth l 1 loss.
+
+191
+00:38:29.930 --> 00:38:37.720
+Benjamin Houghton: All right. So pretty similar. Right? Losses are are, you know, pretty similar process for both the Rpn. And the detection head.
+
+192
+00:38:38.020 --> 00:38:41.467
+Benjamin Houghton: Alright. So there are 2. There's
+
+193
+00:38:42.670 --> 00:39:00.660
+Benjamin Houghton: 2 step training. So I I kind of talked about in pretty good detail about how you might train an Rpn. 1st and then, after you did that the Rpn. You could, you could train the the classification port part portion, and then says alternatively, you could do a joint training is also possible. All right.
+
+194
+00:39:00.790 --> 00:39:05.130
+Benjamin Houghton: So there's a some training implementation details for you
+
+195
+00:39:08.106 --> 00:39:28.593
+Benjamin Houghton: moving on to the faster Rcn versus previous models. Let's see, like we, we see that the accuracy is is really high for all these models. Right? Your 2 stage detectors are usually gonna be a little bit more accurate than a single stage and they're but they're slower, right? So
+
+196
+00:39:29.670 --> 00:39:48.800
+Benjamin Houghton: of course, they, their speed gets progressively as we move down, the list gets faster and faster each time and the region. Proposal method changes from selective search to Rpn and faster. Rcnn. Which is really, you know, the the Rpn. Is really the innovation and the big innovation in the faster Rcnn paper.
+
+197
+00:39:52.297 --> 00:40:06.919
+Benjamin Houghton: But you know we should mention, although it's faster, it's still not real time, usually so 100 to 200 ms per image, and the the anchors require tuning for different data sets right when we talked about that, that, you know, it's not always
+
+198
+00:40:07.540 --> 00:40:15.590
+Benjamin Houghton: clear what what you know how many anchors should you boxes should you use what their aspect ratio should be, what their sizes should be right?
+
+199
+00:40:24.821 --> 00:40:44.460
+Benjamin Houghton: And that. And that brings us to Yolo. All right. So a lot of you probably have heard of Yolo. Here's a link to the paper and see, you know, I know I'm excited to talk about this hopefully. You're excited to learn about it. And so Yolo is a real time option model designed for speed and efficiency.
+
+200
+00:40:47.820 --> 00:40:50.430
+Benjamin Houghton: On like our 2 stage
+
+201
+00:40:50.660 --> 00:40:56.860
+Benjamin Houghton: networks. It's it's a treats object detection as a singular problem, meaning it's a
+
+202
+00:40:57.380 --> 00:41:05.790
+Benjamin Houghton: a single pass through a single unified single convolutional neural network is going to give us the 2 things we need which are bounding boxes and probabilities.
+
+203
+00:41:07.190 --> 00:41:09.649
+Benjamin Houghton: Right? Obviously, this is different than
+
+204
+00:41:10.100 --> 00:41:12.669
+Benjamin Houghton: then. The the 2 stage networks.
+
+205
+00:41:13.760 --> 00:41:18.879
+Benjamin Houghton: all the Rcnns and their variants that generate proposals 1st and then classify them.
+
+206
+00:41:21.210 --> 00:41:25.790
+Benjamin Houghton: and we'll see that there is no region proposal in yellow.
+
+207
+00:41:28.240 --> 00:41:33.850
+Benjamin Houghton: So a single pass, right? No region proposals.
+
+208
+00:41:34.050 --> 00:41:41.039
+Benjamin Houghton: grid-based prediction. So this is really what allows us to work. Okay, so this is the important thing to take off this slide.
+
+209
+00:41:41.200 --> 00:41:43.699
+Benjamin Houghton: Is this idea of grid-based prediction?
+
+210
+00:41:44.270 --> 00:41:48.569
+Benjamin Houghton: All right, we'll we'll see what that means. Well.
+
+211
+00:41:49.420 --> 00:41:53.610
+Benjamin Houghton: sneak peek images divided into a grid, and each cell predicts objects. Okay.
+
+212
+00:41:54.700 --> 00:42:02.149
+Benjamin Houghton: kind of like, I mean, that's that's really it. And the nice thing about Yolo is, I mean, there's more to it, obviously, than that. But in a nutshell that's what it does.
+
+213
+00:42:03.480 --> 00:42:14.320
+Benjamin Houghton: The nice thing about Yolo is. It's it's simpler, much simpler than faster. Rcnn, alright, real time speed.
+
+214
+00:42:14.580 --> 00:42:17.119
+Benjamin Houghton: Right? So it's it's great for
+
+215
+00:42:18.140 --> 00:42:23.720
+Benjamin Houghton: surveillance, surveillance, self-driving cars. The trade-off is lower accuracy.
+
+216
+00:42:30.150 --> 00:42:30.950
+Benjamin Houghton: all right.
+
+217
+00:42:31.580 --> 00:42:37.900
+Benjamin Houghton: So the yellow architecture. What is it? We have the backbone, which is our feature extraction.
+
+218
+00:42:38.640 --> 00:42:43.849
+Benjamin Houghton: So, like all object detection networks, we have these. You could, you know.
+
+219
+00:42:44.520 --> 00:42:47.109
+Benjamin Houghton: this is all one network. Let me let me.
+
+220
+00:42:47.340 --> 00:42:53.819
+Benjamin Houghton: Let me well, these these 2 portions are. This is the last post-processing is important neural network. But
+
+221
+00:42:54.010 --> 00:43:01.233
+Benjamin Houghton: these 2 ports, this is all one network. It's just different parts of it, right? We do our backbone feature, extraction.
+
+222
+00:43:03.260 --> 00:43:07.599
+Benjamin Houghton: and let me just pause and kind of clarify that real fast. So in faster. Rcnn.
+
+223
+00:43:08.600 --> 00:43:11.899
+Benjamin Houghton: You know, I mentioned that it's kind of like a unified network, right?
+
+224
+00:43:12.420 --> 00:43:25.311
+Benjamin Houghton: We do our region. We have the feature extraction that gets shared between the Rpn. And the classification head and the outputs of the Rpn. Are used to dictate what gets fed into the classification head. But
+
+225
+00:43:26.090 --> 00:43:37.430
+Benjamin Houghton: it is kind of all one network, right? But we're the the really. The key thing to hear is that is the region proposals right? There is no region proposals in Yolo. All right. There are.
+
+226
+00:43:39.470 --> 00:43:44.430
+Benjamin Houghton: There is no regional proposed network. There is no region proposals
+
+227
+00:43:47.060 --> 00:43:51.949
+Benjamin Houghton: propose. I ran out of room proposals. None of this. Okay, doesn't exist here.
+
+228
+00:43:53.180 --> 00:43:54.230
+Benjamin Houghton: Alright. So
+
+229
+00:43:54.590 --> 00:44:00.999
+Benjamin Houghton: that's what we mean by a unified network. I just want to clarify that again. Anyways, backbone deep. Cnn.
+
+230
+00:44:01.933 --> 00:44:06.739
+Benjamin Houghton: originally, you know, Google Lynette. You can use all their backbones doesn't really matter.
+
+231
+00:44:07.148 --> 00:44:18.150
+Benjamin Houghton: It does matter. But you know, you'd want to use the right one for your application. But there's different choices you can make you can use resnet. You use. Vgg, you could use a feature pyramid network, which is like probably
+
+232
+00:44:18.620 --> 00:44:30.739
+Benjamin Houghton: would be a pretty advanced implementation. A modern implementation would be use of feature. Pyramid network, which is like I said before, is for small features. But we'll talk about that here in a little bit more after Yolo
+
+233
+00:44:31.546 --> 00:44:35.703
+Benjamin Houghton: extract. Spatial features. Right? That's what the backbone does. We know that?
+
+234
+00:44:36.180 --> 00:44:43.180
+Benjamin Houghton: Let's see the latest versions use darknet or efficientnet.
+
+235
+00:44:43.530 --> 00:44:51.079
+Benjamin Houghton: Okay, we see that there's many, many versions of Yolo, you know, Yolo v. 8, right?
+
+236
+00:44:52.990 --> 00:44:56.450
+Benjamin Houghton: And we're gonna focus really on the main yellow today.
+
+237
+00:44:57.570 --> 00:45:00.309
+Benjamin Houghton: or I'm not saying the main Yolo, the original Yolo.
+
+238
+00:45:01.600 --> 00:45:15.820
+Benjamin Houghton: Alright. Then we have the detection head, which is our bounding box and class predictions. And so what it does is it divides the image into an S. By S. Grid, usually 7 by 7 grid, and then each grid makes a bunch of predictions essentially.
+
+239
+00:45:16.760 --> 00:45:21.902
+Benjamin Houghton: And so what does that really look like? Well, what it looks like is
+
+240
+00:45:22.560 --> 00:45:24.020
+Benjamin Houghton: You could think of it like
+
+241
+00:45:24.980 --> 00:45:33.409
+Benjamin Houghton: 7 diff dividing our we have. You know, we're gonna have some output right out of a fully connected layer. And
+
+242
+00:45:34.070 --> 00:45:46.330
+Benjamin Houghton: we're just, you know, it's going to be a long vector right? And we're just chunking this vector into 7 components, right? And each one of these components is gonna have probabilities. And in them, as well as
+
+243
+00:45:47.910 --> 00:45:53.659
+Benjamin Houghton: probabilities and or confidence scores and bounding box regressions. That's that's what it does.
+
+244
+00:45:53.980 --> 00:45:56.360
+Benjamin Houghton: Okay? That's how
+
+245
+00:45:57.460 --> 00:46:11.219
+Benjamin Houghton: right. And so those of you who are really familiar like, seen a lot of deep learning architectures. This is like pretty quickly like you should already be kind of formulating in your head. Have a pretty good idea of how this works and what the architecture would look like. Of course we'll talk about it in a little bit more detail.
+
+246
+00:46:12.720 --> 00:46:13.285
+Benjamin Houghton: Alright!
+
+247
+00:46:14.150 --> 00:46:17.370
+Benjamin Houghton: Each grid is responsible for predicting up the B bounding boxes.
+
+248
+00:46:19.030 --> 00:46:23.279
+Benjamin Houghton: So be bounding. Which means, Yeah, you you choose this number.
+
+249
+00:46:23.680 --> 00:46:25.170
+Benjamin Houghton: It's a hyperparameter.
+
+250
+00:46:25.710 --> 00:46:33.149
+Benjamin Houghton: So you have to choose this ahead of time. Right? There's no reason proposals, right? So the the implementation has to choose this number.
+
+251
+00:46:34.300 --> 00:46:42.259
+Benjamin Houghton: And for B bounding boxes in each grid gets to predict B of them. We have transforms and their confidence scores.
+
+252
+00:46:42.480 --> 00:46:46.349
+Benjamin Houghton: And then finally, we do some post-processing where we do.
+
+253
+00:46:47.230 --> 00:46:48.920
+Benjamin Houghton: Non, Max, suppression.
+
+254
+00:46:49.720 --> 00:46:59.440
+Benjamin Houghton: And then we do. Yeah. And which is just does the obviously we know what not. Max. Depression is. At this point we keep the highest confidence boxes and discard overlapping ones.
+
+255
+00:47:00.430 --> 00:47:06.950
+Benjamin Houghton: I apologize. I'm gonna go stop, pause video for one second and then we'll resume.
+
+256
+00:47:14.100 --> 00:47:15.486
+Benjamin Houghton: Okay, so
+
+257
+00:47:16.960 --> 00:47:21.560
+Benjamin Houghton: let's pick up where we left off. And I think that we are going to. You know, we're roughly
+
+258
+00:47:22.190 --> 00:47:35.230
+Benjamin Houghton: a little bit less than halfway through this presentation. So we're gonna go, probably one or 2 more slides. And then we're gonna have a second video. But anyways, cause this video. I don't want it to be overly long. And this is a pretty pretty long presentation.
+
+259
+00:47:36.590 --> 00:47:45.360
+Benjamin Houghton: Alright. So we were talking. We we talked about the overall architecture. Let's talk about the detection head really cause. That's what's different here. The backbone.
+
+260
+00:47:46.250 --> 00:47:46.970
+Benjamin Houghton: really,
+
+261
+00:47:48.040 --> 00:48:00.149
+Benjamin Houghton: is just another feature extraction. Cnn, right? We've seen this over and over in every single architecture. So let's talk about the detection head, because it's really the unique thing. This is the this is the real.
+
+262
+00:48:00.330 --> 00:48:09.580
+Benjamin Houghton: This is the real innovation of Yolo is the detection head. So we divide it into an S. By S. Grid, usually in Yolo, 1, 7 by 7,
+
+263
+00:48:09.910 --> 00:48:14.490
+Benjamin Houghton: and each cell is responsible for predicting up the B bounding boxes and their confidence scores.
+
+264
+00:48:15.170 --> 00:48:18.019
+Benjamin Houghton: So each box bounding box includes the following.
+
+265
+00:48:18.830 --> 00:48:22.220
+Benjamin Houghton: and XY is center of the box relative to the grid cell.
+
+266
+00:48:22.410 --> 00:48:26.340
+Benjamin Houghton: The width and height normalize to the image right?
+
+267
+00:48:27.700 --> 00:48:35.139
+Benjamin Houghton: And then and this would, this would be all. And actually, I believe this is, let me just
+
+268
+00:48:36.400 --> 00:48:38.439
+Benjamin Houghton: one second here.
+
+269
+00:48:42.900 --> 00:48:50.691
+Benjamin Houghton: Okay, so I had to fix a typo throwing me off there. But anyways, so let's get back into this right. So each bounding box
+
+270
+00:48:51.210 --> 00:49:07.230
+Benjamin Houghton: right? It includes. This should be relative to the anchor box, right? And the we were talking about the center of the box, and then the width and the height is relative to the anchor box and the center is also relative to the grid cell so relative to the anchor box. And then
+
+271
+00:49:08.320 --> 00:49:10.000
+Benjamin Houghton: I'm sorry this should
+
+272
+00:49:10.410 --> 00:49:18.559
+Benjamin Houghton: this should not be anchor box. I I need to fix this. This should be grid cell. Okay? I apologize. Anyways.
+
+273
+00:49:20.470 --> 00:49:24.319
+Benjamin Houghton: let me just fix that real fast for us, and we'll continue.
+
+274
+00:49:25.840 --> 00:49:49.660
+Benjamin Houghton: Okay, there we go, and I apologize for that. This is, you know, 1st time you give a presentation is when you find all the mistakes you made in it, right? So anyways, width and height are relative to the grid cell. But to be super transparent. Right? You know, anchor boxes did come later on in later versions of Yolo. And that's that's kind of like the full, you know, that gives you the full context of what's going on here. So
+
+275
+00:49:50.100 --> 00:50:06.078
+Benjamin Houghton: the point is, there's different ways of doing it right. But anchor boxes was introduced, and I think it was Yolo v. 3. So you have to. You know, there is different ways of doing this, but it's gonna be relative to the location. Whatever box or anchor. You're you're looking at right?
+
+276
+00:50:07.140 --> 00:50:11.470
+Benjamin Houghton: then we have a confidence score, right? So how likely an object is in the box?
+
+277
+00:50:11.670 --> 00:50:16.226
+Benjamin Houghton: Right? And that's what we actually use for our our non max suppression. Right? We
+
+278
+00:50:16.780 --> 00:50:24.870
+Benjamin Houghton: one of the things we use. And then we have this class probability. Vector if an object is detected, what class does it belong to?
+
+279
+00:50:25.100 --> 00:50:29.170
+Benjamin Houghton: Note that the class probability is shared across all bounding boxes in the grid?
+
+280
+00:50:29.560 --> 00:50:39.909
+Benjamin Houghton: Right? So that's why this is on indented here, because while each bounding box has a class probability, it actually gets shared across all the bounding boxes in the grid.
+
+281
+00:50:40.120 --> 00:50:50.470
+Benjamin Houghton: And so let's look at the output in a little bit more detail well, it'll give us an example, right? So what does the shape look like? Well, we know there's S. By S. Grids. So that's the 1st part.
+
+282
+00:50:50.890 --> 00:50:56.630
+Benjamin Houghton: And so what do we predict in each grid? Well, in each grid there's B bounding boxes.
+
+283
+00:50:56.960 --> 00:51:10.070
+Benjamin Houghton: and for each bounding box we have 5. We have 5 numbers or 5 features X, the the bounding box center, width and height transformations, and then the confidence.
+
+284
+00:51:11.100 --> 00:51:16.530
+Benjamin Houghton: So that gives us 5 features so b times 5 right? And then plus C
+
+285
+00:51:16.800 --> 00:51:26.169
+Benjamin Houghton: right, because we we share the confidence scores across all across all box bounding boxes in the grid. So we have grids
+
+286
+00:51:27.620 --> 00:51:29.213
+Benjamin Houghton: right times.
+
+287
+00:51:31.180 --> 00:51:38.729
+Benjamin Houghton: we have 5, and then remember, we have b times 5 features, so B times 5 features
+
+288
+00:51:44.580 --> 00:51:48.840
+Benjamin Houghton: 5 B features for every single box
+
+289
+00:51:49.790 --> 00:51:56.550
+Benjamin Houghton: in the grid. But plus we have, you know, for every single grid. We'd also need to multiply by C, right
+
+290
+00:51:57.280 --> 00:51:58.780
+Benjamin Houghton: for C classes.
+
+291
+00:51:59.720 --> 00:52:12.020
+Benjamin Houghton: Alright. So here's a an example down here for the past call data set. You can look at that. Give you some real numbers here that are typical. Right? So like I said, 7 is usually used in yo was used in yellow one
+
+292
+00:52:12.160 --> 00:52:25.769
+Benjamin Houghton: here. There's only 2 boxes per grid. And there's 20 classes. And so that gives you the total output of 7 pi 7 times 30. So that's the actual shape of the of the actual output vector.
+
+293
+00:52:26.090 --> 00:52:26.830
+Benjamin Houghton: Alright.
+
+294
+00:52:30.550 --> 00:52:31.990
+Benjamin Houghton: right? And so I mean,
+
+295
+00:52:36.540 --> 00:52:41.899
+Benjamin Houghton: I think that's probably a good place to stop for now. And I think we'll we'll pick up here in the next video.
+
+296
+00:52:42.260 --> 00:52:43.090
+Benjamin Houghton: Thanks.
+

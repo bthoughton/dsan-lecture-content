@@ -1,0 +1,1854 @@
+WEBVTT
+
+1
+00:00:03.350 --> 00:00:06.780
+Benjamin Houghton: All right. Welcome back to part 2
+
+2
+00:00:07.000 --> 00:00:10.290
+Benjamin Houghton: of advanced object detection. This is the
+
+3
+00:00:10.620 --> 00:00:20.160
+Benjamin Houghton: let's see. We did the introduction to object detection, and we did a video, the 1st video and advanced object detection covered
+
+4
+00:00:20.800 --> 00:00:37.740
+Benjamin Houghton: faster Rcnn. As well as the beginning of Yolo. And so we'll pick up kind of where we left off. We were talking about the yellow output when we talked about this slide, but just refresh, remind yourself what the detection head does, and output, or the detection head does in Yolo.
+
+5
+00:00:38.100 --> 00:00:50.040
+Benjamin Houghton: You'll remember we have the backbone that does the feature extraction, and those features get fed into this this detection head and what this they what this detection head does is it outputs
+
+6
+00:00:50.200 --> 00:00:51.730
+Benjamin Houghton: this tensor
+
+7
+00:00:52.490 --> 00:01:04.559
+Benjamin Houghton: that has where it's split the the input image. And this is a I think I've drawn like a 3 by 4 grid here. But imagine this is a 7 by 7 grid, and for each grid in the image.
+
+8
+00:01:05.300 --> 00:01:16.177
+Benjamin Houghton: We get these predictions right? We have. We have B bounding boxes in every single one of these. So we have. What is that? 7 times 7 times B
+
+9
+00:01:17.390 --> 00:01:37.160
+Benjamin Houghton: total bounding boxes for the entire image. There's B in each, but there's B in each grid cell, and each each bounding box has these coordinate transform, these transformations, associated with it as well as a confidence score. Right? How likely an object is in that in that box! And then, finally.
+
+10
+00:01:37.976 --> 00:01:50.693
+Benjamin Houghton: For every single grid. For every you know, it's not every box, but every 7, just the 7 by 7 grid. We have a class probability, vector right? And that's shared across all boxes in the grid, meaning that.
+
+11
+00:01:51.250 --> 00:01:53.480
+Benjamin Houghton: you know each of these boxes get
+
+12
+00:01:53.910 --> 00:02:20.230
+Benjamin Houghton: and get us? What would each of these boxes get assigned a class of probability, or each of these grids, I should say. And so actually, if you look at, let's just look at the yellow paper real fast. I want to show you guys a little graphic because if you don't realize that the class probability vector, is shared across all boxes in the grid. Then you kind of don't understand, you know. The 1st time I saw this it wasn't like super clear to me
+
+13
+00:02:21.460 --> 00:02:26.970
+Benjamin Houghton: why, they're showing this class probability map. So if you see here in their paper.
+
+14
+00:02:27.110 --> 00:02:32.270
+Benjamin Houghton: they have this this class probability map right? And that. That's because
+
+15
+00:02:32.530 --> 00:02:39.140
+Benjamin Houghton: for every single grid cell. And it looks like they have a true 1, 2, yeah, they have a 7 by 7 grid here.
+
+16
+00:02:41.420 --> 00:02:52.657
+Benjamin Houghton: each one of these grids is going to have a single class probability. Vector. And so, therefore, you can assign a probability, a class to every single grid in in the
+
+17
+00:02:53.350 --> 00:02:55.330
+Benjamin Houghton: or you can assign a
+
+18
+00:02:55.510 --> 00:03:17.619
+Benjamin Houghton: yeah, a class probability to every single grid in in the original image. Okay, so that's what that means. When we say, the class probability vector is shared across all bounding boxes. All right, let's return now to the presentation. And you know we'll kind of reinforce this once more, as far as
+
+19
+00:03:18.390 --> 00:03:22.170
+Benjamin Houghton: looking at what the Yolo output is right. We talked about.
+
+20
+00:03:22.290 --> 00:03:30.789
+Benjamin Houghton: talked about what the out, what the detection had outputs. We gave some concrete results as the numbers. And then here it is. One more time
+
+21
+00:03:30.970 --> 00:03:32.520
+Benjamin Houghton: we have the
+
+22
+00:03:34.490 --> 00:03:45.939
+Benjamin Houghton: where we have the what the actual vector, looks like. This is for a a grid cell. Right? So this is a single grid cell output tensor. And here we have the
+
+23
+00:03:48.980 --> 00:03:54.717
+Benjamin Houghton: X and Y coordinate. So the translation coordinates the width and the height for for
+
+24
+00:03:55.520 --> 00:04:01.749
+Benjamin Houghton: for a bounding box, and each bounding box has a confidence score alright. And
+
+25
+00:04:01.920 --> 00:04:10.839
+Benjamin Houghton: so, if we're looking at a single grid cell now single out of those 7 by 7 we have a 7 by 7 grid, a single grid.
+
+26
+00:04:11.360 --> 00:04:14.159
+Benjamin Houghton: This is what the output tensor would look like.
+
+27
+00:04:14.270 --> 00:04:28.430
+Benjamin Houghton: So we have the transformations and confidence for every for B bounding boxes, because, remember, every single grid cell has BB bounding boxes, and then on top of that. We also have this class probability. Vector.
+
+28
+00:04:28.800 --> 00:04:37.059
+Benjamin Houghton: and this is the probability vector, of of each class for the for the entire grid cell.
+
+29
+00:04:37.350 --> 00:04:43.090
+Benjamin Houghton: All right. And that's as you see, this is a single vector so it's going to be shared across all bounding boxes, so to speak.
+
+30
+00:04:54.190 --> 00:05:08.509
+Benjamin Houghton: Alright. So likewise, now that we kind of understand the what the output tensor looks like for a single grid. Let's look at what the output looks like of the entire Yolo model, right. And this is specifically Yolo version one, right? Because
+
+31
+00:05:08.640 --> 00:05:12.250
+Benjamin Houghton: there's, you know, over 8 versions now of.
+
+32
+00:05:12.350 --> 00:05:14.959
+Benjamin Houghton: or at least 8 versions of, Yolo.
+
+33
+00:05:15.520 --> 00:05:34.917
+Benjamin Houghton: And so the original Yolo. This is what the output tensor looks like right now. They're all just slight variations of each other. The ideas are are more or less the same. There's different tweaks for Yolo. But the the overall idea here is that we have this grid based proposal system, or maybe an anchor based proposal system, but regardless.
+
+34
+00:05:36.140 --> 00:05:50.730
+Benjamin Houghton: let's take a look at this and see what the outputs are. Right. So we again we have our bounding box transformations XYW. And H. We have our confidence score for every single bounding box. But
+
+35
+00:05:51.100 --> 00:06:00.350
+Benjamin Houghton: the entire output back the entire tensor would, for for the transformations and confidence, for every bounding box is going to be an S. By S. By B,
+
+36
+00:06:00.690 --> 00:06:03.769
+Benjamin Houghton: right S. By S. By B.
+
+37
+00:06:05.210 --> 00:06:15.250
+Benjamin Houghton: Well, that will be this component right? So 5 it'd be 5 by s times S. Times B. Right, and where every single
+
+38
+00:06:16.950 --> 00:06:19.300
+Benjamin Houghton: bounding box has a set of transfer.
+
+39
+00:06:19.490 --> 00:06:30.589
+Benjamin Houghton: says a set of transformations. Right? So there's S. Times, S. Times, B, total boxes for the entire output, because there's 7 by S. By S. Grids, and there's B boxes in each grid
+
+40
+00:06:31.610 --> 00:06:48.799
+Benjamin Houghton: all right. And then for the confidence scores. I'm sorry this is not confidence. The classes, the pro, the class probabilities. We're gonna have a C. By a C times, what a. C. Times S. By S. Size tensor.
+
+41
+00:06:49.410 --> 00:06:56.900
+Benjamin Houghton: And that's because there's S. By S. Grids. So you know, usually that's 7 by 7, so 49, total.
+
+42
+00:06:57.840 --> 00:07:03.860
+Benjamin Houghton: right? So this component would be s, by s, and this component across the top
+
+43
+00:07:04.140 --> 00:07:09.149
+Benjamin Houghton: right, this is gonna be, this is gonna be C right C classes.
+
+44
+00:07:09.870 --> 00:07:13.959
+Benjamin Houghton: And so for every single grid, we have a class probability. Vector
+
+45
+00:07:15.220 --> 00:07:17.580
+Benjamin Houghton: so this is the full output of Yolo.
+
+46
+00:07:21.440 --> 00:07:22.340
+Benjamin Houghton: And
+
+47
+00:07:23.520 --> 00:07:36.290
+Benjamin Houghton: on the next slides. We'll kind of see how the outlook our full architecture looks like. But I kind of wanted you to. You should be at this point, starting to formulate how you think this would happen right. And the sneak per the sneak
+
+48
+00:07:37.740 --> 00:07:43.890
+Benjamin Houghton: peak preview is just that, you know. We can take feature maps
+
+49
+00:07:44.220 --> 00:07:54.320
+Benjamin Houghton: right? And then we could do some type of down sampling or Max pooling, or whatever, and take those final layers and basically feed them, flatten them, or whatever we need to do.
+
+50
+00:07:54.617 --> 00:08:15.049
+Benjamin Houghton: Usually you'd probably do something like Max pooling. And if you were using like resnet right, if you're using resnet as your as your backbone. You would just do Max pooling, and then you could feed them into a fully connected layer, and then from the once you get it into a fully connected layer. You can predict as many, you know, you can predict it. Whatever dimensional vector, you want.
+
+51
+00:08:15.090 --> 00:08:20.150
+Benjamin Houghton: Right? So here, you know, we would have a, a, vector, that is
+
+52
+00:08:20.270 --> 00:08:38.189
+Benjamin Houghton: here, we would need what? And a, vector, that is 5 times s times, s, times, B, like, that's 1 output. Vector, okay for one, for a single image, for this matrix. And then for this matrix, we would just need A, what we would need. A C, by S, by S, vector
+
+53
+00:08:39.190 --> 00:09:05.050
+Benjamin Houghton: and so we can just output a vector of that size. And then we have our output shape. We need right? So it's it's pretty easy. You know, for those of you who are have been around deep learning a lot. While you realize that we can take feature maps right? We can flatten them into a vector. We can feed that vector. Into fully connected layer. And then we can output a new vector, of whatever shape and size we want or ever, you know. Yeah, I should say, whatever size we want.
+
+54
+00:09:05.160 --> 00:09:10.450
+Benjamin Houghton: Okay? And so, that's kind of how this this is gonna work. And that's your
+
+55
+00:09:10.880 --> 00:09:19.729
+Benjamin Houghton: my impromptu explanation of the architecture without actually showing you the the architecture slides which we're gonna look at now, all right.
+
+56
+00:09:21.630 --> 00:09:51.540
+Benjamin Houghton: Okay, so I have one more the overview. But this is what kind of like the detection head would look like. Well, this is kind of the idea, right? This isn't really the architecture this is just to give you an idea of. You know, this isn't necessarily related to the to the neural networks. Our architecture. I just want you to understand the outputs right? So, like these 3 slides together, like we have the grid cell output. We have the detection head output and then we have the
+
+57
+00:09:52.380 --> 00:10:12.952
+Benjamin Houghton: yeah, we have the the full output together, right? Or and and this is kind of representing like, we take this image here. It's a 3 by 3 grid. But you know this could be whatever size you want. Usually again set. Usually this is going to be 7 by 7 grid. But here I have a 3 by 3 I split it up into 9 little grids, and then each grid has has a set of
+
+58
+00:10:13.590 --> 00:10:25.752
+Benjamin Houghton: Yeah, after I split it. I have a set of outputs for each grid where I have my bounding box transformations and confidence scores, and for each bounding box for B bounding boxes in in
+
+59
+00:10:26.320 --> 00:10:33.429
+Benjamin Houghton: in the image or in the grid. And then I have a class probability vector alright. And so this.
+
+60
+00:10:33.780 --> 00:10:47.989
+Benjamin Houghton: yeah, this would be our our total output right? And and this says, there's, there's S. By S. Grid cells, right? And so this is our total output. Again, it's the same thing that I just showed you on the previous 2 slides. Just in a more visual format. Right?
+
+61
+00:10:48.360 --> 00:10:55.304
+Benjamin Houghton: So I think, understanding the inputs and the outputs a deep learning is is probably yeah, usually a great place to start.
+
+62
+00:10:55.820 --> 00:10:58.429
+Benjamin Houghton: when you're when you're trying to understand a new architecture.
+
+63
+00:10:58.780 --> 00:11:07.160
+Benjamin Houghton: Alright. So here's the overall diagram. Again, like, I've kind of already fully explained this. I'm just now putting it all together in a single slide.
+
+64
+00:11:07.640 --> 00:11:29.735
+Benjamin Houghton: We do our feature extraction right with with some type of backbone. Says, here Yolo uses convolution 20, I think. The original paper, they said they use 24 convolutional layers, and then after that, you know, we have our features. Okay? Yeah, we could do some type of Max pooling or flattening. I'm not sure. And I'm not sure it really matters.
+
+65
+00:11:30.330 --> 00:11:54.160
+Benjamin Houghton: you know. Just understand that you need to get this into. You know, this is gonna be maybe this is 512 by. I don't know. 7 by 7 something like that tensor, and you need to get it flattened in in some way into to feed into these fully connected layers. And so once you do that, once you get a flattened or you could use Max pooling or something along those lines
+
+66
+00:11:54.613 --> 00:11:59.149
+Benjamin Houghton: you can then feed it into these fully connected layers and output whatever size
+
+67
+00:11:59.390 --> 00:12:06.910
+Benjamin Houghton: vectors you need. Right? And so here's our our output vectors again, the total output shape is going to be S. By S.
+
+68
+00:12:07.240 --> 00:12:13.670
+Benjamin Houghton: Times, B, times 5 plus C, right? So that's right, because we have 49, we have S. By S. Grids.
+
+69
+00:12:13.960 --> 00:12:20.000
+Benjamin Houghton: and then for every single grid we're gonna have B. Times 5
+
+70
+00:12:20.260 --> 00:12:27.440
+Benjamin Houghton: features or output features for each bounding boxes, coordinates and confidence score plus
+
+71
+00:12:28.330 --> 00:12:37.939
+Benjamin Houghton: see? The C comes in here because for every grid, we have a class probability vector, with C classes. Okay.
+
+72
+00:12:38.110 --> 00:12:41.110
+Benjamin Houghton: so that's where this number comes from.
+
+73
+00:12:42.540 --> 00:12:54.209
+Benjamin Houghton: Okay. And so once we get our outputs. You know, in each of these outputs is gonna correspond to some grid right? Like, somewhere in that vector we know which parts of the vector correspond to which parts of the grid.
+
+74
+00:12:54.430 --> 00:13:01.669
+Benjamin Houghton: or which which particular grid and which, and then, once we have that we have a bunch of
+
+75
+00:13:01.890 --> 00:13:08.369
+Benjamin Houghton: you know. How many bounding boxes do we have? Well, we have. We'll get well, we know exactly how many we have. It's not like.
+
+76
+00:13:08.510 --> 00:13:12.269
+Benjamin Houghton: I guess, before I before I write this out. It's not like
+
+77
+00:13:12.500 --> 00:13:32.270
+Benjamin Houghton: the 2 stage detectors where we have variable number of bounding boxes, right? Because we have. We don't have a regional region proposal system. Here we have a set number of re, so to speak, a set number of regions, or a set number of bounding boxes, and we have exactly s times, S. Times B of them.
+
+78
+00:13:32.640 --> 00:13:35.140
+Benjamin Houghton: So that's how many bounding boxes we get out
+
+79
+00:13:35.390 --> 00:13:42.490
+Benjamin Houghton: bounding boxes. And so we need to reduce this number down to something that makes more to to the actual.
+
+80
+00:13:42.640 --> 00:13:48.229
+Benjamin Houghton: Hopefully, ideally, this is gonna represent the the true.
+
+81
+00:13:48.760 --> 00:13:55.610
+Benjamin Houghton: When we're done with this, it's gonna represent the true, like the true objects. Right? So the the non background classes. Right?
+
+82
+00:13:56.161 --> 00:14:24.319
+Benjamin Houghton: So we have. You know, we go from something like this that's really messy, that has like a bunch of different, you know, a bunch of different classes. Some of them are, are, you know, or say, a bunch of different boxes, and we reduce it down, using non Max suppression, keeping the boxes that have the the best, the highest confidence right? And and removing the overlapping ones. So it's the same process as before, right? Where.
+
+83
+00:14:24.600 --> 00:14:26.420
+Benjamin Houghton: you know, we're just using.
+
+84
+00:14:27.610 --> 00:14:34.639
+Benjamin Houghton: Yeah, it's the same as we saw in the 2 stage detectors. There's nothing there's nothing new and unique here about this version and all Max oppression and Yolo.
+
+85
+00:14:35.110 --> 00:14:38.780
+Benjamin Houghton: Alright. So that's the overall architecture of of Yolo.
+
+86
+00:14:42.600 --> 00:15:00.867
+Benjamin Houghton: yeah. So we've we've already hit on some of these. But let's kind of reiterate them. It's extremely important to understand these. If you're gonna try and implement these models, if you're trying to compare 2 stage or single stage detectors. Right? The the big thing is here is, it's fast. That's the idea.
+
+87
+00:15:02.929 --> 00:15:27.379
+Benjamin Houghton: global context awareness. That's a big one, too. Right? Because, remember, in the 2 stage detectors, we get a region proposal. Right? We have. We have this big image. And here's a person standing by a tree, and you know, say, this is a region of interest. Only this portion gets fed into the classifier. Right? So that's what they mean by this global context. Awareness, right? The
+
+88
+00:15:27.560 --> 00:15:28.660
+Benjamin Houghton: the
+
+89
+00:15:29.600 --> 00:15:48.249
+Benjamin Houghton: region proposal network. It see, you know, the region proposal network gets the entire image as an input, and it tries to find regions. And then once it finds those regions, it gets fed into the classifier, and it only sees that one portion, whereas in Yolo it's a giant, it's 1. It's a big, unified network. And so each grid.
+
+90
+00:15:48.560 --> 00:15:55.550
+Benjamin Houghton: you know, even though you have a vector associated with each grid that that you know, the that vector right? So
+
+91
+00:15:55.760 --> 00:16:13.399
+Benjamin Houghton: you know, if let's look at that real fast. So say, we have this feature map, right? And we get it gets flattened out in this big, long vector and that goes into a fully connected layer. Well that fully connected layer, even though its output each portions of its output, you know, here's its output, and like different portions of its vector
+
+92
+00:16:13.450 --> 00:16:33.889
+Benjamin Houghton: are are different. They correspond to different grids. But it gets as input the entire vector right? So this output down here that I've shaded right? Its inputs are the entire, vector the entire feature map. So it has a global cont awareness, not just a local awareness. So that's that's a pretty big.
+
+93
+00:16:34.390 --> 00:16:53.443
+Benjamin Houghton: important thing to realize and understand with the Yolo architecture. Okay? So that's pretty important. High accuracy, right? It is very accurate as well, not as accurate as 2 stage. But it's it is, you know, but it's also, you know, it balances speed and accuracy right? It's still very, very accurate. And so
+
+94
+00:16:54.110 --> 00:17:04.036
+Benjamin Houghton: unless you needed like absolute certainty, right? That you know, if you needed the best possible accuracy possible, then maybe you don't use Yolo
+
+95
+00:17:04.579 --> 00:17:05.920
+Benjamin Houghton: But you know
+
+96
+00:17:05.940 --> 00:17:35.940
+Benjamin Houghton: there are newer versions. I I'd imagine I don't know exactly. You know, as of today, what the most accurate, newest, and latest, greatest models are. But in general, in general, 2 stage detectors are going to be slightly more accurate than single than single stage, but I would imagine that the newest versions of the single, like the newest Yolo versions. The newest ones are probably more accurate, or as accurate, or comparable to some of the older 2 stage detectors. Right?
+
+97
+00:17:36.380 --> 00:17:53.739
+Benjamin Houghton: So keep that in mind as well. Alright limitations, struggles with small objects, especially earlier versions. I mean, you can use something called a feature pyramid network, or some type of feature fusion which we're gonna talk about next, right with Yolo to help that. But that is an issue.
+
+98
+00:17:54.610 --> 00:17:57.039
+Benjamin Houghton: lower localization accuracy
+
+99
+00:17:57.240 --> 00:18:06.809
+Benjamin Houghton: compared to 2 stage detectors. Right. We knew that, and can miss overlapping objects, since each grid cell predicts only a limited number of boxes. All right. Okay.
+
+100
+00:18:07.238 --> 00:18:10.520
+Benjamin Houghton: so these are some of the the drawbacks of of Yolo.
+
+101
+00:18:11.839 --> 00:18:16.730
+Benjamin Houghton: Here's the different versions, right? So I I talked about this a little bit
+
+102
+00:18:17.360 --> 00:18:21.730
+Benjamin Houghton: some. I mentioned some of these throughout today. Right? So feature pyramid network. That's a
+
+103
+00:18:21.940 --> 00:18:25.010
+Benjamin Houghton: well, I guess I'll start at the beginning, right? We know about this
+
+104
+00:18:25.760 --> 00:18:36.299
+Benjamin Houghton: 7 by 7 grid here. They're using 2 boxes per cell. Okay, yellow, 2 anchor boxes. Okay.
+
+105
+00:18:36.510 --> 00:18:53.379
+Benjamin Houghton: which we know about anchor boxes. Now, with that is feature pyramid network. We don't know about that yet, but it's a way of basically in. We'll just say it's called feature. Fusion is another way. Another word for it. So multi scale detection. Right? Okay, we're going to talk about what that means here in a little bit
+
+106
+00:18:54.570 --> 00:19:07.180
+Benjamin Houghton: and then the list goes kind of on and on. Yeah. And you can kind of read more about these on your own. I mean, obviously, it's beyond the scope of this course to really discuss all 8 Ver 8 versions of Yolo. But
+
+107
+00:19:07.350 --> 00:19:29.266
+Benjamin Houghton: you see, there's a lot of them. And you know, there's probably gonna be, you know, the models get more and more, I'll say, not necessarily complex or advanced, but maybe get better and better as you move down this list, and you know it's kind of your job as the data scientist to kind of figure out. Well, you know, we might. We could really use this.
+
+108
+00:19:29.920 --> 00:19:31.310
+Benjamin Houghton: let me say.
+
+109
+00:19:31.440 --> 00:19:50.870
+Benjamin Houghton: you know, I don't know. Like, is it? Is there a case, we say, to always use the best one? Maybe right? Maybe not. Maybe not needed. If if some of these other models, especially ones that use like a feature pyramid network. These are going to be more complex, for sure, than like a simple version of Yolo, right? So it really depends on your on your problem statement.
+
+110
+00:19:51.400 --> 00:19:56.540
+Benjamin Houghton: And it's, you know, up to you to kinda understand which which version you should be using. And why?
+
+111
+00:19:59.310 --> 00:20:00.290
+Benjamin Houghton: Okay.
+
+112
+00:20:02.250 --> 00:20:12.127
+Benjamin Houghton: Rcnn versus Yolo, right? We've talked about this quite a bit. But let's kind of look at this. This is a pretty interesting comparison that we have here.
+
+113
+00:20:13.130 --> 00:20:21.179
+Benjamin Houghton: faster. Rcnn is 2 stage, right? And yellow is a single stage, right? We know that speed.
+
+114
+00:20:22.220 --> 00:20:24.099
+Benjamin Houghton: So it's slower.
+
+115
+00:20:26.390 --> 00:20:36.599
+Benjamin Houghton: Right? We know that yellow's faster. That's pretty. It's it's a lot faster. We can see. Okay, how how many orders of magnitude is that 5 versus 1 55
+
+116
+00:20:37.056 --> 00:20:43.440
+Benjamin Houghton: that's like what 30? Not? I'm sorry. Not orders of magnitude. I meant about 30 times faster, 30 X,
+
+117
+00:20:43.880 --> 00:20:44.640
+Benjamin Houghton: right?
+
+118
+00:20:45.500 --> 00:20:48.089
+Benjamin Houghton: It's about 30 times faster, roughly.
+
+119
+00:20:50.750 --> 00:20:51.850
+Benjamin Houghton: Let's see
+
+120
+00:20:52.450 --> 00:21:02.170
+Benjamin Houghton: accuracy. Yeah, faster. Rcnn is good for small objects, and Yolo kind of struggles with them. And it's because of that grids, you know. It's just the way
+
+121
+00:21:03.140 --> 00:21:05.299
+Benjamin Houghton: the Yolo architecture is set up.
+
+122
+00:21:06.590 --> 00:21:13.220
+Benjamin Houghton: Of course there are things you can do to to help with again, with the help of the small objects which we're going to talk about here shortly.
+
+123
+00:21:14.290 --> 00:21:23.520
+Benjamin Houghton: Use cases, high precision, right? So if you're I mean, and verse real time, and that's
+
+124
+00:21:24.560 --> 00:21:32.659
+Benjamin Houghton: pretty cut and dry. In a sense, right? You should, if you know, depending on your application, which version or which type of model you might use.
+
+125
+00:21:34.260 --> 00:21:35.080
+Benjamin Houghton: Okay.
+
+126
+00:21:38.220 --> 00:21:55.674
+Benjamin Houghton: alright. So in summary kind of put a nice little bow on this right. These are the things that you like should absolutely, if you remember nothing else. I mean, and I get it like I've learned I've learned. I've I've you know that old adage. You know. I've forgotten more than I've learned right and
+
+127
+00:21:57.200 --> 00:22:06.926
+Benjamin Houghton: or wait. No, that doesn't make sense, right? It's I've forgotten more than than some people have learned in a lifetime, or something like that. Anyways, that wouldn't make anyways,
+
+128
+00:22:07.600 --> 00:22:15.819
+Benjamin Houghton: yellow is a single stage object detector. So you should definitely remember that right single stage versus 2 stage splits them into a grid
+
+129
+00:22:16.730 --> 00:22:30.120
+Benjamin Houghton: bounding box predicts bounding boxes and probabilities and class confidence scores in a single pass. Right? That that's you should definitely know right if you you have to. If you wanted to if you were taking a Cv. If you're on a computer vision
+
+130
+00:22:30.484 --> 00:22:52.869
+Benjamin Houghton: interview. And I was interviewing you, and you told me you knew about Yolo like these? If these would be like the basic of most basic questions. And everybody can kind of remember these in their sleep. Right? These are things that you should just into it like you should just you should be know, even if you forget some of the like really, really minor, low, level details like you can look those up later. But these are the details you have. You really have to know.
+
+131
+00:22:53.260 --> 00:22:56.540
+Benjamin Houghton: extremely fast, great for real time applications.
+
+132
+00:22:56.660 --> 00:23:05.329
+Benjamin Houghton: And there's newer versions of Yolo that obviously, you know, improve accuracy and they maintain real time performance. Okay, so
+
+133
+00:23:05.630 --> 00:23:10.839
+Benjamin Houghton: yeah, these are the things to be aware of. As you move forward in your data, science career.
+
+134
+00:23:18.040 --> 00:23:20.464
+Benjamin Houghton: Alright. So feature, fusion,
+
+135
+00:23:21.700 --> 00:23:27.709
+Benjamin Houghton: and specifically an object detection. So feature, fusion gets used in, you know, out in in
+
+136
+00:23:27.840 --> 00:23:30.788
+Benjamin Houghton: many places, in deep learning. But
+
+137
+00:23:33.270 --> 00:23:36.461
+Benjamin Houghton: the idea here is, it's
+
+138
+00:23:37.220 --> 00:23:46.810
+Benjamin Houghton: specifically with object. Detection is what we're doing is we're where you are integrating information.
+
+139
+00:23:46.910 --> 00:23:52.889
+Benjamin Houghton: right? Integrating information from different layers or scales to improve accuracy
+
+140
+00:23:53.440 --> 00:24:04.159
+Benjamin Houghton: right? And specifically, this is great for multi scale objects. So what does that mean? Well, let's draw. And are. We have an image. It's really big.
+
+141
+00:24:04.290 --> 00:24:05.150
+Benjamin Houghton: right?
+
+142
+00:24:05.390 --> 00:24:20.290
+Benjamin Houghton: And then it goes through a convolutional network layer and the outputs a little bit smaller, and maybe we have a few feature maps, and then we do it again, and we're smaller and and then, but now we have like a ton of little maps right? And so as we move down.
+
+143
+00:24:21.250 --> 00:24:24.179
+Benjamin Houghton: we kind of lose some spatial awareness.
+
+144
+00:24:24.860 --> 00:24:29.600
+Benjamin Houghton: But we get really really rich semantic details, right?
+
+145
+00:24:29.720 --> 00:24:30.710
+Benjamin Houghton: So
+
+146
+00:24:31.570 --> 00:24:45.199
+Benjamin Houghton: semantic level increases on the downward like we get better and better representations. But we lose spatial information. So what if we could, instead of just using these layers to make our prediction or do our final task?
+
+147
+00:24:45.410 --> 00:24:48.160
+Benjamin Houghton: What if we could use all the layers?
+
+148
+00:24:48.310 --> 00:24:51.260
+Benjamin Houghton: And that's kind of the idea of feature fusion, right.
+
+149
+00:24:52.150 --> 00:24:54.860
+Benjamin Houghton: And so there's a bunch of different ways to do this.
+
+150
+00:24:55.010 --> 00:25:00.219
+Benjamin Houghton: We're, I'm gonna we're gonna talk kind of in detail about feature pyramid networks.
+
+151
+00:25:00.390 --> 00:25:08.689
+Benjamin Houghton: Because just because I'd say it's probably like the most widely used, or probably one of the most popular.
+
+152
+00:25:09.250 --> 00:25:26.290
+Benjamin Houghton: But there's other ways to do this. We call that top down fusion but there's also bottom up scale awareness and attention based. Right? Attention based is pretty interesting, right? Or you know, you know, anytime, anytime. You see the word attention based. Right? You know, you start thinking about transformers.
+
+153
+00:25:26.470 --> 00:25:37.909
+Benjamin Houghton: But anyways, yeah, we're gonna focus on this one today. But just be aware there's other ways to do this. And so if you have a problem where you are struggling with
+
+154
+00:25:38.210 --> 00:25:44.750
+Benjamin Houghton: with maybe you're use. Maybe I don't know. Maybe you have a real time object detection problem.
+
+155
+00:25:44.980 --> 00:25:53.059
+Benjamin Houghton: and you're struggling to detect like small objects or objects that are far away like then then maybe.
+
+156
+00:25:53.250 --> 00:25:59.279
+Benjamin Houghton: And you're if you're not using a feature fusion technique, then then you probably should be right.
+
+157
+00:26:00.240 --> 00:26:04.370
+Benjamin Houghton: Alright. So that's the idea here. And that's the problem that it's going to help us solve.
+
+158
+00:26:07.380 --> 00:26:10.260
+Benjamin Houghton: Alright. So feature pyramid top down fusion.
+
+159
+00:26:11.852 --> 00:26:19.590
+Benjamin Houghton: Yeah, we'll go through all of them right real fast, and then we will. I'll talk about this one in particular in more detail.
+
+160
+00:26:20.540 --> 00:26:24.640
+Benjamin Houghton: Alright. So the concept here is
+
+161
+00:26:26.360 --> 00:26:33.180
+Benjamin Houghton: high resolution, low level feature maps capture fine details. But law lacks strong semantics. Okay?
+
+162
+00:26:33.530 --> 00:26:35.830
+Benjamin Houghton: Right? So
+
+163
+00:26:36.830 --> 00:26:43.999
+Benjamin Houghton: right, we have like, really like in it. When we have a a big, when we have a big feature map, right? A big feature map
+
+164
+00:26:44.180 --> 00:26:56.180
+Benjamin Houghton: like, we have a lot of like, really, really like fine details, like, there's a lot of numbers in here. So we have like, really really fine details. It's like a high resolution image. Think of it that way. It's exactly like that, so to speak, except
+
+165
+00:26:56.290 --> 00:27:10.280
+Benjamin Houghton: machines. Don't think the same way we think right, or who knows how? They think not the way we think right. And so we know that when we see an image that's high resolution. We can see all the details like we can zoom in on somebody's face and see their eye color.
+
+166
+00:27:10.660 --> 00:27:31.899
+Benjamin Houghton: We have a low resolution image. We can't see their eye color. So it's the same thing for a machine, though, if you give it a a giant feature map, it has really fine details. If you get a really small feature map, a smaller version of that. Then it's really it's kind of like blurry, in a sense, to the machine like it can sell, tell. It's a person. But it can't tell you what the person's eye color is anymore.
+
+167
+00:27:33.790 --> 00:27:37.949
+Benjamin Houghton: Whereas the low resolution had really strong semantics.
+
+168
+00:27:38.140 --> 00:27:48.169
+Benjamin Houghton: Okay? Right? Again. Like as we go deeper and deeper into the network, the machine learns better and better representations just towards the end of solving its task
+
+169
+00:27:48.660 --> 00:28:11.990
+Benjamin Houghton: right like it gets to the point where it like it doesn't. It's not even questionable, like if it's a cat or a dog like it. It knows like it's it. Oh, that's definitely a cat like it's transformed it. It's looked at all the fine details. And so, you know, think about it like this, too, like we've talked about this before where it the image starts off, and it it reckon at 1st it might be, does edge edge detection.
+
+170
+00:28:11.990 --> 00:28:20.160
+Benjamin Houghton: and then maybe it starts recognizing eyes, and then it starts recognizing like ears, and then it recognizes like a cat's face and mouth.
+
+171
+00:28:20.300 --> 00:28:23.989
+Benjamin Houghton: and then it recognizes. Oh, it's a cat, right. So as we go down.
+
+172
+00:28:24.460 --> 00:28:31.129
+Benjamin Houghton: we lose the the fine details, but start to gain that understanding of what the image actually is.
+
+173
+00:28:33.480 --> 00:28:38.460
+Benjamin Houghton: So the solution is to just pass along the high, level information downward.
+
+174
+00:28:38.980 --> 00:28:47.170
+Benjamin Houghton: Great, and we kind of combine them. We can combine. There's a way that we can combine the fine details with the
+
+175
+00:28:47.970 --> 00:28:55.819
+Benjamin Houghton: the strong semantics and the feature pyramid network is like, the is the the kind of like the book
+
+176
+00:28:56.200 --> 00:28:57.680
+Benjamin Houghton: textbook example.
+
+177
+00:29:02.260 --> 00:29:04.760
+Benjamin Houghton: So again, like the advantage here. Yeah.
+
+178
+00:29:05.600 --> 00:29:09.720
+Benjamin Houghton: Small object detection without adding too much computational cost
+
+179
+00:29:12.549 --> 00:29:22.140
+Benjamin Houghton: so bottom up, feature aggregation. And we'll go through these ones a little bit faster. Now, because again, like today, we're focusing on feature pyramid. But again bottom up. So
+
+180
+00:29:27.240 --> 00:29:32.010
+Benjamin Houghton: unlike the feature pyramid network which propagates information top down.
+
+181
+00:29:33.380 --> 00:29:41.139
+Benjamin Houghton: we just reintroduce low, level, spatial features back into deeper layers. Okay, so
+
+182
+00:29:42.140 --> 00:30:05.629
+Benjamin Houghton: this strengthens the fine details while preserving rich semantics. Okay? So that's that's really all I want you to understand about this, for now, if this was a you know, if you were gonna if you had a if you were working on a project or something where you're using one of these versions of Yolo. Then I would expect you to. You know you. You'd probably need to look into it deeper than that. But that's the the basic idea here. Right? It's just we're just taking
+
+183
+00:30:05.870 --> 00:30:13.920
+Benjamin Houghton: our high level details. And then we're, you know we're just adding back in to our low, level details. I know it sounds very similar to
+
+184
+00:30:14.050 --> 00:30:22.032
+Benjamin Houghton: to top down, but you'll see in a minute that it, it is different. Well, you'll you'll get a more very intuitive understanding of top down.
+
+185
+00:30:22.610 --> 00:30:27.260
+Benjamin Houghton: because essentially, what we're gonna do is we're gonna yeah. This is.
+
+186
+00:30:28.920 --> 00:30:31.880
+Benjamin Houghton: See? Bottom up. All right. Let me let me explain
+
+187
+00:30:31.960 --> 00:30:51.000
+Benjamin Houghton: that a little bit more. Why it's bought. Let me just give you real quick and a nutshell bottom up, first, st top down. So 1st off, I'm kind of drawing this backwards. Right? So normally, when we talk about feature fusion, we we draw the bigger ones like this. And then we get smaller and smaller. Okay, so top down.
+
+188
+00:30:51.070 --> 00:31:05.360
+Benjamin Houghton: right top, down, which is the feature pyramid top down, we're gonna take these features and add them to these layers. Right? And so then once we've done that, you know we have new features at every level.
+
+189
+00:31:05.600 --> 00:31:26.339
+Benjamin Houghton: We have new features at every level that are a combination right? And then we can use each one of these to do something that's that's bought. That's top down. This is top down, bottom up is the opposite. Right? We're just we just go the other way. It's yeah, but it's a very similar concept. Right? So here we just reintroduce these features to these layers. Somehow, right?
+
+190
+00:31:28.190 --> 00:31:32.889
+Benjamin Houghton: Actually, I probably would skip a level. Right? So because this
+
+191
+00:31:33.820 --> 00:31:42.530
+Benjamin Houghton: this layer outputs this feature map. Right? So then we would need to take these features right and and add them back to to here somehow.
+
+192
+00:31:43.020 --> 00:31:48.539
+Benjamin Houghton: Okay? Oh, no, I'm sorry. That's not entirely correct. Right? So we do a convolution
+
+193
+00:31:49.390 --> 00:31:53.049
+Benjamin Houghton: right? The first.st So this is like the 1st layer. Right?
+
+194
+00:31:53.380 --> 00:32:08.220
+Benjamin Houghton: We get the smaller feature map. So we need to take these original features, these features right, and we need to somehow, you know, reshape them to match this, and then we can use both of these feature sets into the next like convolution. Right? Okay?
+
+195
+00:32:09.230 --> 00:32:10.070
+Benjamin Houghton: So
+
+196
+00:32:10.940 --> 00:32:35.899
+Benjamin Houghton: alright, anyways. That's that. Anyways, that's the only difference. Right? First, st that's why we say top down and bottom up, where? So it's like, think of a pyramid like the bigger feature. Maps are always in the bottom, and small ones are always on the top. And so you're adding low, you're you're adding larger feature maps to smaller ones, or you're going on the opposite direction where you, instead of instead of adding them to each layer, and then doing
+
+197
+00:32:36.180 --> 00:32:36.980
+Benjamin Houghton: right
+
+198
+00:32:37.230 --> 00:32:47.299
+Benjamin Houghton: here and and bottom up here and bottom up. You know we. We combine these 2 together somehow before we go on to the next layer, right, as opposed to
+
+199
+00:32:47.910 --> 00:32:49.420
+Benjamin Houghton: top down.
+
+200
+00:32:49.690 --> 00:33:02.480
+Benjamin Houghton: as opposed to top. Down right. We do all of our convolutions. We get smaller, smaller features. And then, after we're done right, this is the backbone. After we're done, we go back and we we combine them together after we're done. Okay.
+
+201
+00:33:03.290 --> 00:33:08.737
+Benjamin Houghton: so same idea. But you know 2 different ways of kind of doing it. I say, I guess
+
+202
+00:33:10.460 --> 00:33:21.699
+Benjamin Houghton: So then there's self aware fusion. So parallel, multi-scale features. So instead of merging features, different levels, the detector makes predictions at multiple features. Map scales.
+
+203
+00:33:21.860 --> 00:33:26.889
+Benjamin Houghton: Alright. Yeah. So
+
+204
+00:33:30.760 --> 00:33:32.140
+Benjamin Houghton: you could.
+
+205
+00:33:34.260 --> 00:33:44.999
+Benjamin Houghton: You could simply just you know, this is kind of similar to what we're gonna do with the feature pyramid network, right? Essentially like what we're gonna do with it once we're done. But you know, instead of
+
+206
+00:33:45.250 --> 00:33:58.829
+Benjamin Houghton: using this and putting it into your your classifier network. So you have your classifier head, or your detection head, or whatever whatever your end task is really. And using this to get your final output right.
+
+207
+00:33:59.800 --> 00:34:05.359
+Benjamin Houghton: you could use each one of these and feed them into the classifier.
+
+208
+00:34:05.960 --> 00:34:06.780
+Benjamin Houghton: Okay?
+
+209
+00:34:08.460 --> 00:34:25.950
+Benjamin Houghton: And so then you have to kind of figure out how to reshape these. So they all fit into the classifier. And or you need to determine how you're going to take your outputs and kind of merge them all together. But that's the general idea of of scale aware fusion or or parallel multi-scale features.
+
+210
+00:34:28.389 --> 00:34:30.380
+Benjamin Houghton: or the basic premise of it.
+
+211
+00:34:32.480 --> 00:34:42.259
+Benjamin Houghton: Alright. And then, last, but not least, we have the attention base. Right? So we can use something like transformers to adaptively kind of merge information.
+
+212
+00:34:44.239 --> 00:34:52.279
+Benjamin Houghton: And so here you, you're actually learning. It's pretty interesting idea. You're actually learning how much importance each feature level has.
+
+213
+00:34:56.270 --> 00:34:57.069
+Benjamin Houghton: So
+
+214
+00:35:00.510 --> 00:35:08.580
+Benjamin Houghton: yeah. And then, you know, once you do that, you can, you can merge information. But you're gonna do it in a a kind of a, you know.
+
+215
+00:35:08.730 --> 00:35:14.430
+Benjamin Houghton: you're gonna learn how to to merge your information together. All right. So Yolo v. 7, right? That's a
+
+216
+00:35:14.790 --> 00:35:16.230
+Benjamin Houghton: good example.
+
+217
+00:35:19.910 --> 00:35:22.689
+Benjamin Houghton: So the advantage of this is, it's can adapt.
+
+218
+00:35:24.830 --> 00:35:29.559
+Benjamin Houghton: It's more flexible, can adapt to different scales without, like a handcrafted feature, pyramid
+
+219
+00:35:33.500 --> 00:35:40.129
+Benjamin Houghton: alright. So without getting like into the super weeds. About every single one of these like we, we're gonna well, let's talk about
+
+220
+00:35:40.270 --> 00:35:48.290
+Benjamin Houghton: or let me see how many. Yeah, we have a couple more. One more slide, and then we'll talk about feature, pyram or network in in detail, and kind of how like you might implement it.
+
+221
+00:35:49.680 --> 00:35:50.860
+Benjamin Houghton: And
+
+222
+00:35:52.360 --> 00:36:15.299
+Benjamin Houghton: so top down. We have some examples here for each of these. They were on every slide. But yeah, so faster. Rcnn, it, no, just in its raw sense. What I presented in the 1st video isn't we didn't really use a feature pyramid network. But you could use. You know what this is saying is that in modern implementations you would use a feature pyramid network right
+
+223
+00:36:17.426 --> 00:36:27.050
+Benjamin Houghton: so bottom up these versions of Yolo, the parallel multi scale, we have Yolo v. 3, and then the attention based would would be transformer based models
+
+224
+00:36:28.120 --> 00:36:35.239
+Benjamin Houghton: alright. And we talked about really, all these strengths and weaknesses already on the previous slide, it's really just kind of recapped here for you
+
+225
+00:36:35.800 --> 00:36:41.210
+Benjamin Houghton: again. Remember, I was telling you like, that's the the top down is really good for small object detection.
+
+226
+00:36:43.188 --> 00:36:48.450
+Benjamin Houghton: Another thing to point out dynamically learning features which ones are important.
+
+227
+00:36:50.003 --> 00:37:05.670
+Benjamin Houghton: This is probably important, right? Anytime you hear the word attention. I want you to, you know, you should like you should be thinking 2 things like, Oh, it's probably gonna work really. Well, but I'm probably gonna have to, you know, devote some resources and energy to training it.
+
+228
+00:37:08.250 --> 00:37:13.770
+Benjamin Houghton: Computationally expensive. All right? Yeah. And so
+
+229
+00:37:14.040 --> 00:37:32.210
+Benjamin Houghton: that's kind of the the broad overview of feature fusion, right? The idea is just kind of merging features together again, like what is feature fusion. So we take features from multi levels, multi scales, and we kind of merge them together, and or we use multiple feature, we don't just throw them away right like we don't. Just
+
+230
+00:37:32.790 --> 00:37:38.609
+Benjamin Houghton: we get to here right? We have small features. We don't just throw these away. We want to use them somehow.
+
+231
+00:37:38.920 --> 00:37:41.300
+Benjamin Houghton: So there's different ways, obviously, to use them.
+
+232
+00:37:45.120 --> 00:37:53.260
+Benjamin Houghton: Alright feature, pyramid networks and object detection again. It's a top down feature method. We we know that now.
+
+233
+00:37:53.520 --> 00:37:56.909
+Benjamin Houghton: and it's used in in a lot of two-stage detectors.
+
+234
+00:38:01.880 --> 00:38:08.080
+Benjamin Houghton: The feature pyramid network constructs a small a multi-scale pyramid from the backbone.
+
+235
+00:38:09.850 --> 00:38:16.450
+Benjamin Houghton: It allows objects we we kind of. I'm just kind of recapping this. We've already talked about all this, though. When we talked about
+
+236
+00:38:17.040 --> 00:38:18.800
+Benjamin Houghton: the top down approaches.
+
+237
+00:38:18.980 --> 00:38:23.500
+Benjamin Houghton: Yeah, we use the features at different resolutions, meaning different sizes.
+
+238
+00:38:25.670 --> 00:38:34.679
+Benjamin Houghton: The input is the the feature. Pyramer network is is normally a H, by Wrbg, image, right? Okay,
+
+239
+00:38:35.800 --> 00:38:43.109
+Benjamin Houghton: and the output. Yeah, so we have these different pyramid levels that are progressively decreasing spatial resolutions.
+
+240
+00:38:46.590 --> 00:39:01.043
+Benjamin Houghton: yeah, I I mean, it's pretty. I I guess what I'm saying here is like, the input, yeah, it's just you just takes a normal image. It's just it's just we're gonna modify the backbone essentially, or we're gonna kinda add something onto the backbone which I'm gonna show you here in a second. So let's just go to that.
+
+241
+00:39:01.410 --> 00:39:08.339
+Benjamin Houghton: let me see. So I have a diagram. But before we get to that, let's kind of understand the this, this
+
+242
+00:39:08.970 --> 00:39:15.382
+Benjamin Houghton: it's it's under. It's nice to understand, like the levels, the the shapes. I think maybe we'll start here.
+
+243
+00:39:16.180 --> 00:39:37.980
+Benjamin Houghton: you know, you might have to watch this part. Go watch the diagram. Come back. Watch this part again. Cause. It's almost it's almost you. Kinda it's kind of helps to have to understand the shapes and the diagram at the same time, but you know it is what it is. I can't show them all the same on the same slide at the same time. Alright. So this is the bottom up. So this is just the backbone, the feature extraction. Right? So
+
+244
+00:39:39.207 --> 00:39:47.769
+Benjamin Houghton: actually, sometimes you'll refer to a lot of times you'll refer to the backbone as like like we have our backbone
+
+245
+00:39:47.980 --> 00:40:11.299
+Benjamin Houghton: does our feature extraction, and normally we think of that. Well, we put it into a classification head right? Well. The the feature pyramid network is kind of what we call the neck, sometimes right, or the addition of a feature. The feature pyramid network which is the backbone. It's kind of like the backbone and the neck together. Alright, anyways. So we still have a backbone. We still have that. We're we're remember. I told you before.
+
+246
+00:40:11.350 --> 00:40:27.350
+Benjamin Houghton: we're gonna generate like, we're gonna get progressive like, we're gonna start at the bottom big image. And we're gonna get progressively smaller. And that's this is the backbone. We're still gonna do this before we do any type of feature fusion. We're just gonna do a normal. What like what you're used to. A normal resnet.
+
+247
+00:40:29.070 --> 00:40:30.740
+Benjamin Houghton: Work workflow.
+
+248
+00:40:32.551 --> 00:40:47.489
+Benjamin Houghton: So here is like, what a. And now now these numbers aren't. These are just an example, right? These could be different for different architectures. But here's like a generic example. Okay, so you have an image that's h times w height times width width
+
+249
+00:40:47.784 --> 00:41:03.160
+Benjamin Houghton: and you do a stride of one. You're gonna you know, typically you're gonna be doing 3 by 3 convolutions, the stride of one. And you have 64 output channels. That's the 1st stage we call that c 1. And then we have C 2, which is now it's going to be half the size.
+
+250
+00:41:04.100 --> 00:41:25.200
+Benjamin Houghton: right? Because we've done some type of down sampling or Max pooling, whatever we do, you know, in in resnet, I think we you know we do a stride of 2 at at some point, and so now our output are now our news. Our new size is going to be h the height. It's gonna be half the size. But now we have 256 channels.
+
+251
+00:41:25.530 --> 00:41:49.259
+Benjamin Houghton: Okay, I guess this could be 1 12. I just noticed that I skipped 1 12. But it doesn't really matter. That would make this 2 56. And this would be 5 12. I might update this at some point, but the idea here is our channels are increasing alright. And again, like these numbers are, are just an example like, take them with a grain of salt like you're gonna have for different implementations. You might have different numbers here.
+
+252
+00:41:51.110 --> 00:42:06.060
+Benjamin Houghton: Alright. But anyways, we see the the overall pattern here from c 1 to C 5 is that we, as you know, as we go deeper, the images get cut in half, and by the time we're done the images are 1 16th their original size, and we have a lot more channels.
+
+253
+00:42:09.860 --> 00:42:13.969
+Benjamin Houghton: So that's the bottom. The bottom up pathway right on the way up.
+
+254
+00:42:14.680 --> 00:42:31.990
+Benjamin Houghton: then back on the way down. So now we have the the down. So this is where we kind of combine features together. Right? The top down pathway is now like we've gotten to the top right? We've gotten to the top progressively, getting smaller. And now we need to combine these features back together. So in in each layer
+
+255
+00:42:32.470 --> 00:42:34.970
+Benjamin Houghton: we we call, we have, we have these new.
+
+256
+00:42:35.340 --> 00:42:41.330
+Benjamin Houghton: we have these things we call p. 2, p. 3, p. 4, p. 5, and p. 6. And actually, p. 6
+
+257
+00:42:41.450 --> 00:42:49.599
+Benjamin Houghton: is going to be the smallest right? So p. 6
+
+258
+00:42:49.880 --> 00:43:05.759
+Benjamin Houghton: is. Well, this is. And actually it says, here, p. 6 is notice there was no CC. 6. So p. 6 is an extra level that you can add by doing an additional 3 by 3 convolution with a strategy to on top of P. 5.
+
+259
+00:43:05.790 --> 00:43:20.669
+Benjamin Houghton: so it's used. But see? But you don't have to do this right. You don't have to start at P. At p. 6. So and then, so p. 5 is just going to be a 1 by one convolution, plus an up sampled version of of p. 6.
+
+260
+00:43:20.850 --> 00:43:28.630
+Benjamin Houghton: And so we're literally going to add these 2 channels, these 2 things together, we're going to take C 5 or C 5. Remember, c. 5. Was this shape
+
+261
+00:43:29.000 --> 00:43:37.744
+Benjamin Houghton: which was H over 16 times W. Over 16, and we're going to.
+
+262
+00:43:41.660 --> 00:43:47.200
+Benjamin Houghton: we're going to take P. 6. We're going to Upsample it. And we're going to add it to C, 5.
+
+263
+00:43:55.000 --> 00:44:00.210
+Benjamin Houghton: And I just realized a 1 thing and that is that
+
+264
+00:44:01.030 --> 00:44:03.832
+Benjamin Houghton: these numbers actually don't match up
+
+265
+00:44:05.040 --> 00:44:06.730
+Benjamin Houghton: So actually.
+
+266
+00:44:10.370 --> 00:44:21.829
+Benjamin Houghton: yeah, I just realized that these numbers are these, I'll update this slide for you guys. So you won't see this by the time you watch this video, but this should be actually H over 2
+
+267
+00:44:22.100 --> 00:44:25.599
+Benjamin Houghton: W over 2. And this cause this has to be.
+
+268
+00:44:26.050 --> 00:44:32.069
+Benjamin Houghton: This has to be H over 16 W. Over 16. Right? And so these are all you know. There should be 4.
+
+269
+00:44:32.400 --> 00:44:33.769
+Benjamin Houghton: This should be 8,
+
+270
+00:44:33.950 --> 00:44:47.049
+Benjamin Houghton: and then this should be 32. And the reason I know that is because I can't add like these have to be the same size. So c. 5 is a. This. P. 5 is a 1 by one convolution
+
+271
+00:44:47.950 --> 00:44:49.360
+Benjamin Houghton: of C, 5.
+
+272
+00:44:49.710 --> 00:44:56.297
+Benjamin Houghton: Loss, an up sampled version. And so yeah, so the the one by one convolution.
+
+273
+00:44:59.120 --> 00:45:07.645
+Benjamin Houghton: I mean, I guess you could. You know, the one by one convolution is is really to get to get this to be the same number of channels.
+
+274
+00:45:11.560 --> 00:45:14.218
+Benjamin Houghton: erase that real fast right?
+
+275
+00:45:15.280 --> 00:45:42.930
+Benjamin Houghton: because remember, C 5 has. And I have a diagram. This is gonna make a lot more sense. Maybe I should start with the diagram. But we see here that that C. 5 has like 2,000 channels. I mean, this number could be. Maybe it's not 2,000 could be. But it's gonna be a lot. It's gonna be a big number of channels because we're at the top of the pyramid but now we see that there's only 256, so we can't add like a p. 6 has 256 channels. We can't add it to C, 5, even if it's the same shape.
+
+276
+00:45:43.040 --> 00:45:50.150
+Benjamin Houghton: Right? So we had to. We have to do. We have to fix 2 things the size, the well, 2 things the size
+
+277
+00:45:51.100 --> 00:45:53.309
+Benjamin Houghton: of the image right?
+
+278
+00:45:54.510 --> 00:45:57.649
+Benjamin Houghton: So they both need to be H. Over 16
+
+279
+00:45:57.880 --> 00:46:09.329
+Benjamin Houghton: by W. Over 16. And the number of channels. Okay, both these things have to be equivalent for us to to add them together, to do simple matrix addition.
+
+280
+00:46:10.330 --> 00:46:15.110
+Benjamin Houghton: And so the one by one convolution of here.
+
+281
+00:46:15.690 --> 00:46:25.540
+Benjamin Houghton: the one by one convolution of c. 5 allows us to get to the appropriate number of shapes, and the up sampling allows us to get to the appropriate size.
+
+282
+00:46:26.370 --> 00:46:31.950
+Benjamin Houghton: And so that's the peer. That's kind of how this works. Without going into, like all the details about
+
+283
+00:46:32.370 --> 00:46:36.300
+Benjamin Houghton: about every single one. But it's the same pattern over and over for every level.
+
+284
+00:46:37.740 --> 00:46:39.104
+Benjamin Houghton: So I will.
+
+285
+00:46:39.990 --> 00:46:47.579
+Benjamin Houghton: I'm gonna update this chart because there's a couple this must be like a couple of problems with it. Right?
+
+286
+00:46:49.310 --> 00:46:54.469
+Benjamin Houghton: Alright, so. But let's take a look at.
+
+287
+00:46:55.190 --> 00:47:01.370
+Benjamin Houghton: Oh, this is an example of the just an example of like the shapes. Okay? So
+
+288
+00:47:03.020 --> 00:47:10.120
+Benjamin Houghton: The spatial sizes right, and we see that they match. Actually, this is
+
+289
+00:47:10.510 --> 00:47:14.020
+Benjamin Houghton: probably good reference to have right. So we see that
+
+290
+00:47:14.620 --> 00:47:18.270
+Benjamin Houghton: C. 2. And there is no, there is no.
+
+291
+00:47:18.480 --> 00:47:34.959
+Benjamin Houghton: there is No. P. 3. Because that actually, if you look at this, it says, p. 2 is often ignored. You might not even you might not even do a. P. 2, right? It's off. It's optional and often ignored. So here's an example. We don't do. P. 2, right? So in this example
+
+292
+00:47:35.830 --> 00:47:48.300
+Benjamin Houghton: we have c, 3 and p. 3. They're the same size, right? Because, you know, p. 3 is created from adding an upsampled version of p. 4 to c. 3. So so p. 3
+
+293
+00:47:48.800 --> 00:47:55.249
+Benjamin Houghton: is equal to, I'll say up sampled version of p. 4, plus
+
+294
+00:47:55.380 --> 00:48:00.900
+Benjamin Houghton: a. What plus c. 3. Well, C. 3.
+
+295
+00:48:01.010 --> 00:48:04.850
+Benjamin Houghton: Well, let's do this, I'll do this. So a. Con.
+
+296
+00:48:05.230 --> 00:48:12.090
+Benjamin Houghton: c. 1, meaning a. 1 by one convolution of c. 3, 1 by one
+
+297
+00:48:12.320 --> 00:48:15.410
+Benjamin Houghton: conval, not not not not to be confused with c. 1.
+
+298
+00:48:17.100 --> 00:48:22.949
+Benjamin Houghton: But I see where some function, one by one, convolution of c. 3.
+
+299
+00:48:23.130 --> 00:48:29.300
+Benjamin Houghton: And so these have to be the same, the same shape, right, the same spatial size.
+
+300
+00:48:32.230 --> 00:48:36.829
+Benjamin Houghton: Alright. And yeah, when and spatial size and chant like, once you get
+
+301
+00:48:36.870 --> 00:49:03.100
+Benjamin Houghton: right. So shape when we say shape and deep learning or in programming. We often are talking about the number of channels, too, because the shape might be something like this where one is the batch size. Maybe we have a batch size of one, and then we have 64 channels, and then our image shape is like, say, 14 and width and height 14 by 14. So all these dimensions have to match. The shapes have to match the height and the width all have to match in order to add matrices together
+
+302
+00:49:06.080 --> 00:49:14.700
+Benjamin Houghton: right in general, unless, yeah, that's a topic for another day, unless you're unless you're going to
+
+303
+00:49:15.220 --> 00:49:24.369
+Benjamin Houghton: do what they call you know, in in numpy and in in pi torch it will try to.
+
+304
+00:49:25.830 --> 00:49:31.164
+Benjamin Houghton: If if your matrices don't match, if a single dimension doesn't match, then it will
+
+305
+00:49:34.400 --> 00:49:35.720
+Benjamin Houghton: excuse me one sec.
+
+306
+00:49:35.960 --> 00:49:37.170
+Benjamin Houghton: One second.
+
+307
+00:49:40.340 --> 00:50:07.389
+Benjamin Houghton: Oh, I apologize for that. You never know when you're gonna have a interruption when you're trying to record your videos. What I was saying, is that if you try to add matrices of different shapes together? You know, if a single dimension doesn't match numpy and intense or numpy and tie torch. We'll try to broadcast them, but that's neither here nor there, just for our purposes. We just need to assume that the shapes need to match. Right? That's what we're trying to accomplish, anyways.
+
+308
+00:50:08.140 --> 00:50:14.245
+Benjamin Houghton: Alright. And so, without further ado, I present you the the feature pyramid diagram, and
+
+309
+00:50:15.580 --> 00:50:27.209
+Benjamin Houghton: you can kind of get a kind of understand if the charts didn't make sense, which they might not have until you've seen this. Hopefully, this helps right? And so we'll just kind of talk through this this image here, right? And we'll start at the bottom.
+
+310
+00:50:27.240 --> 00:50:51.930
+Benjamin Houghton: And we see that we have an image. Input it's 1 by 3, by 2, by 2, 4 by 2, 4 and then we have a an output convolution, right? And so the red represents just normal convolutions. And you know, sometimes on the 1st layer, you might you might not do a right. So actually, let's look at this real fast. Red is is convolution and or the output feature maps
+
+311
+00:50:52.490 --> 00:51:08.429
+Benjamin Houghton: stride of 2. Except for the 1st layer. I'm saying there's no down sampling right? So you don't have to do down sampling right? And so we get the. So we get c 1, and it hasn't been down sampled. Okay? And then we do it again. We do another convolution, and we get now we have.
+
+312
+00:51:08.530 --> 00:51:21.740
+Benjamin Houghton: We've gone from 64 channels and to 2, 4, 2, 2, 4 by 2, 2, 4 to something like this, 1 12 by 1 12, with 128 channels. And so we see we have twice the number of channels and half the image size.
+
+313
+00:51:21.860 --> 00:51:24.569
+Benjamin Houghton: and then same thing again on C, 3.
+
+314
+00:51:24.970 --> 00:51:28.863
+Benjamin Houghton: The channels, 2, 56 doubles. But the
+
+315
+00:51:30.540 --> 00:51:34.359
+Benjamin Houghton: you know, number of the image size is halved
+
+316
+00:51:34.770 --> 00:51:37.480
+Benjamin Houghton: same thing in C 4. And then finally, C, 5.
+
+317
+00:51:37.740 --> 00:51:42.619
+Benjamin Houghton: Okay, so then we're we're we're finally at an image that or feature map that has
+
+318
+00:51:42.830 --> 00:51:47.969
+Benjamin Houghton: 100 or 1,000 channels, and the images are 14 by 14.
+
+319
+00:51:49.690 --> 00:51:50.620
+Benjamin Houghton: All right.
+
+320
+00:51:51.392 --> 00:51:58.049
+Benjamin Houghton: And so now we can start our. I guess one other thing worth mentioning is like we notice how like
+
+321
+00:51:58.460 --> 00:52:02.320
+Benjamin Houghton: when we're doing these convolutions. Now, this is a really small
+
+322
+00:52:03.490 --> 00:52:05.500
+Benjamin Houghton: let's see if I can get my pencil to work here.
+
+323
+00:52:06.350 --> 00:52:07.870
+Benjamin Houghton: My ipad!
+
+324
+00:52:10.080 --> 00:52:10.770
+Benjamin Houghton: Hmm!
+
+325
+00:52:11.670 --> 00:52:16.369
+Benjamin Houghton: Don't know why, but my pencil doesn't seem to want to work here. Let's see if I can
+
+326
+00:52:19.450 --> 00:52:20.960
+Benjamin Houghton: get it to work.
+
+327
+00:52:23.620 --> 00:52:25.599
+Benjamin Houghton: I don't know why it's not.
+
+328
+00:52:28.250 --> 00:52:32.500
+Benjamin Houghton: I think it might be because I have this image opened up. Let me see if I can
+
+329
+00:52:34.480 --> 00:52:39.390
+Benjamin Houghton: should be should allow me to do it, anyways, let me see one second.
+
+330
+00:52:48.730 --> 00:52:49.720
+Benjamin Houghton: Okay.
+
+331
+00:52:49.960 --> 00:53:05.819
+Benjamin Houghton: apologize. I'm back yeah, for some reason. You know, Zoom thought it'd be really funny to hide my meeting. My pencil controls under my meeting controls, anyways. Alright. So let's take a picture of a look at this. But what were we talking about? We're talking about how, as we go up
+
+332
+00:53:06.423 --> 00:53:15.020
+Benjamin Houghton: the images get smaller and the number of channels increases. And I wanted to point out, that if you look at these
+
+333
+00:53:16.370 --> 00:53:32.900
+Benjamin Houghton: convolutions right? They're relatively small compared to the image size like these might be 3 by 3 convolutions. And so the effective receptive field, meaning. How much of the spatial portion of the image we're looking at is relatively small
+
+334
+00:53:33.550 --> 00:53:44.589
+Benjamin Houghton: compared to the size of the image. But as we go up the pyramid, it gets bigger and bigger relative to spatial. So to the point where the convolution is like covering up almost the entire, the entire channel.
+
+335
+00:53:45.520 --> 00:53:50.529
+Benjamin Houghton: Alright. So now let's talk about the the. This was the top. This was the bottom up. Now we'll talk about the top down
+
+336
+00:53:51.170 --> 00:53:57.330
+Benjamin Houghton: alright. So p. 5. So p. 5 is just gonna be, you know, if you don't have a C. 6.
+
+337
+00:53:58.080 --> 00:54:01.300
+Benjamin Houghton: If you don't have a C. 6, let's assume we don't.
+
+338
+00:54:01.660 --> 00:54:11.260
+Benjamin Houghton: Then p. 5 is just going to be a 1 by one convolution of of C. 5. And so we need to do this one. And the reason is, is, we need. The reason we need
+
+339
+00:54:11.970 --> 00:54:19.520
+Benjamin Houghton: this one by one convolution here is because we had we had
+
+340
+00:54:19.740 --> 00:54:24.629
+Benjamin Houghton: 1,028 channels, and we need to get down to 2, 56, right?
+
+341
+00:54:26.350 --> 00:54:37.079
+Benjamin Houghton: And and the reason being is because all at every level, we'll see that we need to have the same number of channels. Alright. So we we've got p. 5. Now we did a 1 by one convolution. All we've done is gone from
+
+342
+00:54:37.450 --> 00:54:40.559
+Benjamin Houghton: 1,028 channels to 256 channels.
+
+343
+00:54:41.180 --> 00:54:46.229
+Benjamin Houghton: So we've kind of down sampled across the Channel dimension instead of the spatial dimension.
+
+344
+00:54:49.680 --> 00:54:52.689
+Benjamin Houghton: And now we can do
+
+345
+00:54:53.290 --> 00:55:01.579
+Benjamin Houghton: we do this times? 2. What does it represent? Well, let's look at our chart here. It represents bilinear interpolation using up sampling.
+
+346
+00:55:02.500 --> 00:55:05.863
+Benjamin Houghton: And this is what you would normally do in in
+
+347
+00:55:06.480 --> 00:55:20.649
+Benjamin Houghton: I guess you could do. There's other ways to up sample. You could do like a trans transpose convolution which you would do something like that. Typically in like the unit art, and like a segment, the unit model, which is a segmentation architecture which we'll talk about in the coming
+
+348
+00:55:20.910 --> 00:55:23.349
+Benjamin Houghton: in the segmentation videos. But
+
+349
+00:55:23.640 --> 00:55:31.419
+Benjamin Houghton: usually you're gonna do some type of you know, if you're using a feature pyramid network, you know, more often than not you would use bilinear interpolation.
+
+350
+00:55:31.820 --> 00:55:36.569
+Benjamin Houghton: Okay, it's so a little bit faster than than the
+
+351
+00:55:36.760 --> 00:55:39.820
+Benjamin Houghton: then transpose. Because you're not. It's not parametric learning.
+
+352
+00:55:39.980 --> 00:55:41.200
+Benjamin Houghton: All right. So
+
+353
+00:55:42.290 --> 00:55:59.509
+Benjamin Houghton: we do our up sampling. And basically we do interpolation. And we can go from an image size of 14 by 14 to what? Well, now, we have this purple box, these purple channels and its size is going to be one by 2, 56 by.
+
+354
+00:55:59.770 --> 00:56:05.299
+Benjamin Houghton: I guess I could have labeled the purple boxes. But they're this. They're going to be twice the sizes of the green boxes.
+
+355
+00:56:05.570 --> 00:56:08.809
+Benjamin Houghton: This is going to be 28 by 28.
+
+356
+00:56:08.980 --> 00:56:09.910
+Benjamin Houghton: Okay?
+
+357
+00:56:10.940 --> 00:56:15.700
+Benjamin Houghton: And so now we can see that this size is the same as the red boxes.
+
+358
+00:56:16.260 --> 00:56:20.239
+Benjamin Houghton: So we have 28 by 28. So we could add, now we could add.
+
+359
+00:56:20.540 --> 00:56:26.289
+Benjamin Houghton: we could add the this version of p. 5, which has been upsampled to C to C, 4,
+
+360
+00:56:27.310 --> 00:56:32.480
+Benjamin Houghton: except the channels don't match, so we do our one by one convolution
+
+361
+00:56:32.750 --> 00:56:35.020
+Benjamin Houghton: of C 5. And we get out this.
+
+362
+00:56:35.340 --> 00:56:41.479
+Benjamin Houghton: So it's the same same shape as C, 4. Except, you know this, this green box.
+
+363
+00:56:41.980 --> 00:56:46.170
+Benjamin Houghton: these green boxes, these green feature maps are the same size and shape.
+
+364
+00:56:46.570 --> 00:56:48.750
+Benjamin Houghton: just with half the number of channels.
+
+365
+00:56:49.320 --> 00:56:54.139
+Benjamin Houghton: So now the channels match right? So this is going to be one by 2, 56
+
+366
+00:56:54.790 --> 00:56:56.360
+Benjamin Houghton: by 28.
+
+367
+00:56:56.590 --> 00:57:01.880
+Benjamin Houghton: But and I might go back and label these, the green boxes and and the purple boxes.
+
+368
+00:57:02.200 --> 00:57:05.980
+Benjamin Houghton: If it doesn't add too much clutter to the diagram.
+
+369
+00:57:06.890 --> 00:57:09.490
+Benjamin Houghton: So now we can add these 2 together, we can take purple
+
+370
+00:57:09.880 --> 00:57:15.050
+Benjamin Houghton: and we can take green, we can add them, do element, wise addition, and get out. P. 4.
+
+371
+00:57:15.220 --> 00:57:17.070
+Benjamin Houghton: We see the dimensions of p. 4.
+
+372
+00:57:19.630 --> 00:57:26.699
+Benjamin Houghton: Oh, so then we take p. 4, and we do the same thing as we just did. We upsample it to increase the spatial dimension.
+
+373
+00:57:28.420 --> 00:57:33.140
+Benjamin Houghton: And we take C 3, and we down sand. We
+
+374
+00:57:33.650 --> 00:57:40.297
+Benjamin Houghton: actually, we do a 1 by one convolution. But actually, we don't really looks like we don't. We don't really need to.
+
+375
+00:57:43.950 --> 00:57:48.930
+Benjamin Houghton: yeah, I guess. Here, you know, you don't need to do the one by one convolution
+
+376
+00:57:49.380 --> 00:57:54.189
+Benjamin Houghton: you could, I'd say it probably depends on the implementation right? But we go from
+
+377
+00:57:54.490 --> 00:58:05.729
+Benjamin Houghton: the same shape. This should be the same shape, right? This would also be one by 2, 56 by 56. Remember, because, like we, our magic number for number of channels is 2, 56.
+
+378
+00:58:07.120 --> 00:58:10.300
+Benjamin Houghton: So now that we have 256 channels,
+
+379
+00:58:11.440 --> 00:58:23.879
+Benjamin Houghton: we can add that to the up sampled version of p. 4, so we can add. And so we get, we get out. We get out. P. 3, right? So p. 3 is the up sampled version
+
+380
+00:58:24.430 --> 00:58:31.609
+Benjamin Houghton: of C. 3, plus the one by one convolution version of p. 4.
+
+381
+00:58:32.230 --> 00:58:34.500
+Benjamin Houghton: Oh, I said that backwards. I'm sorry.
+
+382
+00:58:35.610 --> 00:58:40.690
+Benjamin Houghton: The upsampled version, p. 4. Hopefully, you caught my mistake while I was speaking.
+
+383
+00:58:41.590 --> 00:58:47.449
+Benjamin Houghton: plus the one by one convolution version of what? Of the of P.
+
+384
+00:58:47.840 --> 00:58:51.439
+Benjamin Houghton: I'm sorry of C, of C, 3,
+
+385
+00:58:52.330 --> 00:58:54.629
+Benjamin Houghton: right. That's what P. 3 equals.
+
+386
+00:58:56.050 --> 00:58:58.100
+Benjamin Houghton: And actually, I just realized something
+
+387
+00:58:58.800 --> 00:59:01.409
+Benjamin Houghton: that might be. Why, on the chart.
+
+388
+00:59:01.550 --> 00:59:10.179
+Benjamin Houghton: Well, let's talk about the rest of this. What I was saying is like, we don't necessarily need this convoluted. We don't necessarily need this convolution here.
+
+389
+00:59:10.640 --> 00:59:14.900
+Benjamin Houghton: this one by one convolution here, because the channels already match.
+
+390
+00:59:15.970 --> 00:59:20.801
+Benjamin Houghton: but I would imagine you would just do it, anyways, because you're doing it for every other layer.
+
+391
+00:59:21.630 --> 00:59:34.360
+Benjamin Houghton: and then again, it's probably depends on the implementation. So then, now, we do need that. We do need the the it here, though, for C 2, we have 1, 12 by 1 12. So we need to up sample, we need to increase the number of image. So we go from
+
+392
+00:59:34.570 --> 00:59:39.749
+Benjamin Houghton: one times 1, 28 by 1, 12 by 1 12 to what? One by 2, 56
+
+393
+00:59:39.920 --> 00:59:50.190
+Benjamin Houghton: by 1, 12, by 1 12. Alright. So once we have that we can add that to the up sampled version, let me zoom out here now, because these bought
+
+394
+00:59:50.360 --> 00:59:52.060
+Benjamin Houghton: so we can see this a little bit better.
+
+395
+00:59:52.960 --> 00:59:56.330
+Benjamin Houghton: So now we have the up sampled version right
+
+396
+00:59:58.500 --> 01:00:09.830
+Benjamin Houghton: for c. 2. We did our one by one convolution to that, and we can add that to the up sampled version of p. 3. To get our p. 2 bot get our p. 2 features.
+
+397
+01:00:10.170 --> 01:00:17.880
+Benjamin Houghton: So now we've combined right now, at every single level, this pyramid we've you know, we've combined the features
+
+398
+01:00:18.080 --> 01:00:27.220
+Benjamin Houghton: progressively downward right down down this way as we move down the pyramid, we're combining the features together.
+
+399
+01:00:29.100 --> 01:00:33.179
+Benjamin Houghton: and so we can do stuff now with with these with p. 2,
+
+400
+01:00:33.300 --> 01:00:44.299
+Benjamin Houghton: which sometimes is ignored. Right. P. 3, p. 4, p. 5. And if you have a P. If you have a p. 6, as well, you can take all these features, these feature maps, and we can do some
+
+401
+01:00:44.770 --> 01:00:47.129
+Benjamin Houghton: our final. We can use them in our final tasks.
+
+402
+01:00:47.260 --> 01:00:49.910
+Benjamin Houghton: So what does that look like? That's what we're going to talk about next.
+
+403
+01:00:51.200 --> 01:00:58.619
+Benjamin Houghton: Alright, before we talk about that. I just want to go back to this chart real fast, which I'm gonna update
+
+404
+01:00:58.740 --> 01:01:05.730
+Benjamin Houghton: here. But if you notice here in p. 3 and p. 4,
+
+405
+01:01:06.610 --> 01:01:13.790
+Benjamin Houghton: notice that we don't have the one by one convolution. I I guess it's it's not necessarily strictly needed. You don't need to do.
+
+406
+01:01:14.170 --> 01:01:25.244
+Benjamin Houghton: If if C. 3 and C. 4 have 256 channels, then you wouldn't need to do it. And actually, I. But I need to. I need to fix this because,
+
+407
+01:01:26.000 --> 01:01:29.169
+Benjamin Houghton: yeah, because we see that they don't have
+
+408
+01:01:30.930 --> 01:01:35.950
+Benjamin Houghton: that we don't have. They don't have 256 channels, so
+
+409
+01:01:36.380 --> 01:01:41.050
+Benjamin Houghton: you couldn't add them together without the one like you had to get them to the same number of channels, though.
+
+410
+01:01:41.710 --> 01:01:52.300
+Benjamin Houghton: Anyways, I'm gonna update this before you see this video. So you'll have a complete chart. But then that hopefully, that all makes sense to you. With the completed chart and the video.
+
+411
+01:01:52.480 --> 01:01:53.506
+Benjamin Houghton: All right.
+
+412
+01:01:54.400 --> 01:02:08.420
+Benjamin Houghton: okay, so how is this using object detection? Right? So we we generate. P. 3. Through, p. 6, you know, and p. 2. If you want to, or and you know, p. 2 and p. 6 are both optional right? But we get these these different levels of the pyramid.
+
+413
+01:02:08.750 --> 01:02:17.849
+Benjamin Houghton: and we can use something called roa align to resize them.
+
+414
+01:02:18.170 --> 01:02:20.349
+Benjamin Houghton: So remember, we used Roi pooling
+
+415
+01:02:22.680 --> 01:02:36.399
+Benjamin Houghton: before when we were talking about faster. Rcnn. We use roi pooling, and so Roi pooling uses integer division where it just takes these features, and it divides them into like a 7 by 7 grid. And does Max pooling for each grid?
+
+416
+01:02:36.650 --> 01:02:39.239
+Benjamin Houghton: Well, Roi align is the same thing.
+
+417
+01:02:39.340 --> 01:03:08.880
+Benjamin Houghton: except we use bilinear interpolation to make sure we have the the right that the so there's no misalignment, right? Because the integer division, if it's not divisible by 7 or whatever number of grids you have you divide it into? Then you're gonna have some misalignment. So Roi Line, it just is just a more precise version of Roi pooling. And that's all you really need to understand about Roi line there, it's more or less the same thing as Roi pooling, or at least the same idea.
+
+418
+01:03:10.590 --> 01:03:13.083
+Benjamin Houghton: Okay? And so once we do that.
+
+419
+01:03:17.170 --> 01:03:23.550
+Benjamin Houghton: you know, we can use the the region proposal necessary is gonna generate proposals for each level.
+
+420
+01:03:24.180 --> 01:03:24.970
+Benjamin Houghton: Right?
+
+421
+01:03:27.440 --> 01:03:32.049
+Benjamin Houghton: So the R. The Rpn can take as input each. Each one of these levels
+
+422
+01:03:32.850 --> 01:03:42.050
+Benjamin Houghton: generate proposals, and then we can use roi align or roi pooling to remap them to the appropriate shape.
+
+423
+01:03:45.890 --> 01:03:51.239
+Benjamin Houghton: Or you know that? I mean, yeah. And then we can.
+
+424
+01:03:51.770 --> 01:03:54.030
+Benjamin Houghton: Once we've mapped them to the appropriate shape
+
+425
+01:03:54.300 --> 01:03:56.850
+Benjamin Houghton: in size, we can feed them into our classifier
+
+426
+01:04:02.558 --> 01:04:16.789
+Benjamin Houghton: and so retina net with our Fpn, just an example of an actual, like an actual implementation here. So we see that the the bounding box classification regression happen independently at each level.
+
+427
+01:04:19.020 --> 01:04:25.029
+Benjamin Houghton: Each level has its own anchor boxes, right? So this is like, so there's a lot of different ways. You can handle this right? So this is just
+
+428
+01:04:25.280 --> 01:04:34.300
+Benjamin Houghton: the general idea, though, is, you know, you know, you could do classification and regression independently.
+
+429
+01:04:34.780 --> 01:04:43.909
+Benjamin Houghton: And then, once you do that, you can go back and and merge. You could do some type of non Max suppression like, because each level, if you do it at every single level.
+
+430
+01:04:44.010 --> 01:04:45.719
+Benjamin Houghton: Then you're gonna have
+
+431
+01:04:46.540 --> 01:05:03.410
+Benjamin Houghton: a bunch of anchor box. Well, you're gonna have a bunch of anchor boxes, regardless of what method you're using. You're gonna have to do some type of non Max suppression. But let's say you did do it at every level. You get your bounding boxes for every single level, from every single level. And then you just go back and you just gonna do non, Max suppression.
+
+432
+01:05:04.120 --> 01:05:16.219
+Benjamin Houghton: But we can use our way, align or pooling, to reshape our features into the appropriate, because, remember and this is usually used in 2 stage detectors, right? Or used in like faster Rcnm.
+
+433
+01:05:17.160 --> 01:05:24.490
+Benjamin Houghton: at least the modern implementations and remember that. You know, our classification head is, gonna expect a certain shape
+
+434
+01:05:24.700 --> 01:05:36.289
+Benjamin Houghton: right faster. Our Cnn uses roi pooling or uses our way align in in modern implementations. And so we're just taking our our feet. It doesn't really matter what size, you know.
+
+435
+01:05:36.610 --> 01:05:42.350
+Benjamin Houghton: are, it doesn't really matter what size feature maps we're using in the Rpn
+
+436
+01:05:44.180 --> 01:05:54.460
+Benjamin Houghton: right? The Rpn actually can handle images, inputs of different sizes. Because remember, it outputs feature maps itself. Let's go all the way back and maybe try to tie that together.
+
+437
+01:05:54.870 --> 01:05:56.770
+Benjamin Houghton: Right? So we know that.
+
+438
+01:05:57.350 --> 01:05:59.930
+Benjamin Houghton: Remember, we did. We're just doing convolutions here.
+
+439
+01:06:00.030 --> 01:06:03.169
+Benjamin Houghton: But the the Rpn. It outputs like this.
+
+440
+01:06:03.450 --> 01:06:05.610
+Benjamin Houghton: Oh, this is the wrong.
+
+441
+01:06:14.390 --> 01:06:19.120
+Benjamin Houghton: I just realized that it it it didn't update my diagram here.
+
+442
+01:06:19.686 --> 01:06:22.670
+Benjamin Houghton: One second, we fix that for us.
+
+443
+01:06:26.010 --> 01:06:27.750
+Benjamin Houghton: Okay, so
+
+444
+01:06:27.940 --> 01:06:41.439
+Benjamin Houghton: made a couple of updates here for you guys so, well, this was already updated once. I don't know what happened, but for some reason I got had the wrong image, or an old image that was placed in here. And
+
+445
+01:06:42.140 --> 01:06:53.849
+Benjamin Houghton: we see here that you know we're just doing 3 by 3, followed by one by one convolutions. And the output shape is gonna be of the Rpn. Here. It's just gonna be. It's gonna be whatever spatial
+
+446
+01:06:54.120 --> 01:06:59.229
+Benjamin Houghton: dimension of the input was. And so we can handle different spatial dimensions here.
+
+447
+01:06:59.670 --> 01:07:19.210
+Benjamin Houghton: right? So that's what I mean by we can handle different feature map inputs of varying levels of the pyramid, because that's the way the Rpn. Was designed. And then once we're done with that, we can take them, we can map them to the appropriate. We can take the original feature maps here from our backbone
+
+448
+01:07:20.310 --> 01:07:27.059
+Benjamin Houghton: we can map, and then we can. We can take the the output of the region proposal network and and map them
+
+449
+01:07:27.220 --> 01:07:42.883
+Benjamin Houghton: to again. So we take the we take these outputs, it proposes regions, and then we find that region inside of the feature maps, and we map them to the appropriate shape, using roi pooling or roi line. So that's what I was trying to tie together there.
+
+450
+01:07:43.430 --> 01:08:10.509
+Benjamin Houghton: right? So and then the other thing real fast. So hopefully, this makes a little more sense for you guys now, and you'll have the updated slides, of course, or updated notes. But I fixed this chart. There was some problems here, right? Like again, like the shapes have to match like this. So if if the shapes don't match on these 2 slides, and then that's an error, right? They have to match. So so, p. 5. So, for example. Now, p. 4. Okay. It's a 1 by one. Convolution
+
+451
+01:08:11.100 --> 01:08:17.930
+Benjamin Houghton: of c. 4 and an upsampled. P. 5. So the upsampling on p. 5 increases
+
+452
+01:08:19.380 --> 01:08:35.729
+Benjamin Houghton: its dimensions to this to H. Over 8 times W. Over 8. That's what the up sampling does. The one by one convolution on c. 4. And what does it do well it. It reduces the number of channels to 2, 56, all right. And so once we do those things.
+
+453
+01:08:36.000 --> 01:08:44.599
+Benjamin Houghton: we can add c. 4 to in in the up sampled. We can add c. 4 and p. 5. Once we do those 2 things operations alright
+
+454
+01:08:45.729 --> 01:08:47.460
+Benjamin Houghton: and get out our, our
+
+455
+01:08:48.050 --> 01:08:53.950
+Benjamin Houghton: our image. That's going to be H over 8 times W. Over 8, with 256 channels. All right.
+
+456
+01:08:55.569 --> 01:09:04.370
+Benjamin Houghton: So that's a that is feature pyramid network. And that's how we use it in in object detection.
+
+457
+01:09:05.920 --> 01:09:09.365
+Benjamin Houghton: So just some final thoughts.
+
+458
+01:09:13.220 --> 01:09:23.709
+Benjamin Houghton: let's see these ones. The fpn, like the top up. These are commonly used on 2 stage detectors like we already mentioned that. But these are the things that maybe it's take away with you.
+
+459
+01:09:23.939 --> 01:09:27.370
+Benjamin Houghton: And then we have single shot and yolo.
+
+460
+01:09:27.710 --> 01:09:39.139
+Benjamin Houghton: Multi-scale detection is preferred in real time. Single stage. Detectors. Okay, and attention based fusion and transformers is is kind of like the next evolution. Right?
+
+461
+01:09:39.350 --> 01:09:40.229
+Benjamin Houghton: So
+
+462
+01:09:40.350 --> 01:09:49.490
+Benjamin Houghton: maybe in the future we could talk about this more. But this is kind of getting outside the scope on this. And we just don't have the time to go into every single one of these techniques.
+
+463
+01:09:52.100 --> 01:10:01.509
+Benjamin Houghton: Okay? And I believe that's that, is it. So thank you for making it all the way to the end of advanced object, detection.
+

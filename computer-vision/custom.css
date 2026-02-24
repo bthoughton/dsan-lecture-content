@@ -1,0 +1,5 @@
+.quarto-title-block h1,
+main.content h1 {
+  border-bottom: 1px solid #2c3e50;
+  padding-bottom: 0.2em;
+}

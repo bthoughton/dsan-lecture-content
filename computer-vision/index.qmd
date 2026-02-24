@@ -1,0 +1,23 @@
+---
+title: "DSAN 6500: Computer Vision Analytics & Generative Image Modeling"
+author: "Prof. Ben Houghton"
+date: today
+format:
+  html:
+    theme: spacelab
+    toc: false
+    embed-resources: true
+---
+
+## Lecture Schedule
+
+| Week | Topic | Link |
+|:----:|-------|:----:|
+| 01 | Foundations of Image and Audio Data | [Lecture](week-1/week-1.html) |
+| 02 | Classical Computer Vision | [Lecture](week-2/week-2.html) |
+| 03 | Fourier Transforms, Spectrograms, and Feature Engineering | [Lecture](week-3/week-3.html) |
+| 04 | Modern CNN Fundamentals and Transfer Learning | [Lecture](week-4/week-4.html) |
+| 05 | Object Detection Fundamentals | [Lecture](week-5/week-5.html) |
+| 06 | Advanced Object Detection | [Lecture](week-6/week-6.html) |
+
+: {.table .table-striped .table-hover}

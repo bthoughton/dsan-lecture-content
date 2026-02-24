@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Prof.&nbsp;Ben Houghton">
+<meta name="dcterms.date" content="2026-02-24">
+
+<title>DSAN 6500: Week 06 - Advanced Object Detection</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="week-6_files/libs/clipboard/clipboard.min.js"></script>
+<script src="week-6_files/libs/quarto-html/quarto.js"></script>
+<script src="week-6_files/libs/quarto-html/popper.min.js"></script>
+<script src="week-6_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="week-6_files/libs/quarto-html/anchor.min.js"></script>
+<link href="week-6_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="week-6_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="week-6_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="week-6_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="week-6_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../custom.css">
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#video-advanced-object-detection---part-1" id="toc-video-advanced-object-detection---part-1" class="nav-link active" data-scroll-target="#video-advanced-object-detection---part-1">Video: Advanced Object Detection - Part 1</a></li>
+  <li><a href="#video-advanced-object-detection---part-2" id="toc-video-advanced-object-detection---part-2" class="nav-link" data-scroll-target="#video-advanced-object-detection---part-2">Video: Advanced Object Detection - Part 2</a></li>
+  <li><a href="#faster-r-cnn-overview" id="toc-faster-r-cnn-overview" class="nav-link" data-scroll-target="#faster-r-cnn-overview">Faster R-CNN Overview</a></li>
+  <li><a href="#faster-r-cnn-architecture" id="toc-faster-r-cnn-architecture" class="nav-link" data-scroll-target="#faster-r-cnn-architecture">Faster R-CNN Architecture</a></li>
+  <li><a href="#anchor-boxes" id="toc-anchor-boxes" class="nav-link" data-scroll-target="#anchor-boxes">Anchor Boxes</a></li>
+  <li><a href="#faster-r-cnn-backbone" id="toc-faster-r-cnn-backbone" class="nav-link" data-scroll-target="#faster-r-cnn-backbone">Faster R-CNN Backbone</a></li>
+  <li><a href="#faster-r-cnn-region-proposal-network-rpn" id="toc-faster-r-cnn-region-proposal-network-rpn" class="nav-link" data-scroll-target="#faster-r-cnn-region-proposal-network-rpn">Faster R-CNN Region Proposal Network (RPN)</a></li>
+  <li><a href="#rpn-objectness-score" id="toc-rpn-objectness-score" class="nav-link" data-scroll-target="#rpn-objectness-score">RPN Objectness Score</a></li>
+  <li><a href="#rpn-bounding-box-offset" id="toc-rpn-bounding-box-offset" class="nav-link" data-scroll-target="#rpn-bounding-box-offset">RPN Bounding Box Offset</a></li>
+  <li><a href="#faster-r-cnn-roi-pooling-classification-head" id="toc-faster-r-cnn-roi-pooling-classification-head" class="nav-link" data-scroll-target="#faster-r-cnn-roi-pooling-classification-head">Faster R-CNN ROI Pooling &amp; Classification Head</a></li>
+  <li><a href="#faster-r-cnn-diagram" id="toc-faster-r-cnn-diagram" class="nav-link" data-scroll-target="#faster-r-cnn-diagram">Faster R-CNN Diagram</a></li>
+  <li><a href="#training-faster-r-cnn" id="toc-training-faster-r-cnn" class="nav-link" data-scroll-target="#training-faster-r-cnn">Training Faster R-CNN</a></li>
+  <li><a href="#faster-r-cnn-vs.-previous-models" id="toc-faster-r-cnn-vs.-previous-models" class="nav-link" data-scroll-target="#faster-r-cnn-vs.-previous-models">Faster R-CNN vs.&nbsp;Previous Models</a></li>
+  <li><a href="#yolo-you-only-look-once-architecture-explained" id="toc-yolo-you-only-look-once-architecture-explained" class="nav-link" data-scroll-target="#yolo-you-only-look-once-architecture-explained">YOLO (You Only Look Once) Architecture Explained</a></li>
+  <li><a href="#yolo-architecture" id="toc-yolo-architecture" class="nav-link" data-scroll-target="#yolo-architecture">YOLO Architecture</a></li>
+  <li><a href="#yolo-detection-head-output" id="toc-yolo-detection-head-output" class="nav-link" data-scroll-target="#yolo-detection-head-output">YOLO Detection Head Output</a></li>
+  <li><a href="#yolo-detection-head-output-example" id="toc-yolo-detection-head-output-example" class="nav-link" data-scroll-target="#yolo-detection-head-output-example">YOLO Detection Head Output Example</a></li>
+  <li><a href="#yolo-grid-cell-output-tensor" id="toc-yolo-grid-cell-output-tensor" class="nav-link" data-scroll-target="#yolo-grid-cell-output-tensor">YOLO Grid Cell Output Tensor</a></li>
+  <li><a href="#yolo-detection-head-ouptut-tensor" id="toc-yolo-detection-head-ouptut-tensor" class="nav-link" data-scroll-target="#yolo-detection-head-ouptut-tensor">YOLO Detection Head Ouptut Tensor</a></li>
+  <li><a href="#yolo-detection-head-output-1" id="toc-yolo-detection-head-output-1" class="nav-link" data-scroll-target="#yolo-detection-head-output-1">YOLO Detection Head Output</a></li>
+  <li><a href="#yolo-diagram" id="toc-yolo-diagram" class="nav-link" data-scroll-target="#yolo-diagram">YOLO Diagram</a></li>
+  <li><a href="#advantages-and-limitations-of-yolo" id="toc-advantages-and-limitations-of-yolo" class="nav-link" data-scroll-target="#advantages-and-limitations-of-yolo">Advantages and Limitations of YOLO</a></li>
+  <li><a href="#evolution-of-yolo-versions" id="toc-evolution-of-yolo-versions" class="nav-link" data-scroll-target="#evolution-of-yolo-versions">Evolution of YOLO Versions</a></li>
+  <li><a href="#faster-r-cnn-vs.-yolo" id="toc-faster-r-cnn-vs.-yolo" class="nav-link" data-scroll-target="#faster-r-cnn-vs.-yolo">Faster R-CNN vs.&nbsp;YOLO</a></li>
+  <li><a href="#yolo-summary" id="toc-yolo-summary" class="nav-link" data-scroll-target="#yolo-summary">YOLO Summary</a></li>
+  <li><a href="#feature-fusion-in-object-detection" id="toc-feature-fusion-in-object-detection" class="nav-link" data-scroll-target="#feature-fusion-in-object-detection">Feature Fusion in Object Detection 🚀</a></li>
+  <li><a href="#feature-pyramid-fusion-top-down-fusion" id="toc-feature-pyramid-fusion-top-down-fusion" class="nav-link" data-scroll-target="#feature-pyramid-fusion-top-down-fusion">Feature Pyramid Fusion (Top-Down Fusion)</a></li>
+  <li><a href="#bottom-up-feature-aggregation" id="toc-bottom-up-feature-aggregation" class="nav-link" data-scroll-target="#bottom-up-feature-aggregation">Bottom-Up Feature Aggregation</a></li>
+  <li><a href="#scale-aware-fusion-parallel-multi-scale-features" id="toc-scale-aware-fusion-parallel-multi-scale-features" class="nav-link" data-scroll-target="#scale-aware-fusion-parallel-multi-scale-features">Scale-Aware Fusion (Parallel Multi-Scale Features)</a></li>
+  <li><a href="#attention-based-feature-fusion" id="toc-attention-based-feature-fusion" class="nav-link" data-scroll-target="#attention-based-feature-fusion">Attention-Based Feature Fusion</a></li>
+  <li><a href="#comparison-of-feature-fusion-methods" id="toc-comparison-of-feature-fusion-methods" class="nav-link" data-scroll-target="#comparison-of-feature-fusion-methods">Comparison of Feature Fusion Methods</a></li>
+  <li><a href="#fpn-in-object-detection" id="toc-fpn-in-object-detection" class="nav-link" data-scroll-target="#fpn-in-object-detection">FPN in Object Detection</a></li>
+  <li><a href="#bottom-up-pathway-backbone-feature-extraction" id="toc-bottom-up-pathway-backbone-feature-extraction" class="nav-link" data-scroll-target="#bottom-up-pathway-backbone-feature-extraction">Bottom-Up Pathway (Backbone Feature Extraction)</a></li>
+  <li><a href="#top-down-pathway-fpn-feature-pyramid" id="toc-top-down-pathway-fpn-feature-pyramid" class="nav-link" data-scroll-target="#top-down-pathway-fpn-feature-pyramid">Top-Down Pathway (FPN Feature Pyramid)</a></li>
+  <li><a href="#fpn-inputoutput-shape-example" id="toc-fpn-inputoutput-shape-example" class="nav-link" data-scroll-target="#fpn-inputoutput-shape-example">FPN Input/Output Shape Example</a></li>
+  <li><a href="#fpn-diagram" id="toc-fpn-diagram" class="nav-link" data-scroll-target="#fpn-diagram">FPN Diagram</a></li>
+  <li><a href="#how-fpn-is-used-in-object-detection" id="toc-how-fpn-is-used-in-object-detection" class="nav-link" data-scroll-target="#how-fpn-is-used-in-object-detection">How FPN is Used in Object Detection</a></li>
+  <li><a href="#final-thoughts-on-feature-fusion" id="toc-final-thoughts-on-feature-fusion" class="nav-link" data-scroll-target="#final-thoughts-on-feature-fusion">Final Thoughts on Feature Fusion</a></li>
+  <li><a href="#study-guide" id="toc-study-guide" class="nav-link" data-scroll-target="#study-guide">Study Guide</a>
+  <ul class="collapse">
+  <li><a href="#faster-r-cnn" id="toc-faster-r-cnn" class="nav-link" data-scroll-target="#faster-r-cnn">Faster R-CNN</a></li>
+  <li><a href="#yolo-you-only-look-once" id="toc-yolo-you-only-look-once" class="nav-link" data-scroll-target="#yolo-you-only-look-once">YOLO (You Only Look Once)</a></li>
+  <li><a href="#faster-r-cnn-vs.-yolo-1" id="toc-faster-r-cnn-vs.-yolo-1" class="nav-link" data-scroll-target="#faster-r-cnn-vs.-yolo-1">Faster R-CNN vs.&nbsp;YOLO</a></li>
+  <li><a href="#feature-fusion-in-object-detection-1" id="toc-feature-fusion-in-object-detection-1" class="nav-link" data-scroll-target="#feature-fusion-in-object-detection-1">Feature Fusion in Object Detection</a></li>
+  <li><a href="#feature-pyramid-network-fpn" id="toc-feature-pyramid-network-fpn" class="nav-link" data-scroll-target="#feature-pyramid-network-fpn">Feature Pyramid Network (FPN)</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DSAN 6500: Week 06 - Advanced Object Detection</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Prof.&nbsp;Ben Houghton </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 24, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="video-advanced-object-detection---part-1" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="video-advanced-object-detection---part-1">Video: Advanced Object Detection - Part 1</h2>
+<p>The following is a recording on this topic, I hope you find it useful!</p>
+<p>Feel free to watch at 1.5x or 2x speed.</p>
+<p><strong>Note</strong>: If you find something missing or incorrect in the recording, then please let me know!</p>
+<video id="myVideo" width="750" height="500" controls="controls" preload="none">
+<source src="video-1.mp4" type="video/mp4">
+<p>Your browser does not support the video tag. </p>
+<script>
+    window.onload = function() {
+        const video = document.getElementById('myVideo');
+        video.playbackRate = 1.5; // Sets playback speed to 1.5x
+    };
+</script>
+</video></section>
+<section id="video-advanced-object-detection---part-2" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="video-advanced-object-detection---part-2">Video: Advanced Object Detection - Part 2</h2>
+<p>The following is a recording on this topic, I hope you find it useful!</p>
+<p>Feel free to watch at 1.5x or 2x speed.</p>
+<p><strong>Note</strong>: If you find something missing or incorrect in the recording, then please let me know!</p>
+<video id="myVideo" width="750" height="500" controls="controls" preload="none">
+<source src="video-2.mp4" type="video/mp4">
+<p>Your browser does not support the video tag. </p>
+<script>
+    window.onload = function() {
+        const video = document.getElementById('myVideo');
+        video.playbackRate = 1.5; // Sets playback speed to 1.5x
+    };
+</script>
+</video></section>
+<section id="faster-r-cnn-overview" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-overview">Faster R-CNN Overview</h2>
+<div class="columns">
+<div class="column" style="width:60%;">
+<ul>
+<li><a href="https://arxiv.org/pdf/1506.01497">Faster R-CNN</a> (circa 2016) is an improved version of Fast R-CNN
+<ul>
+<li>Like its predecessors, it is a two-stage object detection model</li>
+<li>Introduces a Region Proposal Network (RPN)</li>
+</ul></li>
+<li>Significantly reduced detection time compared to predecessors</li>
+<li>Eliminates the need for external region proposal methods like Selective Search in Fast R-CNN</li>
+</ul>
+</div><div class="column" style="width:40%;">
+<p><img src="./img/faster-r-cnn-overview.png" class="img-fluid"></p>
+</div>
+</div>
+<!-- ## Overview of Faster R-CNN
+Faster R-CNN consists of **two main stages**:
+1. **Region Proposal Network (RPN):**  
+   - Generates **region proposals** (candidate object locations) directly from feature maps.
+   - Replaces computationally expensive region proposal methods (e.g., Selective Search in Fast R-CNN).
+
+2. **Fast R-CNN Detection Head:**  
+   - Classifies each proposed region and refines its bounding box.
+   - Uses **RoI pooling (or RoI Align in later versions)** to extract fixed-size features. -->
+</section>
+<section id="faster-r-cnn-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-architecture">Faster R-CNN Architecture</h2>
+<p>Comprised of three key components:</p>
+<ul>
+<li><strong>Backbone</strong>: Feature extraction network
+<ul>
+<li>A CNN (e.g., <strong>ResNet50, VGG16</strong>) extracts <strong>feature maps</strong> from the input image.</li>
+</ul></li>
+<li><strong>Region Proposal Network (RPN)</strong>: Proposes potential object locations
+<ul>
+<li>Proposes potential object locations in the image</li>
+<li>Uses <strong>anchors</strong> (predefined boxes of different scales/aspect ratios)</li>
+</ul></li>
+<li><strong>RoI Pooling &amp; Classification Head</strong>: Classifies proposed regions and refines bounding boxes
+<ul>
+<li>Top K proposals are selected using <strong>Non-Maximum Suppression (NMS)</strong></li>
+<li>Proposal are resized to a fixed size using <strong>RoI Pooling (or RoI Align in later versions)</strong></li>
+<li>Classifies proposed regions and refines bounding boxes.</li>
+</ul></li>
+</ul>
+</section>
+<section id="anchor-boxes" class="level2">
+<h2 class="anchored" data-anchor-id="anchor-boxes">Anchor Boxes</h2>
+<p><img src="./img/anchor-boxes.png" class="img-fluid"></p>
+</section>
+<section id="faster-r-cnn-backbone" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-backbone">Faster R-CNN Backbone</h2>
+<ul>
+<li>The backbone is a CNN that extracts feature maps from the input image</li>
+<li>Extracted features are shared between the <strong>RPN</strong> and the <strong>RoI classification head</strong></li>
+<li>Original Faster R-CNN paper uses <strong>ZFNet</strong> and <strong>VGG16</strong> as the backbone
+<ul>
+<li>Modern implementations use the following CNNs:
+<ul>
+<li><strong>ResNet</strong> and its variants - most popular</li>
+<li><strong>Feature Pyramid Networks (FPN)</strong></li>
+<li><strong>EfficientNet</strong></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="faster-r-cnn-region-proposal-network-rpn" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-region-proposal-network-rpn">Faster R-CNN Region Proposal Network (RPN)</h2>
+<ol type="1">
+<li>A <strong>small CNN Network</strong> slides over the feature map (typically <span class="math inline">3 \times 3</span>) with a stride of 1 pixel, followed by parallel <span class="math inline">1 \times 1</span> convolutions.
+<ul>
+<li><span class="math inline">3 \times 3</span> sliding window <a href="https://arxiv.org/pdf/1506.01497#page=3">has an effective receptive field of 228 pixels at the original image size using VGG16</a></li>
+</ul></li>
+<li>At each position, <strong>anchors</strong> (predefined boxes of d ifferent scales/aspect ratios) are considered if an object is present and what the bounding box offsets are.</li>
+<li>The network predicts:
+<ul>
+<li><strong>Object Score</strong>: Whether each anchor contains an object or not.</li>
+<li><strong>Bounding Box Offsets</strong>: Adjustments to refine the anchor’s location.</li>
+</ul></li>
+</ol>
+<p>Note that each pixel in the input feature map is associated with a spatial location in the original image. Therefore by “sliding across input feature map” or splitting the input feature map into overlapping grid cells, we consider <span class="math inline">k</span> anchors (usually <span class="math inline">k=9</span>) for each of the <span class="math inline">WH</span> spatial locations where <span class="math inline">W</span> and <span class="math inline">H</span> are the width and height of the feature map.</p>
+</section>
+<section id="rpn-objectness-score" class="level2">
+<h2 class="anchored" data-anchor-id="rpn-objectness-score">RPN Objectness Score</h2>
+<p>The objectness score is a tensor of shape <span class="math inline">W \times H \times 2k</span>, represented by <span class="math inline">2k</span> channels of the RPN output Network. The scores are arranged in the original spatial order of the feature map and each channel is associated with a specific anchor’s object or background probability.</p>
+<p><img src="./img/objectness-score.png" class="img-fluid"></p>
+<!-- Then the objectness score tensor is as follows, where $p^{o,1}_{i,j}$ is the probability of an object for anchor box 1 at position $(i,j)$ and $p^{b,1}_{i,j}$ is the probability of background for anchor box 1 at position $(i,j)$.
+
+$$
+\begin{bmatrix} p^{o,1}_{1,1} & p^{o,1}_{1,2} & \cdots & p^{o,1}_{1,W} \\ p^{o,1}_{2,1} & p^{o,1}_{2,2} & \cdots & p^{o,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{o,1}_{H,1} & p^{o,1}_{H,2} & \cdots & p^{o,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} p^{b,1}_{1,1} & p^{b,1}_{1,2} & \cdots & p^{b,1}_{1,W} \\ p^{b,1}_{2,1} & p^{b,1}_{2,2} & \cdots & p^{b,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{b,1}_{H,1} & p^{b,1}_{H,2} & \cdots & p^{b,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} p^{o,2}_{1,1} & p^{o,2}_{1,2} & \cdots & p^{o,2}_{1,W} \\ p^{o,2}_{2,1} & p^{o,2}_{2,2} & \cdots & p^{o,2}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{o,2}_{H,1} & p^{o,2}_{H,2} & \cdots & p^{o,2}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} p^{b,2}_{1,1} & p^{b,2}_{1,2} & \cdots & p^{b,2}_{1,W} \\ p^{b,2}_{2,1} & p^{b,2}_{2,2} & \cdots & p^{b,2}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{b,2}_{H,1} & p^{b,2}_{H,2} & \cdots & p^{b,2}_{H,W} \end{bmatrix}
+
+\cdots
+
+\begin{bmatrix} p^{o,k}_{1,1} & p^{o,k}_{1,2} & \cdots & p^{o,k}_{1,W} \\ p^{o,k}_{2,1} & p^{o,k}_{2,2} & \cdots & p^{o,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{o,k}_{H,1} & p^{o,k}_{H,2} & \cdots & p^{o,k}_{H,W} \end{bmatrix}
+
+\begin{bmatrix} p^{b,k}_{1,1} & p^{b,k}_{1,2} & \cdots & p^{b,k}_{1,W} \\ p^{b,k}_{2,1} & p^{b,k}_{2,2} & \cdots & p^{b,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{b,k}_{H,1} & p^{b,k}_{H,2} & \cdots & p^{b,k}_{H,W} \end{bmatrix}
+
+
+$$
+
+
+The bounding box offset for each anchor box is a tensor of shape $H \times W \times 2k$, represented by 2 channels of the RPN output Network.  -->
+</section>
+<section id="rpn-bounding-box-offset" class="level2">
+<h2 class="anchored" data-anchor-id="rpn-bounding-box-offset">RPN Bounding Box Offset</h2>
+<p>The bounding box offset is a tensor of shape <span class="math inline">H \times W \times 4k</span>, represented by <span class="math inline">4k</span> channels of the RPN output Network. The scores are arranged in the original spatial order of the feature map and each channel is associated with one of a specific anchor box’s 4 bounding box transfomrations.</p>
+<p><img src="./img/bbox-transformations.png" class="img-fluid"></p>
+<!-- $$
+\begin{bmatrix} t^{x,1}_{1,1} & t^{x,1}_{1,2} & \cdots & t^{x,1}_{1,W} \\ t^{x,1}_{2,1} & t^{x,1}_{2,2} & \cdots & t^{x,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{x,1}_{H,1} & t^{x,1}_{H,2} & \cdots & t^{x,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{y,1}_{1,1} & t^{y,1}_{1,2} & \cdots & t^{y,1}_{1,W} \\ t^{y,1}_{2,1} & t^{y,1}_{2,2} & \cdots & t^{y,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{y,1}_{H,1} & t^{y,1}_{H,2} & \cdots & t^{y,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{w,1}_{1,1} & t^{w,1}_{1,2} & \cdots & t^{w,1}_{1,W} \\ t^{w,1}_{2,1} & t^{w,1}_{2,2} & \cdots & t^{w,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{w,1}_{H,1} & t^{w,1}_{H,2} & \cdots & t^{w,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{h,1}_{1,1} & t^{h,1}_{1,2} & \cdots & t^{h,1}_{1,W} \\ t^{h,1}_{2,1} & t^{h,1}_{2,2} & \cdots & t^{h,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{h,1}_{H,1} & t^{h,1}_{H,2} & \cdots & t^{h,1}_{H,W} \end{bmatrix}
+
+\cdots
+
+\begin{bmatrix} t^{x,k}_{1,1} & t^{x,k}_{1,2} & \cdots & t^{x,k}_{1,W} \\ t^{x,k}_{2,1} & t^{x,k}_{2,2} & \cdots & t^{x,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{x,k}_{H,1} & t^{x,k}_{H,2} & \cdots & t^{x,k}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{y,k}_{1,1} & t^{y,k}_{1,2} & \cdots & t^{y,k}_{1,W} \\ t^{y,k}_{2,1} & t^{y,k}_{2,2} & \cdots & t^{y,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{y,k}_{H,1} & t^{y,k}_{H,2} & \cdots & t^{y,k}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{w,k}_{1,1} & t^{w,k}_{1,2} & \cdots & t^{w,k}_{1,W} \\ t^{w,k}_{2,1} & t^{w,k}_{2,2} & \cdots & t^{w,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{w,k}_{H,1} & t^{w,k}_{H,2} & \cdots & t^{w,k}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{h,k}_{1,1} & t^{h,k}_{1,2} & \cdots & t^{h,k}_{1,W} \\ t^{h,k}_{2,1} & t^{h,k}_{2,2} & \cdots & t^{h,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{h,k}_{H,1} & t^{h,k}_{H,2} & \cdots & t^{h,k}_{H,W} \end{bmatrix}
+
+$$ -->
+</section>
+<section id="faster-r-cnn-roi-pooling-classification-head" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-roi-pooling-classification-head">Faster R-CNN ROI Pooling &amp; Classification Head</h2>
+<ul>
+<li>The ROI Pooling &amp; Classification Head is a small network that classifies proposed regions and refines bounding boxes.</li>
+<li><strong>Steps:</strong>
+<ol type="1">
+<li>The <strong>Top-K proposals</strong> (usually <strong>~2000</strong> in training, <strong>~300</strong> in inference) are selected using <strong>class agnostic Non-Maximum Suppression (NMS)</strong>.</li>
+<li>The proposals are resized to a fixed size using <strong>RoI Pooling (or RoI Align in later versions like Mask R-CNN)</strong>.</li>
+<li>The proposals are classified and bounding boxes are refined using fully connected layers.</li>
+<li>The classified proposals are finally passed through a <strong>class-wise Non-Maximum Suppression (NMS)</strong> to remove redundant detections.</li>
+</ol></li>
+</ul>
+</section>
+<section id="faster-r-cnn-diagram" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-diagram">Faster R-CNN Diagram</h2>
+<p><img src="./img/faster-r-cnn.png" class="img-fluid"></p>
+</section>
+<section id="training-faster-r-cnn" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="training-faster-r-cnn">Training Faster R-CNN</h2>
+<p><strong>Multi-Task Loss Function</strong> Faster R-CNN optimizes: <span class="math display">
+\mathcal{L} = \mathcal{L}_{\text{RPN}} + \mathcal{L}_{\text{Detection}}
+</span> Each part consists of:</p>
+<ul>
+<li><strong>RPN Loss:</strong>
+<ul>
+<li>Classification loss <span class="math inline">\mathcal{L}_{cls}</span> for object vs.&nbsp;background (Binary Cross Entropy or Categorical Cross Entropy).</li>
+<li>Bounding box regression loss <span class="math inline">\mathcal{L}_{bbox}</span>, Smooth L1 loss.</li>
+</ul></li>
+<li><strong>Detection Head Loss:</strong>
+<ul>
+<li>Classification loss <span class="math inline">\mathcal{L}_{cls}</span>, Softmax Cross Entropy.</li>
+<li>Bounding box regression loss <span class="math inline">\mathcal{L}_{bbox}</span>, Smooth L1 loss.</li>
+</ul></li>
+</ul>
+<p><strong>Two-Step Training</strong></p>
+<ol type="1">
+<li><strong>Train RPN first</strong>: It learns to propose good region candidates.</li>
+<li><strong>Train the detection head</strong>: Using RPN proposals to classify objects and refine bounding boxes.</li>
+</ol>
+<p>Alternatively, a <strong>joint training</strong> approach is also possible.</p>
+</section>
+<section id="faster-r-cnn-vs.-previous-models" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-vs.-previous-models">Faster R-CNN vs.&nbsp;Previous Models</h2>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Region Proposal Method</th>
+<th>Speed</th>
+<th>Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>R-CNN</strong></td>
+<td>Selective Search</td>
+<td>Slow</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td><strong>Fast R-CNN</strong></td>
+<td>Selective Search</td>
+<td>Faster</td>
+<td>High</td>
+</tr>
+<tr class="odd">
+<td><strong>Faster R-CNN</strong></td>
+<td>RPN (learned proposals)</td>
+<td>Much faster</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>Faster than Fast R-CNN</strong> (due to RPN).<br>
+✅ <strong>End-to-end trainable</strong> (removes hand-designed region proposal methods).<br>
+✅ <strong>Accurate across multiple object sizes</strong>.</p>
+<p>⚠️ <strong>Still not real-time</strong> (inference takes <strong>~100-200ms per image</strong>).<br>
+⚠️ <strong>Anchors require tuning</strong> for different datasets.</p>
+</section>
+<section id="yolo-you-only-look-once-architecture-explained" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-you-only-look-once-architecture-explained">YOLO (You Only Look Once) Architecture Explained</h2>
+<ul>
+<li><a href="https://arxiv.org/pdf/1506.02640">YOLO (You Only Look Once)</a> is a <strong>real-time object detection model</strong> designed for speed and efficiency.</li>
+<li><strong>YOLO treats object detection as a singular problem</strong>, predicting <strong>bounding boxes and class probabilities in a single pass</strong> through the network.</li>
+<li>This differs from region-based approaches like Faster R-CNN, which first generate proposals and then classify them</li>
+</ul>
+<p>✅ <strong>Single-Pass Detection</strong> → No region proposals, direct predictions<br>
+✅ <strong>Grid-Based Prediction</strong> → Image is divided into a grid, and each cell predicts objects<br>
+✅ <strong>Real-Time Speed</strong> → Optimized for fast inference, ideal for applications like surveillance and self-driving cars<br>
+⚠️ <strong>Lower accuracy</strong> compared to two-stage detectors like Faster R-CNN</p>
+</section>
+<section id="yolo-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-architecture">YOLO Architecture</h2>
+<ol type="1">
+<li><strong>Backbone (Feature Extraction)</strong>
+<ul>
+<li>The backbone is a <strong>deep CNN</strong> (originally inspired by GoogLeNet).<br>
+</li>
+<li>It extracts <strong>spatial features</strong> from the input image.<br>
+</li>
+<li>Latest versions use <strong>CSPDarkNet (YOLOv4, YOLOv5) or EfficientNet (YOLOv7, YOLOv8)</strong> for stronger feature representation.</li>
+</ul></li>
+<li><strong>Detection Head (Bounding Box and Class Prediction)</strong>
+<ul>
+<li>The image is divided into an <span class="math inline">S \times S</span> grid (e.g., <span class="math inline">7 \times 7</span> in YOLOv1).<br>
+</li>
+<li>Each grid cell is responsible for predicting <strong>up to B bounding boxes (including transforms) and their confidence scores</strong>.</li>
+</ul></li>
+<li><strong>Post-Processing (Non-Maximum Suppression - NMS)</strong>
+<ul>
+<li>Since multiple grid cells may detect the same object, <strong>Non-Maximum Suppression (NMS)</strong> is applied.<br>
+</li>
+<li>NMS removes redundant detections by <strong>keeping the highest-confidence box</strong> and discarding overlapping ones.</li>
+</ul></li>
+</ol>
+</section>
+<section id="yolo-detection-head-output" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-detection-head-output">YOLO Detection Head Output</h2>
+<ul>
+<li>The image is divided into an <span class="math inline">S \times S</span> grid (e.g., <span class="math inline">7 \times 7</span> in YOLOv1).</li>
+<li>Each grid cell is responsible for predicting <strong>up to <span class="math inline">B</span> bounding boxes and their confidence scores</strong>.<br>
+</li>
+<li>Each bounding box includes:
+<ul>
+<li><span class="math inline">x, y</span> → Center of the box (relative to the grid cell)<br>
+</li>
+<li><span class="math inline">w, h</span> → Width and height (relative to the grid cell, anchor box it later versions of YOLO)<br>
+</li>
+<li><strong>Confidence score</strong> (<span class="math inline">p</span>) → How likely an object is in the box<br>
+</li>
+</ul></li>
+<li><strong>Class probability vector</strong> (<span class="math inline">c_1, c_2, \ldots, c_C</span>) → If an object is detected, which class of <span class="math inline">C</span> classes it belongs to, note class probability is shared across all bounding boxes.</li>
+</ul>
+</section>
+<section id="yolo-detection-head-output-example" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-detection-head-output-example">YOLO Detection Head Output Example</h2>
+<p>This results in a final output tensor of shape:</p>
+<p><span class="math display">
+S \times S \times (B \times 5 + C)
+</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">S \times S</span> → Number of grid cells<br>
+</li>
+<li><span class="math inline">B</span> → Number of bounding boxes per cell<br>
+</li>
+<li><span class="math inline">5</span> → <span class="math inline">x, y, w, h</span> and object confidence score (<span class="math inline">p</span>) per box<br>
+</li>
+<li><span class="math inline">C</span> → Number of object classes</li>
+</ul>
+<p>Example for YOLOv1:</p>
+<ul>
+<li><span class="math inline">S = 7</span>, <span class="math inline">B = 2</span>, <span class="math inline">C = 20</span> (Pascal VOC dataset)</li>
+<li>Output tensor: <span class="math display">
+7 \times 7 \times (2 \times 5 + 20) = 7 \times 7 \times 30
+</span></li>
+</ul>
+</section>
+<section id="yolo-grid-cell-output-tensor" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-grid-cell-output-tensor">YOLO Grid Cell Output Tensor</h2>
+<p>Below is the output tensor for a single grid cell. Here <span class="math inline">x_i</span>, <span class="math inline">y_i</span>, <span class="math inline">w_i</span>, <span class="math inline">h_i</span> are the bounding box transformations and <span class="math inline">p_i</span> is the confidence score of the <span class="math inline">i^{th}</span> bounding box. The <span class="math inline">c_j</span> is the class probability of the <span class="math inline">j^{th}</span> class. Here <span class="math inline">B</span> is the number of bounding boxes per grid cell.</p>
+$$
+<span class="math display">\begin{bmatrix}
+    x_1 &amp; y_1 &amp; w_1 &amp; h_1 &amp; p_1 \\
+    x_2 &amp; y_2 &amp; w_2 &amp; h_2 &amp; p_2 \\
+    \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
+    x_{B} &amp; y_{B} &amp; w_{B} &amp; h_{B} &amp; p_{B} \\
+\end{bmatrix}
+\quad
+\begin{bmatrix}
+    c_1 &amp; c_2 &amp; \cdots &amp; c_{C} \\
+\end{bmatrix}</span>
+</section>
+<section id="yolo-detection-head-ouptut-tensor" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-detection-head-ouptut-tensor">YOLO Detection Head Ouptut Tensor</h2>
+<p>Below is the output tensor for of the YOLO detection head. Here <span class="math inline">x_i</span>, <span class="math inline">y_i</span>, <span class="math inline">w_i</span>, <span class="math inline">h_i</span> are the bounding box transformations and <span class="math inline">p_i</span> is the confidence score of the <span class="math inline">i^{th}</span> bounding box. The <span class="math inline">c^k_j</span> is the class probability of the <span class="math inline">j^{th}</span> class for the <span class="math inline">k^{th}</span> grid cell. The total number of bounding boxes is <span class="math inline">S \times S \times B</span> where <span class="math inline">S</span> is the number of grid cells in the horizontal and vertical directions and <span class="math inline">B</span> is the number of bounding boxes per grid cell.</p>
+<p><span class="math display">
+\begin{bmatrix}
+    x_1 &amp; y_1 &amp; w_1 &amp; h_1 &amp; p_1 \\
+    x_2 &amp; y_2 &amp; w_2 &amp; h_2 &amp; p_2 \\
+    \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
+    x_{S \times S \times B} &amp; y_{S \times S \times B} &amp; w_{S \times S \times B} &amp; h_{S \times S \times B} &amp; p_{S \times S \times B} \\
+\end{bmatrix}
+\quad
+\begin{bmatrix}
+    c^1_1 &amp; c^1_2 &amp; \cdots &amp; c^1_{C} \\
+    c^2_1 &amp; c^2_2 &amp; \cdots &amp; c^2_{C} \\
+    \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+    c^{S \times S}_1 &amp; c^{S \times S}_2 &amp; \cdots &amp; c^{S \times S}_{C} \\
+\end{bmatrix}
+</span></p>
+</section>
+<section id="yolo-detection-head-output-1" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-detection-head-output-1">YOLO Detection Head Output</h2>
+<p><img src="./img/yolo-detection-head.png" class="img-fluid"></p>
+</section>
+<section id="yolo-diagram" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-diagram">YOLO Diagram</h2>
+<p><img src="./img/yolo-overview.png" class="img-fluid"></p>
+</section>
+<section id="advantages-and-limitations-of-yolo" class="level2">
+<h2 class="anchored" data-anchor-id="advantages-and-limitations-of-yolo">Advantages and Limitations of YOLO</h2>
+<section id="advantages" class="level3">
+<h3 class="anchored" data-anchor-id="advantages">Advantages</h3>
+<ul>
+<li>🚀 <strong>Fast inference</strong> – No region proposals, direct detection in a single forward pass.<br>
+</li>
+<li>📏 <strong>Global context awareness</strong> – Predicts based on the entire image, not just local patches.<br>
+</li>
+<li>🎯 <strong>High accuracy</strong> – Newer YOLO versions balance speed and accuracy well.</li>
+</ul>
+</section>
+<section id="limitations" class="level3">
+<h3 class="anchored" data-anchor-id="limitations">Limitations</h3>
+<ul>
+<li>Struggles with <strong>small objects</strong> (especially earlier versions).<br>
+</li>
+<li><strong>Lower localization accuracy</strong> compared to two-stage detectors like Faster R-CNN.<br>
+</li>
+<li>Can miss <strong>overlapping objects</strong> since each grid cell predicts only a limited number of boxes.</li>
+</ul>
+</section>
+</section>
+<section id="evolution-of-yolo-versions" class="level2">
+<h2 class="anchored" data-anchor-id="evolution-of-yolo-versions">Evolution of YOLO Versions</h2>
+<table class="table">
+<colgroup>
+<col style="width: 40%">
+<col style="width: 59%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Version</th>
+<th>Improvements</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>YOLOv1 (2015)</strong></td>
+<td>First implementation, <strong>7×7 grid, 2 boxes per cell</strong>, fast but less accurate.</td>
+</tr>
+<tr class="even">
+<td><strong>YOLOv2 (2016, YOLO9000)</strong></td>
+<td>Introduced <strong>anchor boxes</strong>, improved accuracy, trained on <strong>9000 classes</strong>.</td>
+</tr>
+<tr class="odd">
+<td><strong>YOLOv3 (2018)</strong></td>
+<td>Added <strong>multi-scale detection (FPN)</strong>, better feature extraction with <strong>DarkNet-53</strong>.</td>
+</tr>
+<tr class="even">
+<td><strong>YOLOv4 (2020)</strong></td>
+<td>Uses <strong>CSPDarkNet</strong> and <strong>Path Aggregation Network (PANet)</strong>, higher accuracy.</td>
+</tr>
+<tr class="odd">
+<td><strong>YOLOv5 (2020, Ultralytics)</strong></td>
+<td>Optimized for PyTorch, smaller models, real-time edge deployment.</td>
+</tr>
+<tr class="even">
+<td><strong>YOLOv7 (2022)</strong></td>
+<td>Introduces <strong>extended E-ELAN architecture</strong>, better model scaling.</td>
+</tr>
+<tr class="odd">
+<td><strong>YOLOv8 (2023)</strong></td>
+<td>More modular, improved architecture for custom training.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="faster-r-cnn-vs.-yolo" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-vs.-yolo">Faster R-CNN vs.&nbsp;YOLO</h2>
+<table class="table">
+<colgroup>
+<col style="width: 32%">
+<col style="width: 46%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Faster R-CNN</th>
+<th>YOLO</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Detection Method</strong></td>
+<td>Two-stage (RPN + classifier)</td>
+<td>Single-stage (direct regression)</td>
+</tr>
+<tr class="even">
+<td><strong>Speed</strong></td>
+<td>Slower (~5 FPS)</td>
+<td>Faster (up to 155 FPS)</td>
+</tr>
+<tr class="odd">
+<td><strong>Accuracy</strong></td>
+<td>Higher for small objects</td>
+<td>Good but struggles with small objects</td>
+</tr>
+<tr class="even">
+<td><strong>Use Cases</strong></td>
+<td>High-precision tasks (medical, aerial imagery)</td>
+<td>Real-time applications (autonomous driving, surveillance)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="yolo-summary" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-summary">YOLO Summary</h2>
+<p>✅ <strong>YOLO is a single-stage object detector</strong> that <strong>splits an image into a grid</strong> and directly predicts <strong>bounding boxes, class probabilities, and confidence scores</strong> in one pass.<br>
+✅ <strong>It is extremely fast</strong> and <strong>well-suited for real-time applications</strong> like autonomous vehicles and video surveillance.<br>
+✅ <strong>Newer YOLO versions</strong> (YOLOv4, YOLOv5, YOLOv7, YOLOv8) improve accuracy while maintaining real-time performance.</p>
+</section>
+<section id="feature-fusion-in-object-detection" class="level2">
+<h2 class="anchored" data-anchor-id="feature-fusion-in-object-detection">Feature Fusion in Object Detection 🚀</h2>
+<p>Feature fusion is a <strong>critical technique</strong> in object detection that helps networks integrate information from different layers or scales to improve accuracy, particularly for <strong>multi-scale objects</strong>.</p>
+<p>Single-scale feature maps may fail to detect small objects due to loss of fine details. Feature fusion solves this by:</p>
+<p>✅ <strong>Enhancing spatial details</strong> (small objects)<br>
+✅ <strong>Combining high-level semantics with low-level textures</strong><br>
+✅ <strong>Improving robustness across object scales</strong></p>
+<ul>
+<li>There are four types of feature fusion techniques:
+<ul>
+<li>Feature Pyramid Fusion (Top-Down Fusion)</li>
+<li>Bottom-Up Feature Aggregation</li>
+<li>Scale-Aware Fusion (Parallel Multi-Scale Features)</li>
+<li>Attention-Based Feature Fusion</li>
+</ul></li>
+</ul>
+</section>
+<section id="feature-pyramid-fusion-top-down-fusion" class="level2">
+<h2 class="anchored" data-anchor-id="feature-pyramid-fusion-top-down-fusion">Feature Pyramid Fusion (Top-Down Fusion)</h2>
+<p>Used in: <strong>FPN (Feature Pyramid Network), Faster R-CNN, RetinaNet</strong></p>
+<p>📌 <strong>Concept:</strong></p>
+<ul>
+<li>High-resolution, low-level feature maps capture <strong>fine details</strong> but lack strong semantics.<br>
+</li>
+<li>Low-resolution, high-level feature maps have <strong>strong semantics</strong> but lose spatial details.<br>
+</li>
+<li><strong>Solution:</strong> Pass high-level semantic information <strong>downward</strong> to enrich finer feature maps.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<ul>
+<li><strong>FPN</strong> creates a feature pyramid where each level receives <strong>both high-resolution details and deep semantic context.</strong></li>
+</ul>
+<p><strong>Advantage:</strong></p>
+<ul>
+<li>Boosts <strong>small object detection</strong> without adding too much computational cost.</li>
+</ul>
+</section>
+<section id="bottom-up-feature-aggregation" class="level2">
+<h2 class="anchored" data-anchor-id="bottom-up-feature-aggregation">Bottom-Up Feature Aggregation</h2>
+<p>Used in: <strong>PANet (Path Aggregation Network), YOLOv4, YOLOv5</strong></p>
+<p>📌 <strong>Concept:</strong></p>
+<ul>
+<li>Unlike FPN, which propagates information <strong>top-down</strong>, PANet <strong>reintroduces</strong> low-level spatial features back into deeper layers.<br>
+</li>
+<li>This <strong>strengthens fine details</strong> while preserving rich semantics.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<ul>
+<li><strong>YOLOv4 PANet</strong> → Combines <strong>deep semantic features</strong> with <strong>shallow feature maps</strong> to refine predictions.</li>
+</ul>
+<p><strong>Advantage:</strong></p>
+<ul>
+<li>Improves <strong>both small and large object detection</strong>.</li>
+</ul>
+</section>
+<section id="scale-aware-fusion-parallel-multi-scale-features" class="level2">
+<h2 class="anchored" data-anchor-id="scale-aware-fusion-parallel-multi-scale-features">Scale-Aware Fusion (Parallel Multi-Scale Features)</h2>
+<p>Used in: <strong>SSD (Single Shot Detector), YOLOv3</strong></p>
+<p>📌 <strong>Concept:</strong><br>
+- Instead of merging features from different levels, the detector <strong>makes predictions at multiple feature map scales</strong>.<br>
+- Each feature map specializes in detecting objects of a particular <strong>size range</strong>.</p>
+<p><strong>Example:</strong></p>
+<ul>
+<li><strong>SSD</strong> detects:
+<ul>
+<li><strong>Large objects</strong> from deep, coarse feature maps<br>
+</li>
+<li><strong>Small objects</strong> from shallow, fine-grained feature maps</li>
+</ul></li>
+</ul>
+<p><strong>Advantage:</strong></p>
+<ul>
+<li>Simple and <strong>fast</strong>, but not as refined as FPN-style fusion.</li>
+</ul>
+</section>
+<section id="attention-based-feature-fusion" class="level2">
+<h2 class="anchored" data-anchor-id="attention-based-feature-fusion">Attention-Based Feature Fusion</h2>
+<p>Used in: <strong>Transformer-based detectors (DETR, YOLOv7-E)</strong></p>
+<p>📌 <strong>Concept:</strong><br>
+- Instead of simple up/down fusion, networks <strong>learn</strong> how much importance each feature level has.<br>
+- Uses <strong>attention mechanisms</strong> (like self-attention in Transformers) to adaptively merge information.</p>
+<p><strong>Example:</strong></p>
+<ul>
+<li><strong>DETR (Detection Transformer)</strong> dynamically assigns <strong>importance scores</strong> to different feature levels.</li>
+</ul>
+<p><strong>Advantage:</strong></p>
+<ul>
+<li>More flexible and can adapt to different object scales <strong>without hand-crafted feature pyramids</strong>.</li>
+</ul>
+</section>
+<section id="comparison-of-feature-fusion-methods" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-of-feature-fusion-methods">Comparison of Feature Fusion Methods</h2>
+<table class="table">
+<colgroup>
+<col style="width: 37%">
+<col style="width: 18%">
+<col style="width: 20%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature Fusion Type</th>
+<th>Examples</th>
+<th>Strengths</th>
+<th>Weaknesses</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Top-Down (FPN)</strong></td>
+<td>Faster R-CNN, RetinaNet</td>
+<td>Enhances small object detection</td>
+<td>Requires extra computation</td>
+</tr>
+<tr class="even">
+<td><strong>Bottom-Up (PANet)</strong></td>
+<td>YOLOv4, YOLOv5</td>
+<td>Strengthens fine details</td>
+<td>More complex than FPN</td>
+</tr>
+<tr class="odd">
+<td><strong>Parallel Multi-Scale</strong></td>
+<td>SSD, YOLOv3</td>
+<td>Fast and simple</td>
+<td>Less refined feature interaction</td>
+</tr>
+<tr class="even">
+<td><strong>Attention-Based</strong></td>
+<td>DETR, Transformer-based models</td>
+<td>Dynamically learns feature importance</td>
+<td>Computationally expensive</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="fpn-in-object-detection" class="level2">
+<h2 class="anchored" data-anchor-id="fpn-in-object-detection">FPN in Object Detection</h2>
+<ul>
+<li><p>The FPN is a top-down feature fusion technique that is used in two-stage detectors like Faster R-CNN.</p></li>
+<li><p>The <strong>Feature Pyramid Network (FPN)</strong> constructs a <strong>multi-scale feature pyramid</strong> from a <strong>deep CNN backbone (e.g., ResNet-50, ResNet-101, etc.)</strong>.</p></li>
+<li><p>Allows the network to detect objects at multiple scales by extracting <strong>feature maps at different resolutions</strong>.</p></li>
+<li><p><strong>Input to FPN</strong> is typically an image of size <strong>( H W )</strong> (RGB image).<br>
+</p></li>
+<li><p><strong>Output consists of feature maps</strong> at different pyramid levels (<strong>P2, P3, P4, P5, P6</strong>) with progressively decreasing spatial resolutions.</p></li>
+</ul>
+</section>
+<section id="bottom-up-pathway-backbone-feature-extraction" class="level2">
+<h2 class="anchored" data-anchor-id="bottom-up-pathway-backbone-feature-extraction">Bottom-Up Pathway (Backbone Feature Extraction)</h2>
+<p>FPN starts with a <strong>standard CNN backbone (e.g., ResNet-50/101)</strong>, which produces multiple intermediate feature maps:</p>
+<table class="table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 28%">
+<col style="width: 32%">
+<col style="width: 17%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature Map</th>
+<th>Corresponding Backbone Layer</th>
+<th>Spatial Size (Relative to Input)</th>
+<th>Stride (w.r.t Input)</th>
+<th>Channels</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>C1</strong></td>
+<td>Initial convolutional layers</td>
+<td><span class="math inline">H \times W</span></td>
+<td>1</td>
+<td>64</td>
+</tr>
+<tr class="even">
+<td><strong>C2</strong></td>
+<td>ResNet Stage 1</td>
+<td><span class="math inline">H/2 \times W/2</span></td>
+<td>2</td>
+<td>256</td>
+</tr>
+<tr class="odd">
+<td><strong>C3</strong></td>
+<td>ResNet Stage 2</td>
+<td><span class="math inline">H/4 \times W/4</span></td>
+<td>4</td>
+<td>512</td>
+</tr>
+<tr class="even">
+<td><strong>C4</strong></td>
+<td>ResNet Stage 3</td>
+<td><span class="math inline">H/8 \times W/8</span></td>
+<td>8</td>
+<td>1024</td>
+</tr>
+<tr class="odd">
+<td><strong>C5</strong></td>
+<td>ResNet Stage 4</td>
+<td><span class="math inline">H/16 \times W/16</span></td>
+<td>16</td>
+<td>2048</td>
+</tr>
+</tbody>
+</table>
+<p>👉 <strong>Note:</strong> The feature channels increase from <strong>256 → 512 → 1024 → 2048</strong> as we go deeper in the backbone.</p>
+</section>
+<section id="top-down-pathway-fpn-feature-pyramid" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="top-down-pathway-fpn-feature-pyramid">Top-Down Pathway (FPN Feature Pyramid)</h2>
+<p><strong>FPN pyramid levels (P2–P6)</strong> are created by combining bottom-up features with <strong>upsampled high-level features</strong>:</p>
+<table class="table">
+<colgroup>
+<col style="width: 19%">
+<col style="width: 30%">
+<col style="width: 23%">
+<col style="width: 11%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>FPN Level</strong></th>
+<th><strong>Constructed From</strong></th>
+<th><strong>Spatial Size</strong></th>
+<th><strong>Stride</strong></th>
+<th><strong>Channels</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>P3</strong></td>
+<td><strong>1×1 Conv on C3</strong> + Upsampled P4</td>
+<td><span class="math inline">H/4 \times W/4</span></td>
+<td>4</td>
+<td>256</td>
+</tr>
+<tr class="even">
+<td><strong>P4</strong></td>
+<td><strong>1×1 Conv on C4</strong> + Upsampled P5</td>
+<td><span class="math inline">H/8 \times W/8</span></td>
+<td>8</td>
+<td>256</td>
+</tr>
+<tr class="odd">
+<td><strong>P5</strong></td>
+<td><strong>1×1 Conv on C5</strong></td>
+<td><span class="math inline">H/16 \times W/16</span></td>
+<td>16</td>
+<td>256</td>
+</tr>
+<tr class="even">
+<td><strong>P6</strong></td>
+<td><strong>3×3 Conv on P5 (stride 2, no lateral)</strong></td>
+<td><span class="math inline">H/32 \times W/32</span></td>
+<td>32</td>
+<td>256</td>
+</tr>
+</tbody>
+</table>
+<p>👉 <strong>Key Observations:</strong></p>
+<ul>
+<li><strong>Each feature map in FPN has 256 channels</strong>, regardless of its spatial size.<br>
+</li>
+<li><strong>Higher-resolution feature maps (P3, P4) are enhanced with upsampled deeper features</strong> to retain semantic meaning.<br>
+</li>
+<li><strong>P6 is an extra level</strong> added via a <strong>3x3 stride-2 convolution on P5</strong> (used in RetinaNet for detecting very large objects).</li>
+</ul>
+</section>
+<section id="fpn-inputoutput-shape-example" class="level2">
+<h2 class="anchored" data-anchor-id="fpn-inputoutput-shape-example">FPN Input/Output Shape Example</h2>
+<p>If an image of size <strong><span class="math inline">800 \times 800</span></strong> is passed through an FPN built on <strong>ResNet-50</strong>, the feature maps at each level will have the following dimensions:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Feature Map</th>
+<th>Spatial Size</th>
+<th>Stride</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>C2</strong></td>
+<td><span class="math inline">400 \times 400</span></td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td><strong>C3</strong></td>
+<td><span class="math inline">200 \times 200</span></td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<td><strong>C4</strong></td>
+<td><span class="math inline">100 \times 100</span></td>
+<td>8</td>
+</tr>
+<tr class="even">
+<td><strong>C5</strong></td>
+<td><span class="math inline">50 \times 50</span></td>
+<td>16</td>
+</tr>
+<tr class="odd">
+<td><strong>P3</strong></td>
+<td><span class="math inline">200 \times 200</span></td>
+<td>8</td>
+</tr>
+<tr class="even">
+<td><strong>P4</strong></td>
+<td><span class="math inline">100 \times 100</span></td>
+<td>16</td>
+</tr>
+<tr class="odd">
+<td><strong>P5</strong></td>
+<td><span class="math inline">50 \times 50</span></td>
+<td>32</td>
+</tr>
+<tr class="even">
+<td><strong>P6</strong></td>
+<td><span class="math inline">25 \times 25</span></td>
+<td>64</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="fpn-diagram" class="level2 nostretch">
+<h2 class="nostretch anchored" data-anchor-id="fpn-diagram">FPN Diagram</h2>
+<p><a href="./img/feature-pyramid-network.png"><img src="./img/feature-pyramid-network.png" class="img-fluid"></a></p>
+</section>
+<section id="how-fpn-is-used-in-object-detection" class="level2">
+<h2 class="anchored" data-anchor-id="how-fpn-is-used-in-object-detection">How FPN is Used in Object Detection</h2>
+<p><strong>Faster R-CNN with FPN:</strong></p>
+<ul>
+<li>The <strong>Region Proposal Network (RPN)</strong> generates proposals at multiple levels (<strong>P3 to P6</strong>).<br>
+</li>
+<li><strong>RoIAlign</strong> maps region proposals to the most appropriate feature map based on their size.
+<ul>
+<li><strong>RoIPooling</strong> uses integer division to map the region proposal to the feature map which can cause misalignment.</li>
+<li><strong>RoIAlign</strong> uses bilinear interpolation to map the region proposal to the feature map which reduces the misalignment.</li>
+</ul></li>
+</ul>
+<p><strong>RetinaNet with FPN:</strong></p>
+<ul>
+<li>Bounding box classification and regression happen <strong>independently at each level</strong> (P3–P7).
+<ul>
+<li>Each level has its own <strong>anchor boxes</strong>, allowing better handling of <strong>small, medium, and large objects</strong>.</li>
+</ul></li>
+</ul>
+<!-- ## Summary
+✅ **FPN constructs a feature pyramid (P2–P6) from a deep CNN backbone (e.g., ResNet-50, ResNet-101).**  
+✅ **Each feature map has a fixed 256 channels but varies in spatial size and stride.**  
+✅ **Lower-level features (P3) handle small objects, while higher-level features (P5, P6) detect large objects.**  
+✅ **Used in both two-stage (Faster R-CNN) and one-stage (RetinaNet) detectors to improve scale robustness.**   -->
+</section>
+<section id="final-thoughts-on-feature-fusion" class="level2">
+<h2 class="anchored" data-anchor-id="final-thoughts-on-feature-fusion">Final Thoughts on Feature Fusion</h2>
+<ul>
+<li><strong>FPN &amp; PANet</strong> are commonly used in two-stage detectors like Faster R-CNN.<br>
+</li>
+<li><strong>SSD &amp; YOLOv3-style multi-scale detection</strong> is preferred in real-time single-stage detectors.<br>
+</li>
+<li><strong>Attention-based fusion</strong> (Transformers) is the next evolution in feature fusion for object detection.</li>
+</ul>
+</section>
+<section id="study-guide" class="level1">
+<h1>Study Guide</h1>
+<section id="faster-r-cnn" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn">Faster R-CNN</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>How Faster R-CNN improves on Fast R-CNN (eliminates Selective Search)</li>
+<li>The three components: Backbone, Region Proposal Network (RPN), RoI Pooling &amp; Classification Head</li>
+<li>What anchor boxes are and why multiple scales/aspect ratios are used</li>
+<li>How the RPN generates objectness scores and bounding box offsets</li>
+<li>RoI Pooling vs.&nbsp;RoI Align (integer division vs.&nbsp;bilinear interpolation)</li>
+<li>Multi-task loss: classification loss + bounding box regression loss + RPN losses</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>What is the key innovation of Faster R-CNN over Fast R-CNN?</li>
+<li>What does the Region Proposal Network predict for each anchor?</li>
+<li>Why does Faster R-CNN use anchors at multiple scales and aspect ratios?</li>
+</ul>
+</section>
+<section id="yolo-you-only-look-once" class="level2">
+<h2 class="anchored" data-anchor-id="yolo-you-only-look-once">YOLO (You Only Look Once)</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>YOLO as a single-stage detector: detection as a regression problem in one forward pass</li>
+<li>Grid-based prediction: image divided into <span class="math inline">S \times S</span> grid, each cell predicts <span class="math inline">B</span> bounding boxes</li>
+<li>Detection head output: <span class="math inline">(x, y, w, h, \text{confidence})</span> per box + class probabilities per cell</li>
+<li>Output tensor shape: <span class="math inline">S \times S \times (B \times 5 + C)</span></li>
+<li>Post-processing with Non-Maximum Suppression (NMS)</li>
+<li>Advantages (speed, real-time) and limitations (small objects, dense objects)</li>
+<li>Evolution of YOLO versions (v1 through v8+)</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>How does YOLO differ from Faster R-CNN in its detection approach?</li>
+<li>What is the shape of the YOLO output tensor for a <span class="math inline">7 \times 7</span> grid with 2 bounding boxes and 20 classes?</li>
+<li>Why does YOLO struggle with small objects compared to two-stage detectors?</li>
+</ul>
+</section>
+<section id="faster-r-cnn-vs.-yolo-1" class="level2">
+<h2 class="anchored" data-anchor-id="faster-r-cnn-vs.-yolo-1">Faster R-CNN vs.&nbsp;YOLO</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>Two-stage (RPN + classifier) vs.&nbsp;single-stage (direct regression)</li>
+<li>Speed vs.&nbsp;accuracy trade-offs</li>
+<li>Use cases: precision-critical (medical, aerial) vs.&nbsp;real-time (surveillance, autonomous driving)</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>In what scenario would you pick Faster R-CNN over YOLO?</li>
+<li>Why is YOLO faster than Faster R-CNN?</li>
+</ul>
+</section>
+<section id="feature-fusion-in-object-detection-1" class="level2">
+<h2 class="anchored" data-anchor-id="feature-fusion-in-object-detection-1">Feature Fusion in Object Detection</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>Why feature fusion is needed (multi-scale object detection)</li>
+<li>Four types of feature fusion:
+<ul>
+<li>Feature Pyramid Fusion (top-down) — used in FPN</li>
+<li>Bottom-Up Feature Aggregation — used in PANet</li>
+<li>Scale-Aware Fusion (parallel multi-scale) — used in SSD, YOLO multi-scale</li>
+<li>Attention-Based Fusion — used in Transformers</li>
+</ul></li>
+<li>Comparison of methods (accuracy, speed, complexity)</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>Why do single-scale feature maps fail for small object detection?</li>
+<li>What is the difference between top-down and bottom-up feature fusion?</li>
+</ul>
+</section>
+<section id="feature-pyramid-network-fpn" class="level2">
+<h2 class="anchored" data-anchor-id="feature-pyramid-network-fpn">Feature Pyramid Network (FPN)</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>FPN constructs a multi-scale feature pyramid from a CNN backbone</li>
+<li>Bottom-up pathway: backbone features C2–C5 with increasing channels (256→2048) and decreasing resolution</li>
+<li>Top-down pathway: upsampled high-level features combined with lateral connections to create P3–P6</li>
+<li>All FPN output levels have 256 channels regardless of spatial size</li>
+<li>How FPN is used in Faster R-CNN (RPN proposals at multiple levels) and RetinaNet (independent predictions per level)</li>
+<li>RoI Align maps proposals to the appropriate pyramid level based on object size</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>What are the spatial dimensions of P3, P4, P5 for an 800×800 input with a ResNet-50 backbone?</li>
+<li>Why does FPN use 1×1 convolutions on the backbone features?</li>
+<li>How does FPN help detect both small and large objects?</li>
+</ul>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
