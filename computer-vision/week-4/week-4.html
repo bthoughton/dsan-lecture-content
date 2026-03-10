@@ -231,10 +231,9 @@ window.Quarto = {
 <source src="video-1.mp4" type="video/mp4">
 <p>Your browser does not support the video tag. </p>
 <script>
-    window.onload = function() {
-        const video = document.getElementById('myVideo');
-        video.playbackRate = 1.5; // Sets playback speed to 1.5x
-    };
+    document.getElementById('myVideo').addEventListener('loadedmetadata', function() {
+        this.playbackRate = 1.5;
+    });
 </script>
 </video></section>
 <section id="video-modern-cnn-architectures-part-2-densenet-mobilenet-and-transfer-learning" class="level2">
@@ -246,10 +245,9 @@ window.Quarto = {
 <source src="video-2.mp4" type="video/mp4">
 <p>Your browser does not support the video tag. </p>
 <script>
-    window.onload = function() {
-        const video = document.getElementById('myVideo');
-        video.playbackRate = 1.5; // Sets playback speed to 1.5x
-    };
+    document.getElementById('myVideo').addEventListener('loadedmetadata', function() {
+        this.playbackRate = 1.5;
+    });
 </script>
 </video></section>
 <section id="video-transfer-learning" class="level2">
@@ -261,10 +259,9 @@ window.Quarto = {
 <source src="video-3.mp4" type="video/mp4">
 <p>Your browser does not support the video tag. </p>
 <script>
-    window.onload = function() {
-        const video = document.getElementById('myVideo');
-        video.playbackRate = 1.5; // Sets playback speed to 1.5x
-    };
+    document.getElementById('myVideo').addEventListener('loadedmetadata', function() {
+        this.playbackRate = 1.5;
+    });
 </script>
 </video></section>
 <section id="cnn-fundamentals" class="level1">

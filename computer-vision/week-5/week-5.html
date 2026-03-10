@@ -167,10 +167,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <source src="video.mp4" type="video/mp4">
 <p>Your browser does not support the video tag. </p>
 <script>
-    window.onload = function() {
-        const video = document.getElementById('myVideo');
-        video.playbackRate = 1.5; // Sets playback speed to 1.5x
-    };
+    document.getElementById('myVideo').addEventListener('loadedmetadata', function() {
+        this.playbackRate = 1.5;
+    });
 </script>
 </video></section>
 <section id="object-detection-fundamentals" class="level1">

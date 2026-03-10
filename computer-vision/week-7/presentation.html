@@ -411,14 +411,13 @@ Prof.&nbsp;Ben Houghton
 <p>The following is a recording on this topic, I hope you find it useful!</p>
 <p>Feel free to watch at 1.5x or 2x speed.</p>
 <p><strong>Note</strong>: If you find something missing or incorrect in the recording, then please let me know!</p>
-<video id="myVideo" width="750" height="500" controls="controls" preload="none">
+<video id="myVideo1" width="750" height="500" controls="controls" preload="none">
 <source src="video-1.mp4" type="video/mp4">
 <p>Your browser does not support the video tag. </p>
 <script>
-    window.onload = function() {
-        const video = document.getElementById('myVideo');
-        video.playbackRate = 1.5; // Sets playback speed to 1.5x
-    };
+    document.getElementById('myVideo1').addEventListener('loadedmetadata', function() {
+        this.playbackRate = 1.5;
+    });
 </script>
 </video></section>
 <section id="video-image-segmentation---mask-r-cnn" class="slide level2">
@@ -426,14 +425,13 @@ Prof.&nbsp;Ben Houghton
 <p>The following is a recording on this topic, I hope you find it useful!</p>
 <p>Feel free to watch at 1.5x or 2x speed.</p>
 <p><strong>Note</strong>: If you find something missing or incorrect in the recording, then please let me know!</p>
-<video id="myVideo" width="750" height="500" controls="controls" preload="none">
+<video id="myVideo2" width="750" height="500" controls="controls" preload="none">
 <source src="video-2.mp4" type="video/mp4">
 <p>Your browser does not support the video tag. </p>
 <script>
-    window.onload = function() {
-        const video = document.getElementById('myVideo');
-        video.playbackRate = 1.5; // Sets playback speed to 1.5x
-    };
+    document.getElementById('myVideo2').addEventListener('loadedmetadata', function() {
+        this.playbackRate = 1.5;
+    });
 </script>
 </video></section>
 <section>
