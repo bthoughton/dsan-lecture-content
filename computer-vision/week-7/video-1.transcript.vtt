@@ -1,0 +1,1330 @@
+WEBVTT
+
+1
+00:00:02.830 --> 00:00:03.950
+Benjamin Houghton: All right.
+
+2
+00:00:04.200 --> 00:00:25.249
+Benjamin Houghton: Welcome back to another video about introduction to image segmentation, not to say that there's another video, at least not right now, this is the only video so far for introduction to image segmentation, not to say that there might not be a more advanced video, maybe later down the road.
+
+3
+00:00:27.690 --> 00:00:33.110
+Benjamin Houghton: Okay? So overview image segmentation is the process of
+
+4
+00:00:33.620 --> 00:00:37.820
+Benjamin Houghton: partitioning an image into multiple segments or sets of pixels.
+
+5
+00:00:38.460 --> 00:00:50.039
+Benjamin Houghton: So that might we have some examples in the next screen. But that literally means if I have a picture here and this tree that will say, is segmented in red.
+
+6
+00:00:50.670 --> 00:00:51.640
+Benjamin Houghton: okay?
+
+7
+00:00:51.940 --> 00:01:04.400
+Benjamin Houghton: And then we draw another color. Let's say a person here. I have a person there in green right? Meaning that we've identified exactly which pixels belong to specific objects in the image. So
+
+8
+00:01:04.769 --> 00:01:10.079
+Benjamin Houghton: you'll have to forgive my crew drawing. I have, more better visualizations coming up soon.
+
+9
+00:01:10.290 --> 00:01:17.244
+Benjamin Houghton: So segmentation is very different from classification. Obviously classify classification is you. You
+
+10
+00:01:18.850 --> 00:01:31.890
+Benjamin Houghton: classify an entire image into one category, and segmentation is obviously like we said, we segment image into, we split it into multiple regions, but not like object detection. Right? It is also different than object, detection
+
+11
+00:01:32.110 --> 00:01:39.969
+Benjamin Houghton: and object detection. We just determine where an object say, where an object is, we determine the center, or
+
+12
+00:01:40.450 --> 00:01:44.299
+Benjamin Houghton: really what we do is we. We draw a bounding box around it right? So
+
+13
+00:01:45.050 --> 00:01:56.479
+Benjamin Houghton: we can determine where in the image an object is, and what extent? But it doesn't specifically say what? What pixels right? And so that's fundamentally different than segmentation.
+
+14
+00:01:56.650 --> 00:01:57.560
+Benjamin Houghton: So did
+
+15
+00:01:57.790 --> 00:02:18.919
+Benjamin Houghton: one more little example here. Right? So if I have a person in an image, and I'm and I wanna, I draw a bounding box around that person right? And that's very different than saying, determining like these pixels over here, though, if I have, you know these pixels over here right? They're not a part of that person, but they're inside the the bounding box for that object.
+
+16
+00:02:19.430 --> 00:02:29.480
+Benjamin Houghton: So in segmentation, we're actually going to determine which pixels actually belong to the object and which pixels belong do not belong to a particular object.
+
+17
+00:02:31.285 --> 00:02:41.040
+Benjamin Houghton: Let's see. So yeah, that's the the key difference. Here's some, you know, different segmentation types. And maybe let's give you better intuition of what?
+
+18
+00:02:41.170 --> 00:02:50.040
+Benjamin Houghton: Of what? Segmentation is. So in this 1st example, we see that everything's been segmented where? So the background
+
+19
+00:02:50.895 --> 00:02:55.629
+Benjamin Houghton: we have like. Let's see a hillside here. Some trees, the ground. It's all been
+
+20
+00:02:56.010 --> 00:02:58.620
+Benjamin Houghton: green. It's all been segmented in green.
+
+21
+00:02:59.510 --> 00:03:24.809
+Benjamin Houghton: We have the cars. They've been segmented in red. We have a cat down here. It's purple, and then we have a house that, and which is yellow and the sky is blue. So we have different objects here, and we haven't really determined. We haven't really made a distinction between these different cars like this is Car one. This is car 2. But we notice they're shaded the same because those pixels to the computer are the same right? They both belong to a car class.
+
+22
+00:03:24.970 --> 00:03:37.510
+Benjamin Houghton: They they haven't been given they the the task wasn't to say, Oh, this is car one. And this is car 2. Alright. So that's different. Like, that's where instance, segmentation is different. So
+
+23
+00:03:38.130 --> 00:03:54.749
+Benjamin Houghton: instance segmentation assigns a unique identifier to each object. So in the second example, here, in instance, segmentation, we see car one and car 2, we see that they're shaded different colors of red now, meaning that they're still belong to class car. But we know that this is car one. And we know this over. Here is car 2.
+
+24
+00:03:54.870 --> 00:04:03.159
+Benjamin Houghton: Another thing you'll notice is that the background isn't explicitly segmented, and we'll see this in. And when we talk about mask.
+
+25
+00:04:05.210 --> 00:04:10.039
+Benjamin Houghton: Rcnn, so mask. Rcnn, right? We'll talk about later
+
+26
+00:04:10.190 --> 00:04:17.339
+Benjamin Houghton: it it. What it does is we find objects or regions of interest, and then we only segment those areas.
+
+27
+00:04:17.550 --> 00:04:36.890
+Benjamin Houghton: Right? So we determine in this object, we determine in this region of interest, oh, this area, this part, these pixels belong to the car, and these pixels do not belong to the car. So that's why you you only segment the areas of interest. So you don't explicitly segment the whole object right? So
+
+28
+00:04:36.990 --> 00:04:59.480
+Benjamin Houghton: while we know that these the background is, we know that the pixels haven't been segmented our background, we don't explicitly segment them. And so that's why they're they're not shaded here. They're just the original color or of the original image. And then, finally, we have panoptic segmentation. So it's a combination of semantic and instant segmentation. So it provides a class label
+
+29
+00:04:59.860 --> 00:05:09.220
+Benjamin Houghton: for every single pixel in the entire image. So we see here now once again, like the original. Like the original example and segmentation, we see that
+
+30
+00:05:09.590 --> 00:05:11.020
+Benjamin Houghton: the background.
+
+31
+00:05:11.350 --> 00:05:25.229
+Benjamin Houghton: like the grass and the or the trees and the hillside, have all been given a class label as well as this house here in the sky, even though we might consider these background objects. And we've also distinguished between car one and car 2.
+
+32
+00:05:25.590 --> 00:05:27.750
+Benjamin Houghton: So it's a it's a combination of the 2,
+
+33
+00:05:31.560 --> 00:05:34.190
+Benjamin Houghton: all right so
+
+34
+00:05:35.170 --> 00:05:51.440
+Benjamin Houghton: transpose convolutions. And I know this is kind of a jolt, or from where we were headed. But you know, this is going to help us kind of understand our 1st model today. So we're going to talk about unit first, st which is a unit, is a semantic segmentation model, a rather famous model.
+
+35
+00:05:51.670 --> 00:06:00.899
+Benjamin Houghton: And in order to understand you net, we kind of need to understand what a transposed convolution is. And so some of you have maybe heard of me talk about this before. But
+
+36
+00:06:01.310 --> 00:06:07.659
+Benjamin Houghton: a it's it's a kind of like the opposite of a convolution. Right? So
+
+37
+00:06:09.330 --> 00:06:14.127
+Benjamin Houghton: kind of you can think of it as like a. It's also known as like a deconvolution. All right.
+
+38
+00:06:16.270 --> 00:06:19.240
+Benjamin Houghton: and the purpose of it is to perform up sampling.
+
+39
+00:06:19.760 --> 00:06:27.399
+Benjamin Houghton: So normally, you know, when we do convolutions, we usually get progressively smaller and smaller feature maps.
+
+40
+00:06:27.630 --> 00:06:28.810
+Benjamin Houghton: Well.
+
+41
+00:06:29.150 --> 00:06:37.469
+Benjamin Houghton: if we want to go the other way. Small to big feature maps, we can do a transpose convolution. So that's the whole purpose of this.
+
+42
+00:06:40.260 --> 00:06:52.480
+Benjamin Houghton: There's other ways to do this. Besides a transpose convolution. There's also a thing called Bilinear interpolation. And actually, we're going to talk about that in quite some detail, because it's pretty key to some of the other
+
+43
+00:06:52.860 --> 00:06:55.479
+Benjamin Houghton: architectures we're going to talk about in this video.
+
+44
+00:06:56.210 --> 00:07:12.590
+Benjamin Houghton: But you can do a thing like interpolation where you just kind of say, I want to make my image twice as big, and so I'll just gather information from the pixels in between. So if I had, you know, Pixel one and Pixel 2. And I want to make this now, instead of being
+
+45
+00:07:12.710 --> 00:07:40.369
+Benjamin Houghton: 2 pixels. I want to make this. I don't know. This isn't the best example, but 4 pixels. Right? So this would be pixel one. This would be pixel 2. Let's say I had Pixel 3. Here, then what this pixel here to get information from one and 2, and this pixel here could get information from Pixel 2 and 3 right and but that's a 2 dimensional one dimensional case. Of course, this would be a 2 dimensional operation. And again, I'm gonna talk about. We're gonna talk about this more.
+
+46
+00:07:40.380 --> 00:07:45.310
+Benjamin Houghton: But if we want to go from something like this, 2 by 2 to would that be
+
+47
+00:07:45.420 --> 00:07:52.480
+Benjamin Houghton: 4 by 4? 2 want right now we have a 4 by 4, right? So
+
+48
+00:07:52.810 --> 00:07:56.709
+Benjamin Houghton: this would be a new pixel. This would be a new pixel.
+
+49
+00:07:57.140 --> 00:07:58.909
+Benjamin Houghton: Let's see, right? So
+
+50
+00:07:59.020 --> 00:08:04.749
+Benjamin Houghton: I think like this, this doesn't really matter per se like, I'm just saying arbitrary new pixels. But
+
+51
+00:08:04.940 --> 00:08:11.399
+Benjamin Houghton: the idea here is that these new pixels are just gonna gather information. So this P. This pixel in particular.
+
+52
+00:08:12.010 --> 00:08:28.270
+Benjamin Houghton: I'll I'll draw it in blue. This pixel here would get information from the pixels that like maybe this one to this one, this one I don't know this one right? It's gonna gather information from the surrounding pixels to fill in the gap sort of right?
+
+53
+00:08:28.670 --> 00:08:32.449
+Benjamin Houghton: So I mean, it's just making the image larger. And
+
+54
+00:08:33.710 --> 00:08:37.360
+Benjamin Houghton: one of the key differences I guess I wanted to point out here is that
+
+55
+00:08:37.530 --> 00:08:39.698
+Benjamin Houghton: it does this with
+
+56
+00:08:40.659 --> 00:08:47.240
+Benjamin Houghton: the transpose convolution. I don't know if it says I'm scanning this slide real fast. I don't see where it says it. But
+
+57
+00:08:47.940 --> 00:08:56.490
+Benjamin Houghton: yes, here we go. It learns parameters for up sampling on like interpolation. Right? Interpolation doesn't have learn parameters.
+
+58
+00:08:56.980 --> 00:09:06.650
+Benjamin Houghton: It just uses interpolation to sample the surrounding information
+
+59
+00:09:09.620 --> 00:09:20.419
+Benjamin Houghton: alright, so increases the spatial dimensions while potentially reducing channels. Use the decoder sections of segmentation networks. Okay, so we'll talk about what this last part means
+
+60
+00:09:21.490 --> 00:09:22.740
+Benjamin Houghton: when we get to you net
+
+61
+00:09:23.730 --> 00:09:40.419
+Benjamin Houghton: alright. So what is a transport like OP. Mathematically. Let's let's take a look at it. Or at least give you an intuitive example. Here. This isn't the end. All be all example. It's not necessarily mathematical definition, but it kind of gives you the idea of what's going on here. So
+
+62
+00:09:41.631 --> 00:09:53.379
+Benjamin Houghton: we see that. And this is a if this gift you can. If you're watching this at home, or you have the notes up, you can refresh this and play it as many times as you want. But essentially.
+
+63
+00:09:53.790 --> 00:09:58.160
+Benjamin Houghton: actually, I might. I might do that real fast. And so so we see that
+
+64
+00:09:58.530 --> 00:10:07.690
+Benjamin Houghton: this kernel, essentially what's happening is it's sliding across in this kernel. All 4 of these numbers and the kernel are being multiplied by the input.
+
+65
+00:10:09.360 --> 00:10:13.750
+Benjamin Houghton: Okay, so I'll let it play one more time. Then it'll finish. And so
+
+66
+00:10:14.090 --> 00:10:29.350
+Benjamin Houghton: we see what happens. Here is this kernel 1, 2, 3, 4. First, st it gets multiplied by number one, and so one times one is 1 1 times, and then we say one times, 2 is 2, and we say 3 times, one is 3, and then obviously 4 times. One is
+
+67
+00:10:29.540 --> 00:10:33.329
+Benjamin Houghton: 4 times, one is 4 right? And so
+
+68
+00:10:34.570 --> 00:10:37.180
+Benjamin Houghton: then we go to the next pixel.
+
+69
+00:10:37.420 --> 00:10:41.409
+Benjamin Houghton: and we multiply the kernel again. The entire kernel by this number.
+
+70
+00:10:42.450 --> 00:10:45.319
+Benjamin Houghton: and 1, 2, 3, 4 times 0 is 0,
+
+71
+00:10:46.310 --> 00:10:52.810
+Benjamin Houghton: and so on, and so forth. And so we've gone from something that's 3 by 3 to something that is.
+
+72
+00:10:52.970 --> 00:10:58.839
+Benjamin Houghton: this should be 6 by 6, right? Because we've doubled in size because we have a stride of 2. Okay, so
+
+73
+00:10:59.060 --> 00:11:03.684
+Benjamin Houghton: this is a really simple example. How this is used in unit
+
+74
+00:11:05.900 --> 00:11:17.660
+Benjamin Houghton: But this isn't the full story with transpose convolution, but it's kind of beyond the scope of this course really, to go into all the different cases. But you can. If you change the stride
+
+75
+00:11:19.000 --> 00:11:25.579
+Benjamin Houghton: right and change the you're you're gonna get different results. Okay?
+
+76
+00:11:26.593 --> 00:11:30.929
+Benjamin Houghton: If we change the stride, we would not get a
+
+77
+00:11:31.680 --> 00:11:39.489
+Benjamin Houghton: current. We would not get an output that 6 by 6. Okay, because you would actually have to take this kernel. Multiply it by this number.
+
+78
+00:11:40.410 --> 00:11:51.317
+Benjamin Houghton: and the the numbers are still going the same place. But then you're just gonna shift over one spot. And so the kernel instead of the kernel sliding down 2 places. Essentially, what's gonna happen is
+
+79
+00:11:52.610 --> 00:12:13.599
+Benjamin Houghton: you're gonna have to add up the results of the kernel being multiplied together by neighboring pixels. I I know that might be kind of hand wavy or on intuitive. But I provide you guys a really good link here that you can read about how the stride and things like that affect the transpose convolutions. Really, all I want you to understand is that these kernels
+
+80
+00:12:14.540 --> 00:12:18.410
+Benjamin Houghton: right? These kernels are learned weights, and
+
+81
+00:12:18.880 --> 00:12:29.550
+Benjamin Houghton: you can ups you can. You can like any like any other convolution. The kernel is a learn, a learn parameter, and you can increase the size you can
+
+82
+00:12:29.780 --> 00:12:30.930
+Benjamin Houghton: change your.
+
+83
+00:12:31.150 --> 00:12:36.230
+Benjamin Houghton: you know. Go from a smaller input to A to a larger, to a larger output by changing the stride.
+
+84
+00:12:38.570 --> 00:12:41.499
+Benjamin Houghton: And so now, we've found a way to parameterize
+
+85
+00:12:41.980 --> 00:12:47.490
+Benjamin Houghton: increasing image size, which is what we're gonna need in order to do unit.
+
+86
+00:12:48.280 --> 00:12:56.819
+Benjamin Houghton: All right. So here's an example of, yeah, just a code example of a transpose convolution. This is built directly into pi torch.
+
+87
+00:12:58.010 --> 00:12:58.930
+Benjamin Houghton: Okay?
+
+88
+00:13:01.880 --> 00:13:03.459
+Benjamin Houghton: So you can look at that
+
+89
+00:13:04.100 --> 00:13:13.760
+Benjamin Houghton: all right. And of course, in this last side this is a really good example for those of you who are who are curious to know more about transpose convolutions.
+
+90
+00:13:13.880 --> 00:13:15.230
+Benjamin Houghton: This is
+
+91
+00:13:15.460 --> 00:13:25.872
+Benjamin Houghton: kind of gives you a more, much more in depth explanation than I gave in in the video thus far. So this is a good example, if you, if you really care to know
+
+92
+00:13:26.280 --> 00:13:33.160
+Benjamin Houghton: you know how these things work. Right? So
+
+93
+00:13:35.668 --> 00:13:43.299
+Benjamin Houghton: moving on, though unit. So let's talk about unit. Now that we understand what at least the basics of what a transpose convolution is
+
+94
+00:13:44.759 --> 00:13:59.180
+Benjamin Houghton: unit is a convolutional network right design. And it's designed for segmentation, and it was originally designed for biomedical image. Right? That was the journal that it was published in it had a focus on biomedical images.
+
+95
+00:13:59.520 --> 00:14:04.470
+Benjamin Houghton: but it. It obviously extends to many other applications.
+
+96
+00:14:04.760 --> 00:14:12.459
+Benjamin Houghton: So they it uses what they call an encoder decoder, not in the sense of a transformer. Okay, but it's the same. I it
+
+97
+00:14:12.930 --> 00:14:22.135
+Benjamin Houghton: not so don't. If you guys are familiar with transformers and stuff, it's not like a transformer encoder, decoder. It's a convolutional neural network encoder, decoder
+
+98
+00:14:22.690 --> 00:14:28.820
+Benjamin Houghton: alright, and then we have tra. We have skip connections and transpose convolution. So those are the main, the main parts of this.
+
+99
+00:14:29.610 --> 00:14:36.060
+Benjamin Houghton: and we see, it's efficient for training on small data sets. Okay, key components. Right? Encoder.
+
+100
+00:14:36.190 --> 00:14:40.429
+Benjamin Houghton: we're contracting path, meaning that the feature maps get smaller.
+
+101
+00:14:40.710 --> 00:14:44.400
+Benjamin Houghton: Then we have the bottleneck which connects the encoder to the decoder.
+
+102
+00:14:44.730 --> 00:14:55.959
+Benjamin Houghton: We have the decoder which now the feature maps are going to get larger, and it uses transposed convolutions to do that with a with a 2 by 2 stride. Right? So it's just like that example I showed.
+
+103
+00:14:56.760 --> 00:14:58.870
+Benjamin Houghton: And then it has skip connections.
+
+104
+00:14:59.240 --> 00:15:20.750
+Benjamin Houghton: meaning that we're gonna link. So I don't really like the name bottleneck here, like where it says connects encoder to decoder it. It does that, but it does it at the at the, at the smallest feature levels. You'll see what I mean by that in a minute. But there's skip connections that actually connect the encoder to decoder at all different spatial sizes. So as the feature maps get smaller
+
+105
+00:15:20.970 --> 00:15:26.490
+Benjamin Houghton: and the encoder and they get larger in the decoder, we're constantly concatenating them together
+
+106
+00:15:26.950 --> 00:15:35.510
+Benjamin Houghton: at all levels. And then the bottleneck is just the bottom, right? So we'll see that here. It's gonna make a lot more sense when we look at the architecture in a minute.
+
+107
+00:15:37.980 --> 00:15:43.420
+Benjamin Houghton: Just a little bit more details before we get to that, though. So each the encoder has
+
+108
+00:15:44.050 --> 00:15:51.769
+Benjamin Houghton: has the following steps, double convolution and then array Lou activation. Okay and small kernel size, meaning 3 by 3.
+
+109
+00:15:52.220 --> 00:15:54.530
+Benjamin Houghton: And then we do a Max pooling
+
+110
+00:15:54.680 --> 00:16:03.229
+Benjamin Houghton: that reduces the spatial dimension, right? So a convolution in itself is only gonna it's it's not gonna reduce this, the
+
+111
+00:16:03.750 --> 00:16:16.009
+Benjamin Houghton: the filter, the it's not going to reduce the spatial dimensions very much right? So as we go down just like a normal, what we would see in like something like resident or a normal model. Where we go from
+
+112
+00:16:18.400 --> 00:16:31.689
+Benjamin Houghton: right? We we're gonna do that same pattern where we might have a few channels that are big to many channels that are small. And we're gonna do that through like typical double combo, basically.
+
+113
+00:16:32.050 --> 00:16:51.820
+Benjamin Houghton: just like all the other famous architectures that really Bgg, I should really say, Bgg is really the, you know kind of the grandfather of where we do these double convolutions, or we do convolutions with 3 by 3 kernels, and then we do a Max pooling, or we do, you know, might do regular activation. And then we probably do, you know, we do, Max, pooling? Okay? And as we go down.
+
+114
+00:16:52.160 --> 00:17:09.340
+Benjamin Houghton: we ha! We typically have the the spatial dimensions, and we double the channel dimension. Right? So we go from an image that's 2, 2, 4 by 2, 2, 4 down to 1, 12 by 1 12, and we might go from something like 64 channels to 128. Right? Very typical architecture.
+
+115
+00:17:10.410 --> 00:17:11.130
+Benjamin Houghton: Okay.
+
+116
+00:17:11.644 --> 00:17:31.830
+Benjamin Houghton: except, the only difference is that unit actually, biomedical images are normally larger than that. They're not typically 2, 2, 4. So that's built into the architecture. But it doesn't matter like we can use whatever image size we want, right as long as we resize it to whatever the model expects. Or we can even define our own custom model right? That takes whatever image size input we want.
+
+117
+00:17:32.080 --> 00:17:41.160
+Benjamin Houghton: Alright, the d, the decoder right is the the expanding path. Right. So it did.
+
+118
+00:17:42.460 --> 00:17:56.770
+Benjamin Houghton: consists of a transpose convolution, and then it concatenates the corresponding feature maps with the encoder. Right? These are the skip conditions. That's what I was talking about, how every level of or every spatial dimension is connected.
+
+119
+00:17:57.538 --> 00:18:02.469
+Benjamin Houghton: And it's gonna make a lot more sense. Once you see the diagram, all right.
+
+120
+00:18:03.450 --> 00:18:07.609
+Benjamin Houghton: Okay? And then we do. Then we do 2 more convolutions.
+
+121
+00:18:10.250 --> 00:18:19.095
+Benjamin Houghton: And so basically, what we do is we restructure the segmented image while retaining high resolution details. Okay? So we'll we'll see what that means here in a second.
+
+122
+00:18:20.270 --> 00:18:33.379
+Benjamin Houghton: skip connections, right? So the skip connections we talked about that directly links the encoder and decoder. It just takes spatial. It just takes feature maps that are the same size, and concatenates them together all right, and so doing that
+
+123
+00:18:33.680 --> 00:18:46.439
+Benjamin Houghton: you know. What do we know about? What do we know now about feature, fusion, right in feature, fusion. We lose spatial awareness as we go deeper into a network as we get smaller and smaller channels
+
+124
+00:18:46.860 --> 00:18:53.650
+Benjamin Houghton: or feature maps. But we get a lot of semantic understanding. And so basically
+
+125
+00:18:54.010 --> 00:19:02.670
+Benjamin Houghton: directly linking these things together helps us retain a lot of that spatial information. And well, you know, as we go down
+
+126
+00:19:02.840 --> 00:19:14.159
+Benjamin Houghton: the P. Well, as we go down, we get more and more semantic meaning. And then I guess what really matters is a decoder side. Right? As the decoder comes up, we start losing some of that semantic understanding
+
+127
+00:19:16.830 --> 00:19:27.639
+Benjamin Houghton: and it helps re kind of like retain some of these fine details. Right? So it's I'll show you here in a second. We'll we'll come back to this, but that's the general idea.
+
+128
+00:19:27.900 --> 00:19:31.359
+Benjamin Houghton: And then the final output layers is pretty important to understand.
+
+129
+00:19:31.470 --> 00:19:41.170
+Benjamin Houghton: We do a 1 by one convolution, and we map each pixel to basically
+
+130
+00:19:41.300 --> 00:19:53.769
+Benjamin Houghton: we, we, the one by one convolution, is going to classify each pixel. And so we have as many feet in order to do that, we need what? Right? So maybe pause the video. Think about this for a second in order to have a
+
+131
+00:19:53.930 --> 00:19:59.579
+Benjamin Houghton: in order to segment an image into, say, N classes N. Classes.
+
+132
+00:20:01.220 --> 00:20:09.270
+Benjamin Houghton: N is number of classes not N equals classes. Sorry, not right? So N equals num classes.
+
+133
+00:20:10.480 --> 00:20:17.359
+Benjamin Houghton: We need to have how many channel feature maps you think right. If well, if you said, N, that's you're you're correct. We need to have N feature maps.
+
+134
+00:20:18.110 --> 00:20:34.640
+Benjamin Houghton: Okay? And so each map is going to be a binary map essentially of is this pixel belong to that class or not? Right? So we do the one by one convolution, and we follow it up with a softmax. If you're doing multi class or sigmoid, if you're doing binary classification.
+
+135
+00:20:38.380 --> 00:20:43.040
+Benjamin Houghton: So with all without further ado, here is what unit looks like.
+
+136
+00:20:43.340 --> 00:20:46.229
+Benjamin Houghton: And maybe hopefully, this will all kind of start to make sense.
+
+137
+00:20:47.020 --> 00:20:48.080
+Benjamin Houghton: So
+
+138
+00:20:48.650 --> 00:20:57.590
+Benjamin Houghton: the top here you have the number of channels. So in this. It's a gray scale image, so biomedical image, so
+
+139
+00:20:58.130 --> 00:21:02.520
+Benjamin Houghton: don't necessarily think of it as as grayscale. So typically
+
+140
+00:21:03.380 --> 00:21:19.790
+Benjamin Houghton: and from I I did work for some time in bioinformatics as a data scientist, slash computer vision data scientist and don't necessarily think of it as like grayscale images, basically, it's pretty complex. But these microscopes take.
+
+141
+00:21:20.432 --> 00:21:44.959
+Benjamin Houghton: You know, they have many, many channels. And they have across depth and time. But it they don't. They're not taking. Rg, they're not. They're not microscopes for biomedical images aren't doing. RGB, okay, now, that's not to say that we can't do a 3 channel like you could put input as many channels as you want here, right as long as the architecture is set up to hand. Like as long as your kernels
+
+142
+00:21:45.150 --> 00:21:50.629
+Benjamin Houghton: you have the appropriate shape. Right? It's all about shapes and deep learning as we've kind of figured out.
+
+143
+00:21:50.890 --> 00:21:57.899
+Benjamin Houghton: So. But you you don't typically not gonna have a a typical 3 color channel image like we're used to working with thus far
+
+144
+00:21:58.050 --> 00:22:03.499
+Benjamin Houghton: and biomedical images you're gonna have. Typically, you know, you're you're gonna have like some.
+
+145
+00:22:03.610 --> 00:22:14.459
+Benjamin Houghton: Maybe this is like a an image of a microscope take took, and it's just measuring it. And it's measuring some intensity and without getting into like all the details. You know.
+
+146
+00:22:14.720 --> 00:22:34.989
+Benjamin Houghton: they can use a varying. They can detect like different light spectrums, and they can use different stains and stuff like that, and they take many, many images, like many, many images at different depths, right? So focusing on different depths, because, like these, bio specimen are are really really thin. And you can kind of like see through them, I guess, or sort of.
+
+147
+00:22:35.070 --> 00:22:55.380
+Benjamin Houghton: and you can stain them. And and so you'll take a bunch of grayscale images. But that's the idea. But I guess what I wanted to. My point was is like, yeah, like this, that's why it's the input channel is one. But you know again, like as long as you're you can make this whatever you want, as long as your kernels, that like, as long as your your model expects like, you know.
+
+148
+00:22:55.380 --> 00:23:07.959
+Benjamin Houghton: you know, the original one. It's input channel was one, you know. Maybe it was one channel at least in this example, in the diagram they gave. You know, I'd have to read the paper to see how many different versions they they ultimately made.
+
+149
+00:23:07.960 --> 00:23:16.349
+Benjamin Houghton: you know, or publish. But anyways. So just understand that right? We can obviously do this with with, however, many channel inputs we want.
+
+150
+00:23:17.700 --> 00:23:25.139
+Benjamin Houghton: So if we were doing something like segmentation, like a real world image, we might use a model that's expecting 3 channel input.
+
+151
+00:23:25.310 --> 00:23:30.350
+Benjamin Houghton: And so anyways, we see, like, just like a normal convolution.
+
+152
+00:23:30.720 --> 00:23:35.170
+Benjamin Houghton: we're Houston. So so right now, don't. Don't look at the right side like, just focus on the left side.
+
+153
+00:23:35.300 --> 00:23:38.699
+Benjamin Houghton: So we go from one channel to 64.
+
+154
+00:23:38.740 --> 00:24:07.940
+Benjamin Houghton: Okay. And we see the image size gets slightly smaller. That's because they didn't use padding. You can use padding here right? So if you don't use padding, you're gonna lose 2 pixels right? Because the edge on the edges, the top and the sides. That kernel is, gonna be it's not gonna be overhanging like it normally would be right. So you're gonna lose a you're gonna lose one current. You're gonna lose one pixel on the top, one pixel on the bottom, one on the right and one on the left.
+
+155
+00:24:08.000 --> 00:24:17.450
+Benjamin Houghton: and so we see that the image sizes is more or less, we'll say is more or less the same again. You, you know you can use padding here, obviously, if you wanted to, and then the image size would be the same.
+
+156
+00:24:17.540 --> 00:24:22.869
+Benjamin Houghton: So we do a double convolution. Right? So blue is a double convolution with a Raylu activation.
+
+157
+00:24:24.260 --> 00:24:32.999
+Benjamin Houghton: And then we do a Max pooling in red right? And we see we go from 64 channels down to what? So now we have 128 channels
+
+158
+00:24:33.360 --> 00:24:38.770
+Benjamin Houghton: alright, and we see that the images are are been halved right now they're 2, 84 by 2, 84,
+
+159
+00:24:39.310 --> 00:24:46.160
+Benjamin Houghton: another double, another double convolution. And now the images are 2, 80 by 2, 82, 80
+
+160
+00:24:46.320 --> 00:24:47.660
+Benjamin Houghton: by 2, 80
+
+161
+00:24:48.220 --> 00:24:59.110
+Benjamin Houghton: and so we do this double convolution, another Max pooling, and so on, and so forth, until we get all the way to the bottom, which again, this is called the bottleneck down here. Alright
+
+162
+00:25:00.120 --> 00:25:05.949
+Benjamin Houghton: so at the bottleneck, the bottom of the pyramid. Right? We have. What do we have? We have
+
+163
+00:25:06.390 --> 00:25:12.760
+Benjamin Houghton: 1,024 channels.
+
+164
+00:25:13.580 --> 00:25:17.760
+Benjamin Houghton: and the images are at the very like. So after this double convolution, here
+
+165
+00:25:18.720 --> 00:25:21.809
+Benjamin Houghton: we have the images are 28 by 28.
+
+166
+00:25:21.940 --> 00:25:25.250
+Benjamin Houghton: So we have 1024 by 28, by 28.
+
+167
+00:25:25.900 --> 00:25:33.979
+Benjamin Houghton: Okay, so now we start doing our transposed convolutions or our up convolutions that they call in this diagram.
+
+168
+00:25:35.140 --> 00:25:42.960
+Benjamin Houghton: And so now the images are gonna are gonna double in size. And sure enough, we see after we do this this up convolution. Oh, well, now, we're at
+
+169
+00:25:43.787 --> 00:25:51.710
+Benjamin Houghton: our images are 56 by 56. Okay, it's 28 times 2 is 56, and
+
+170
+00:25:55.400 --> 00:26:10.220
+Benjamin Houghton: we also notice another thing, too, here that we actually decreased the number of channels. So as we're going down the pyramid, we're increasing the number of channels as the images get smaller or the the feature maps get smaller, and on the way up
+
+171
+00:26:10.350 --> 00:26:18.109
+Benjamin Houghton: looks like we're having the number of channels. So here we go from 1024 channels to what? Well, we go down to.
+
+172
+00:26:18.470 --> 00:26:21.640
+Benjamin Houghton: we go down to looks like 512.
+
+173
+00:26:22.010 --> 00:26:42.019
+Benjamin Houghton: Okay, that's what this up convolution does right here it goes from 1024 to 5, 12. So actually, what it does is it takes an image, that's what's 1024 by our feature maps not just an image, a collection of feature, maps or images, and it and it goes to what it goes to 5, 12
+
+174
+00:26:42.390 --> 00:26:43.510
+Benjamin Houghton: by
+
+175
+00:26:43.680 --> 00:26:51.729
+Benjamin Houghton: 56, by 56. And so hopefully, after I explain this, you guys won't need me anymore to explain this, like, you'll be able to read this diagram for yourself, right?
+
+176
+00:26:53.340 --> 00:27:12.819
+Benjamin Houghton: Okay? So that's this blue box, right? And and so this blue box. And I should have mentioned this is directly from the unit paper. Right? I didn't draw this one myself, because I thought their diagram is is pretty good. I only draw it. If I feel like there, it's lacking in some way. So anyways, let's see.
+
+177
+00:27:13.990 --> 00:27:26.819
+Benjamin Houghton: this blue box is the the part that's been up, sent or up had the up convolu. It's the result of the up convolution or the transpose convolution. And then what do we do? We take this? We take this feature map, and we we just concatenate these together.
+
+178
+00:27:27.870 --> 00:27:43.459
+Benjamin Houghton: So now we've we have. So now we've gone back to 1024, right? And so that's might have been confusing@firstst We're here, I was saying you probably were saying, Well, how does he get 512 from that says 1024 here? Well, that's because we took the 5.th We took the 512
+
+179
+00:27:43.870 --> 00:27:52.800
+Benjamin Houghton: channels from the up convolution result, and we took the 512 channels from this double convolution on the the down
+
+180
+00:27:53.360 --> 00:27:57.719
+Benjamin Houghton: so on the would that the encoder side and we put them together.
+
+181
+00:27:59.666 --> 00:28:06.240
+Benjamin Houghton: So now we do a double convolution again. Once again. Here we're going from 1024 to 5 12,
+
+182
+00:28:06.800 --> 00:28:08.030
+Benjamin Houghton: you see. So
+
+183
+00:28:08.550 --> 00:28:17.479
+Benjamin Houghton: we you know, we we've actually reduced number of channels twice, once in the bottleneck, and then once here in this double convolution, double convolution here
+
+184
+00:28:17.600 --> 00:28:28.090
+Benjamin Houghton: and then. Now we go and then. Now it's the same thing. So now we do another up another up convolution. Okay? And so once again, this up convolution is gonna do 2 things. It's gonna one
+
+185
+00:28:28.510 --> 00:28:35.709
+Benjamin Houghton: reduce the image size or feature, map, size
+
+186
+00:28:36.580 --> 00:28:46.149
+Benjamin Houghton: and or spatial, I should say, spatial size and 2, what's it gonna do? It's going to oh, my, gosh, I said this backwards. I'm sorry it reduces
+
+187
+00:28:47.390 --> 00:28:50.109
+Benjamin Houghton: the num the number of channels. Okay?
+
+188
+00:28:51.660 --> 00:28:55.210
+Benjamin Houghton: And it increases, increases
+
+189
+00:28:55.840 --> 00:29:03.339
+Benjamin Houghton: spatial dimension. I'm so used to saying that it decreases spatial dimension. But it. This is the up, the up convolution here
+
+190
+00:29:03.730 --> 00:29:21.449
+Benjamin Houghton: in this step. So now we were at. What were we at? Here? We had. We were at 512 channels by 52 by 52. And this up convolution is gonna produce what it's gonna produce something that's looks like 1 0, 4. I'm sorry I'll break the channels first.st Keep the same.
+
+191
+00:29:21.970 --> 00:29:24.010
+Benjamin Houghton: Keep the pie torch
+
+192
+00:29:24.530 --> 00:29:31.600
+Benjamin Houghton: nomenclature, so to speak, 256 by 1 0, 2 by 1, 0, 2, okay.
+
+193
+00:29:32.280 --> 00:29:39.150
+Benjamin Houghton: 256 channels by by width or height of 102 and width of 102,
+
+194
+00:29:39.740 --> 00:29:41.930
+Benjamin Houghton: and so on and so forth. Right
+
+195
+00:29:42.950 --> 00:29:54.149
+Benjamin Houghton: once we've done that up convolution. We can once again, now that that they match right? We can. We see that we have 500, we get 256 channels
+
+196
+00:29:54.270 --> 00:29:59.369
+Benjamin Houghton: from the the encode, the decoder side, and we get 256 over here
+
+197
+00:29:59.610 --> 00:30:05.489
+Benjamin Houghton: channels from the encoder, and guess what the image sizes. The images are the same size.
+
+198
+00:30:05.700 --> 00:30:06.685
+Benjamin Houghton: Right?
+
+199
+00:30:17.340 --> 00:30:18.953
+Benjamin Houghton: yeah. So
+
+200
+00:30:27.030 --> 00:30:28.300
+Benjamin Houghton: second.
+
+201
+00:30:35.760 --> 00:30:53.789
+Benjamin Houghton: okay, just wanted to double check one thing real fast. So one of the things you guys might notice. This is kind of a minor detail. But you know I was mentioning before how they didn't use any padding, right? So the images to lose, like, you know, a pixel each time to do a double convolution. And actually
+
+202
+00:30:54.190 --> 00:31:03.379
+Benjamin Houghton: one of the things that one of the I wouldn't say problems. But one of the things that this results in is image sizes that actually don't match. And so you'll see how
+
+203
+00:31:03.540 --> 00:31:11.290
+Benjamin Houghton: like these images over here are 1 30 like, let's let's look at this 1 1 30. But my pen will work here.
+
+204
+00:31:12.181 --> 00:31:15.709
+Benjamin Houghton: We see over here that this is one
+
+205
+00:31:15.980 --> 00:31:23.879
+Benjamin Houghton: 36. That's the size of the images, 136 by 36. And these are only 1 0, 4 by 1 0, 4 on the right hand side. Okay. So
+
+206
+00:31:24.320 --> 00:31:37.888
+Benjamin Houghton: if you pull up the and that's what I want to do, I want to pull up the their paper real fast, just to show you guys. They they say, copy and crop right? So here in the network architecture, they say that
+
+207
+00:31:39.090 --> 00:31:45.330
+Benjamin Houghton: they they crop the feature maps right here. They crop them. Okay? So
+
+208
+00:31:45.490 --> 00:31:49.070
+Benjamin Houghton: I guess this is a kind of a minor detail. But, like.
+
+209
+00:31:50.660 --> 00:32:15.751
+Benjamin Houghton: you know, you could just use padding, you know. Or you could you? If you use bilinear interpolation, you could also make them whatever size you want. So it's another like. Instead of doing an up convolution. If you do it up, if you do an up convolution, you get to learn, you get the, you know you get the added benefit of having learn parameters. But if you do bilinear interpolation, you know we you will see here in a little bit that you know.
+
+210
+00:32:16.190 --> 00:32:24.950
+Benjamin Houghton: that you can make the the output. Whatever size you want, right? You can go from whatever size input to whatever size output you want.
+
+211
+00:32:27.450 --> 00:32:36.196
+Benjamin Houghton: But again, if you just use padding right? So the image, if you use padding like, you know, pi torch, I think I think it's the default or not the default, but
+
+212
+00:32:36.760 --> 00:32:53.869
+Benjamin Houghton: for a convolution. But one of the padding arguments is like same right. If you use same padding in pi torch. When you're doing convolution, the output image will be the same size, at least spatially right, even if not necessarily channels, but the number, the height and width of the feature maps will be the same as the input.
+
+213
+00:32:54.960 --> 00:32:56.100
+Benjamin Houghton: So
+
+214
+00:32:57.740 --> 00:33:08.608
+Benjamin Houghton: yeah, that's just a that's where I guess with these little dash lines represent. Okay, so that's 1 of the things that you know this is this diagram isn't super like explicit about. But anyways,
+
+215
+00:33:09.200 --> 00:33:32.840
+Benjamin Houghton: anyways, we see that as we go up, you know, it's the same. We have this pattern. Now, hopefully, we, you see this pattern where we just do an up convolution where we reduce the number of channels, and we increase spatial dimensions, the exact opposite of what we did on the encoder side. So we encode it. We encode the information on this direction. Right? We get more and more semantic encoded machine understood
+
+216
+00:33:33.570 --> 00:34:00.419
+Benjamin Houghton: feature maps as we kind of lose spatial awareness. And then the way up we regain that spatial awareness. And you know we pass, you know. I guess we pass like the spatial information this direction and on the on the Decode. And then we're passing the semantic information up. Right? So spatial information goes across, and semantic information goes up on this side. And so the encoder branch is kind of taking
+
+217
+00:34:00.420 --> 00:34:18.339
+Benjamin Houghton: both. You know. It's taking the information from the bottleneck, and it's taking the information from the decoder and the encoder and kind of combining it and in in decoding it. And and that's how it you know, we finally get to the top with this this final, this final feature map that is, that is the original.
+
+218
+00:34:19.210 --> 00:34:32.160
+Benjamin Houghton: Oh, and this it's and actually, they have 3, 8, 8 by 3, 8 8 is their final output, which is what it I've done this before, where, normally, when I I've I have used used unit for
+
+219
+00:34:32.460 --> 00:34:41.229
+Benjamin Houghton: app certain applications in the past, and I I did it with padding where that was the same. If you guys are interested in that code, I can give it to you for
+
+220
+00:34:41.920 --> 00:34:53.821
+Benjamin Houghton: But it's it's also, you know, pretty widely known, or how to do it. You could probably find it on the Internet, or or maybe even ask a large language model how to do it. It probably tell you how to do it pretty easily. But
+
+221
+00:34:54.409 --> 00:35:15.179
+Benjamin Houghton: that's what you'll typically see nowadays, where you'll just use padding is the same, and the output image will be the same size as the input. But even if it's not, it doesn't matter, because you could take this image and you could resize it to match your original input. But the idea here is that you know what's important to understand is like, or look at our number of outputs. Our output channels is 2, because this diagram is a binary
+
+222
+00:35:15.480 --> 00:35:30.570
+Benjamin Houghton: binary segmentation. So you know, it was probably something like where I think the original paper they were trying to segment cells or something like that. I'm not a biologist, but I have basic understanding of that kind of stuff. But anyways, they were trying to.
+
+223
+00:35:30.570 --> 00:35:53.109
+Benjamin Houghton: Maybe maybe it was nuclei of cells up. But I think it was actually, I don't remember what they were trying to segment. Now, it doesn't really matter something in a biospecimen image. And they wanted to say, Is this a cell or not? Is this a nuclei or not? Is this a cancer cell or not? I don't know whatever they're trying to segment. But the point is, it can be applied to a lot of different things. And it's just a binary mask, which is why, we have 2 channels.
+
+224
+00:35:54.150 --> 00:35:55.080
+Benjamin Houghton: Okay,
+
+225
+00:35:58.080 --> 00:36:07.080
+Benjamin Houghton: and I guess you could even do this if it was maybe we should double check that real fast. What their their original tent was, give it one second.
+
+226
+00:36:09.930 --> 00:36:34.080
+Benjamin Houghton: Okay. So I just wanted to double check that to make sure that indeed they were doing weren't doing something funky here. They did indeed, do a binary classification in their original paper, not to say that it's like super relevant. You know what their original intent was the this the over id overall idea and architecture. What's possible is really what's important to understand here. They actually use a softmax classification, softmax activation
+
+227
+00:36:34.454 --> 00:36:45.039
+Benjamin Houghton: instead of a sigmoid. But like a modern implementation, you would probably just have a single channel output. Right? That's what I've done in the past. When I wanted to do a binary segmentation mask, but
+
+228
+00:36:45.430 --> 00:37:04.339
+Benjamin Houghton: you could do it either way. And actually, we're going to talk about the loss functions here in a minute, because they do kind of factor in here, you know, if you have an image that is like, especially if it's something that's imbalanced where you know, you're maybe you're looking for cancer cells, right? And most of the images like have heart. Like, most like 99% of the pixels aren't cancer cells. Well.
+
+229
+00:37:04.340 --> 00:37:18.730
+Benjamin Houghton: then, that's going to tell the model like, hey? If you just predict not cancer cell and all the in all the pixels, then, you know, you're going to be right? 99% of the time, which is a problem. So that's we're going to talk about the loss functions for for the unit model here in a little bit more depth.
+
+230
+00:37:18.770 --> 00:37:19.340
+Benjamin Houghton: But
+
+231
+00:37:20.410 --> 00:37:46.480
+Benjamin Houghton: yeah. So that's that's why we have 2 channels. We have a we have softmax sell or not sell, you know. That's like one of the things that they were talking about in their paper. They're trying to segment out cells. All right. So let's let's do that. Now we'll talk about the loss functions, and then I think we'll do is we'll take a break, or we'll pause the video at the end of unit, and we'll we'll pick up with the rest of the video after you net or the rest of the after second video for mask Rcnn and the rest of the topics.
+
+232
+00:37:47.460 --> 00:37:57.383
+Benjamin Houghton: So unit loss function binary cross entropy. Right? So this is what you if you were going to use binary cross entropy. Right?
+
+233
+00:37:59.860 --> 00:38:05.520
+Benjamin Houghton: then this would be like a you would have a single channel output, right? One channel. Okay?
+
+234
+00:38:06.080 --> 00:38:11.839
+Benjamin Houghton: Because you're and you would have a this is where you would use. What type of activation function do you think you would use here?
+
+235
+00:38:12.750 --> 00:38:17.940
+Benjamin Houghton: Correct if you, said Sigmoid, if you use the signal you would want to use the sigmoid activation function here.
+
+236
+00:38:18.920 --> 00:38:35.169
+Benjamin Houghton: this is good when they're balanced. Right? This is what I was saying before. Where if you have highly imbalanced and balanced data sets like like cancer cell versus, not cancer cell, then you're gonna have problems with, because there, it's just gonna want to predict the most dominant class.
+
+237
+00:38:35.330 --> 00:38:36.240
+Benjamin Houghton: Alright,
+
+238
+00:38:37.840 --> 00:38:44.423
+Benjamin Houghton: right? So in other. Or you know, small objects and large images. Okay, it's a tough one for that.
+
+239
+00:38:46.040 --> 00:39:01.960
+Benjamin Houghton: yeah, it can only use for binary clock. And then and and this is just a typical right? It's just the normal binary cross entropy, right? And so basically, what is y hat represent? And what is y? Right? So y is the true label for some pixel, right for pixel I.
+
+240
+00:39:02.930 --> 00:39:07.740
+Benjamin Houghton: And you know for how many pixels there are in the image? Right? And is the number of pixels?
+
+241
+00:39:08.780 --> 00:39:09.680
+Benjamin Houghton: Okay?
+
+242
+00:39:09.850 --> 00:39:18.919
+Benjamin Houghton: So hopefully that one makes sense right for every single pixel. It's gonna get a loss score whether or not it was truly the true label or not.
+
+243
+00:39:19.180 --> 00:39:22.229
+Benjamin Houghton: and then moving on, we have the categorical cross entropy.
+
+244
+00:39:22.560 --> 00:39:40.089
+Benjamin Houghton: Right? So this is, you're gonna do this across multi multi classes. Right? So now, it's not just you know, it's it's it's a typical again. It's you, you. If you guys are familiar with deep learning, you should be familiar with these loss functions. Here we have
+
+245
+00:39:41.380 --> 00:40:03.949
+Benjamin Houghton: for for every single class. Now we're gonna we're gonna give a loss score for that pixel, right? So that Pixel is gonna get some probability. I should have mentioned that on the previous slide. Right? So Y hat is the prediction. The is the probability that of that class belonging the probably, that pixel belonging to that class. So across all classes
+
+246
+00:40:04.400 --> 00:40:06.749
+Benjamin Houghton: and all pixels were going to do this.
+
+247
+00:40:07.160 --> 00:40:09.350
+Benjamin Houghton: And so that's why we have the double summation here.
+
+248
+00:40:13.220 --> 00:40:14.130
+Benjamin Houghton: Okay,
+
+249
+00:40:18.850 --> 00:40:27.619
+Benjamin Houghton: right? And then. So this would be if and then ask yourself like, this is a pretty important thing to understand. It's like, how many output channels do you need here?
+
+250
+00:40:29.240 --> 00:40:33.839
+Benjamin Houghton: Well, you need. C, you need C channels.
+
+251
+00:40:34.340 --> 00:40:38.340
+Benjamin Houghton: C is the number of classes, and it's also the number of channels.
+
+252
+00:40:38.520 --> 00:40:43.630
+Benjamin Houghton: So each channel is going to give you like for your output of your unit model.
+
+253
+00:40:43.820 --> 00:40:58.150
+Benjamin Houghton: If you're gonna predict cat, dog and bird segment, cat, dog bird and then maybe background. I don't know. Maybe you have 4 classes. Let's let's say you have 3 to make it simple. Let's say you're gonna do cat, dog, and background. I don't know
+
+254
+00:40:58.460 --> 00:41:02.899
+Benjamin Houghton: whatever you could do some other combination, but then you would have 3 output channels.
+
+255
+00:41:03.030 --> 00:41:10.260
+Benjamin Houghton: one for cat, one for dog, one for background, and so then each
+
+256
+00:41:10.380 --> 00:41:14.959
+Benjamin Houghton: you would look at each pixel and each channel, and and you would you know it would get some
+
+257
+00:41:16.180 --> 00:41:22.750
+Benjamin Houghton: that Pixel would contribute to the loss in in some way using this equation, the categorical cross entropy equation
+
+258
+00:41:24.570 --> 00:41:40.639
+Benjamin Houghton: all right. And then. Now, we start getting to like the the more interesting ones. Right? So this is a weighted. I think this is the right. This is the one that the original paper used. They use weighted binary cross entropy. And this is to account for the imbalance. Okay? So
+
+259
+00:41:41.360 --> 00:41:45.041
+Benjamin Houghton: the weight is associated with each pixel. Let's see.
+
+260
+00:41:45.730 --> 00:41:57.690
+Benjamin Houghton: right? So you know, if you were, gonna you would probably give like a really high waiting for tumor, and then a really low waiting for organ, right for some medical imbalanced image.
+
+261
+00:41:58.370 --> 00:42:05.109
+Benjamin Houghton: And so this is gonna force the model to not just predict. Oh, Oregon, for every single pixel it sees
+
+262
+00:42:06.170 --> 00:42:18.490
+Benjamin Houghton: right? So it's the same function as we had here. But now we're multiplying by a weight. Okay, instead of taking the average. Right? We're taking. You know, we're using a waiting system.
+
+263
+00:42:19.800 --> 00:42:20.530
+Benjamin Houghton: Right?
+
+264
+00:42:23.300 --> 00:42:24.090
+Benjamin Houghton: Okay,
+
+265
+00:42:28.870 --> 00:42:30.036
+Benjamin Houghton: And then
+
+266
+00:42:31.660 --> 00:42:45.070
+Benjamin Houghton: finally, we'll talk about well, there's a few more in here, but I'm gonna talk really about the important ones. And the rest of them are really just here for your reference. But there's a thing called dice loss right? And so dice loss is another
+
+267
+00:42:49.130 --> 00:42:49.990
+Benjamin Houghton: Well.
+
+268
+00:42:50.260 --> 00:43:10.459
+Benjamin Houghton: it's great, for imbalanced data sets as well, and so dice uses it actually measures overlap. Okay? And in a sense, it's it's very similar to intersection over union, at least conceptually. But it's not quite the same right? Because well, let's look at this right? So we're multiplying here at the top, right? So y times y hat.
+
+269
+00:43:10.580 --> 00:43:15.464
+Benjamin Houghton: right? So if it's a true, if it is, if it if y does belong
+
+270
+00:43:16.730 --> 00:43:18.799
+Benjamin Houghton: you know, this would be back in the
+
+271
+00:43:19.990 --> 00:43:26.843
+Benjamin Houghton: this would be back in the binary case. Right? So I think there's general. Yeah, okay, it is. Well, anyways. But
+
+272
+00:43:27.660 --> 00:43:52.020
+Benjamin Houghton: if y does is if it's label is true. So one it would be one times. What if let's pretend our model did really good. And it did like 98%. So that's a high number that's close close to one right? And then the bottom. The bottom would be would be, what right it would be. Well, this is on the top. I'm sorry. It's 2 times that. So this would be almost 2, right, almost 2,
+
+273
+00:43:52.490 --> 00:44:06.509
+Benjamin Houghton: and the bottom would be would be 2. And so this number would be close to one right? This would be well, this one minus all this. So this number would be close to 0, right? So we wouldn't get a very large loss if we
+
+274
+00:44:06.780 --> 00:44:26.629
+Benjamin Houghton: we get. You know, we want loss to be small, so the loss would be small for that pixel inversely, if if y was equal to one, and say Y hat was equal to something small like our model did bad 0 point 1. Well, now, the top is going to be equal to what? 0 2 times 0 point 1. So I guess 0 point 2 over 2.
+
+275
+00:44:26.930 --> 00:44:42.550
+Benjamin Houghton: And so one minus this number, right? What's that? That's like 0 point, this top becomes what 0 point 1 right? And so now the loss is 0 point 9. And so we see, like we have a high loss for that pixel before it was close to 0 now it's close to one.
+
+276
+00:44:45.290 --> 00:44:57.350
+Benjamin Houghton: Alright. So it's it's kind of like, in a sense, it's it's similar to enter to. To intersection. Right? It's, you know, in in Iou we do the we do the ratio of the overlap
+
+277
+00:44:57.840 --> 00:45:01.090
+Benjamin Houghton: to the ratio of the total area for both
+
+278
+00:45:01.430 --> 00:45:30.619
+Benjamin Houghton: for both objects. Right, remember, like, it's easier to think about when you have bounding boxes, but you can do it with segmentation right? So if I had 2 boxes that overlap. They have a high overlap here, and then this other, and then this area outside is where they don't overlap right? So the bottom of this equation right? The bottom of this equation is kind of like the blue area where they don't overlap sort of it's not exactly the same, but it's similar, and the top represents the area where they do overlap.
+
+279
+00:45:31.030 --> 00:45:31.920
+Benjamin Houghton: Okay?
+
+280
+00:45:32.570 --> 00:45:37.250
+Benjamin Houghton: So that's why we say it's it's similar to Iou metric.
+
+281
+00:45:37.580 --> 00:45:39.780
+Benjamin Houghton: Course, Iou is a metric.
+
+282
+00:45:40.860 --> 00:46:08.990
+Benjamin Houghton: is a metric here, but it's not used here in this particular model as loss function, right? So they use this dice loss. So dice loss is always a great choice. I would suggest, if you're doing some, I mean, unless you have really, really balanced data like, normally, you're going to be using something like weighted binary, cross entropy or dice loss right? You probably wouldn't want to use just pure categorical cross entropy and and binary cross entropy. I had done that before, and it still works pretty well, because you know such a powerful model. But you're going to get better results with one of these
+
+283
+00:46:09.150 --> 00:46:10.840
+Benjamin Houghton: loss functions. Okay?
+
+284
+00:46:11.480 --> 00:46:15.320
+Benjamin Houghton: And then finally, you can combine them right? So you can combine.
+
+285
+00:46:15.610 --> 00:46:22.500
+Benjamin Houghton: This is probably the best thing to do is combine binary cross entropy, or, you know, weighted binary cross entropy with dice loss.
+
+286
+00:46:25.470 --> 00:46:37.030
+Benjamin Houghton: and this is, you know. It says it's best for general binary segmentation tasks. Of course you could do. You could combine. There there are. This is the binary case, but there are multi-class cases as well.
+
+287
+00:46:37.500 --> 00:46:39.499
+Benjamin Houghton: So this is probably the best thing to do.
+
+288
+00:46:39.680 --> 00:46:57.459
+Benjamin Houghton: whether you're doing binary or not? You would. If you're gonna do. If you had a multi-class classification problem, you would just use the multi class version of this which I think I have here in the slides. If not, you know we can. You can look that up. But so, Alpha, here is the weight. Yeah. And then you just assign weights like, how much you wanna
+
+289
+00:46:57.600 --> 00:47:03.069
+Benjamin Houghton: how much weight you want to give to binary cross entropy and how much you want to give to the dice loss.
+
+290
+00:47:04.571 --> 00:47:23.640
+Benjamin Houghton: And so I have supplemental up here like these are the ones you really should understand, like at least give like a you should binary cross entropy, categorical cross entropy, weighted binary, cross entropy, dice, loss, and combined. These are the ones that are are important to really understand. These are the ones that are really more here for your reference. I'm not going to go through them in quite the same detail.
+
+291
+00:47:23.640 --> 00:47:35.260
+Benjamin Houghton: This is the generalized dice loss. So this is for multiple classes, right? And so you see, it's it's very similar to the. So if I'll go back to the to the dice loss. It looks
+
+292
+00:47:35.460 --> 00:47:47.400
+Benjamin Houghton: the same right, the top and bottom does more or less the same. The only difference is, now we have. We have these like, now we have these weight, these, I'm sorry you're gonna do it across all classes. Okay.
+
+293
+00:47:48.440 --> 00:47:49.220
+Benjamin Houghton: right?
+
+294
+00:47:49.680 --> 00:47:55.619
+Benjamin Houghton: So it does kind of the same thing. It just does it for every single class, and as opposed to just the binary case.
+
+295
+00:47:57.780 --> 00:48:03.529
+Benjamin Houghton: And then again, this is another one where?
+
+296
+00:48:04.310 --> 00:48:12.839
+Benjamin Houghton: It's good to understand. I'm not again, and I won't go through this in as much detail again. This is supplemental. But you should just just so you're aware of it that it exists. It's
+
+297
+00:48:13.860 --> 00:48:26.490
+Benjamin Houghton: is that this is designed to down weight. Well classified pixels. Okay? So meaning that like, if if the prob, what does that mean? Well, it means that the probability is high.
+
+298
+00:48:26.770 --> 00:48:51.030
+Benjamin Houghton: then it down, it gets down weighted like, if it so meaning like, what does that mean? Like. If if the model is like super confident about a pixel like, it's 99% sure it's not that it that pixels, if it's probability. So Y hat is. If Y hat is large, like a large number close to one, then then that that pixel doesn't get to factor in as much the loss function
+
+299
+00:48:51.240 --> 00:48:55.590
+Benjamin Houghton: right? If the Y hat is small number, right?
+
+300
+00:48:57.520 --> 00:49:01.470
+Benjamin Houghton: Right? So it's not sure about why hat, then?
+
+301
+00:49:02.010 --> 00:49:09.522
+Benjamin Houghton: then it's, you know. Well, actually, I think this should work if it y has close to 0, too. Right? So
+
+302
+00:49:11.390 --> 00:49:19.909
+Benjamin Houghton: right? So it it would work on both ends. I think right. So if if y hat is close to 0 or close to one
+
+303
+00:49:20.770 --> 00:49:21.930
+Benjamin Houghton: then
+
+304
+00:49:23.760 --> 00:49:41.100
+Benjamin Houghton: then it that that pixel gets down weighted right, because the model is really sure, right, if it know. If it's predicting a probability that's close to 0, close to one, it's pretty sure. And so you put less weight on it through these. This, there's this focus factor. Right here, we have this focus factor.
+
+305
+00:49:41.728 --> 00:49:52.491
+Benjamin Houghton: Not to be confused with Alpha. That's the class waiting right? So that's for notice, we're doing this across C classes. So you're this would be
+
+306
+00:49:56.730 --> 00:49:58.720
+Benjamin Houghton: yeah, anyways. So
+
+307
+00:49:59.430 --> 00:50:23.809
+Benjamin Houghton: I guess the moral story is like, just know, this exists know that if the probability is high, really high or really low, the model is really sure about that, pixel it shouldn't factor in as the loss. And we need to focus on pixels that are closer to 0 point 5. And that's the one that the model needs to to. They're gonna factor in higher into the loss function, meaning that they're gonna have a bigger say in how the parameters are changed to to correctly classify them. All right.
+
+308
+00:50:26.060 --> 00:50:40.460
+Benjamin Houghton: And I think, yeah, that's all of them and so the last slide. And then for this video is, we're just gonna talk about some of the applications, right? So medical image segmentation. Right? Of course, we talked about that quite a bit.
+
+309
+00:50:40.730 --> 00:50:54.540
+Benjamin Houghton: Some of the satellite image analysis, industrial inspection, self driving cars. Okay? So these are all some applications of of segmentation models or the unit model, which is semantic segmentation.
+
+310
+00:50:55.120 --> 00:51:09.190
+Benjamin Houghton: Okay, notice that, like we never talked about, we only classified pixels based upon what class they're on. We never said class one instance one, right? We never did any of that. So you know, we're only talking about again like this is, this is, remember what we're doing here. This is
+
+311
+00:51:09.370 --> 00:51:27.050
+Benjamin Houghton: semantic segmentation, meaning we don't know the difference between cell one and cell 2 or car one and car 2 or or tree one. If we're doing land, cover body of water, one body of water, 2 right. And it's all the same thing to the loss function and to the to the outputs or to the model
+
+312
+00:51:27.720 --> 00:51:45.849
+Benjamin Houghton: advantages. So it works well with small data sets very efficient training skip connections, right? Help preserve spatial details really well, and it can be adapted to various tasks. Right? It extends far beyond just what it was originally designed for, which is medical image segmentation.
+
+313
+00:51:46.530 --> 00:51:55.379
+Benjamin Houghton: Alright that'll be the end of this video. And the next video we will cover. We will cover. Instance, segmentation using mask. Rcnn.
+
+314
+00:52:07.440 --> 00:52:19.553
+Benjamin Houghton: okay, just kidding. We're not quite done. I did wanna clarify one thing that might have been a little bit misleading about the focal loss again. This is supplemental. But I said that
+
+315
+00:52:20.210 --> 00:52:30.120
+Benjamin Houghton: I think what I was saying was like. If the if the probability is close to 0 like for easily meaning that it was the the model's pretty sure like, really sure, that it's not
+
+316
+00:52:30.210 --> 00:52:33.370
+Benjamin Houghton: belong to some class, then it it should.
+
+317
+00:52:33.450 --> 00:52:58.319
+Benjamin Houghton: it shouldn't get as much, say in the loss. While that is true, that is not that. It's kind of indirectly the case right? Because if we have, say, 3 classes and like, let's say, the probabilities are 0 point 1 0 point 1 and say 0 point 9 and the the binary. The let's see that one hot encoded vector for the actual class would say, it is this class class 3. So this is class.
+
+318
+00:52:58.320 --> 00:53:04.090
+Benjamin Houghton: we'll say, this is class cat, class, cat, dog and class.
+
+319
+00:53:04.130 --> 00:53:06.392
+Benjamin Houghton: I don't know background or something.
+
+320
+00:53:07.490 --> 00:53:13.619
+Benjamin Houghton: so when these are 0, this, this value actually goes to 0 makes this whole thing 0 right?
+
+321
+00:53:14.390 --> 00:53:38.518
+Benjamin Houghton: But this portion is gonna be high. It's really like this number. It's this is gonna be one. You know, this, this is gonna be really close to one. So the the model is really sure about this pixel and and this this part doesn't really get to factor into the loss very much as opposed to like if it was like, let's do another example. Now, right, let's say this was like 0 point
+
+322
+00:53:38.950 --> 00:53:41.980
+Benjamin Houghton: 3. This was like 0 point.
+
+323
+00:53:42.390 --> 00:53:50.000
+Benjamin Houghton: I don't know. 3. And this was like 0 point 4. So now it's kind of like we see the probabilities kind of split across the classes.
+
+324
+00:53:50.140 --> 00:54:05.450
+Benjamin Houghton: Okay, well, let's go back to the same exercise again again. These don't factor in because they're cause they're true. Class like this number is still 0. Right? So for the cat and dog case, yi, right, yi equals 0.
+
+325
+00:54:05.480 --> 00:54:21.409
+Benjamin Houghton: But for the background, okay, it is. Say that, Pixel, it truly is a background. Pixel. Well, then, why I, what it will, equals to what equals one. And then so this is where the the waiting kicks in. So now we have one minus 0 point 4, which is 0 point 6
+
+326
+00:54:21.510 --> 00:54:25.020
+Benjamin Houghton: right? Which is much larger.
+
+327
+00:54:25.130 --> 00:54:54.540
+Benjamin Houghton: right? It's a much larger number than what we had before, where we had one minus 0 point 9, which is 0 point 1 right? So now that we see that this number is much larger, 0 point 6 is especially once you, you multiply by this focus factor, typically, too. So 0 point 1 squared is much, much smaller than 0 point 6 squared. And so 0 point 6 gets a much bigger say, or the the in this case, right? When it's not sure 0 point 4 gets a much bigger, say than 0 point 9.
+
+328
+00:54:54.910 --> 00:55:17.375
+Benjamin Houghton: Okay, so that's the way this works. And I kind of said it in. You know, I said indirectly, right? So what I said, wasn't entirely incorrect. It was just misleading, I was saying. If if we're not sure if the pixel, if the probability is close to 0 or one, then, you know it doesn't get as much, say in the loss. But that's not entirely true. It only matters if it's close to one or not, and if it, if it, if it's
+
+329
+00:55:17.830 --> 00:55:38.175
+Benjamin Houghton: if the pixels, if you have probabilities near the middle, right near the middle, or evenly distributed like the example, we had with 0 point 3 0 point 3 0. If you have them evenly distributed. Whichever one is the true class is, gonna get the is gonna get the say in the loss function. So it's gonna end, you know, if you had a, it'll be indirectly
+
+330
+00:55:38.660 --> 00:55:40.619
+Benjamin Houghton: right? Yeah. So.
+
+331
+00:55:41.670 --> 00:55:57.959
+Benjamin Houghton: But if you had something that was say, like 0 point 1 versus like 0 point 9 the 0 point 1 isn't directly influencing loss. But the 0 point 9 is because you know, it's gotta this. Those numbers got to add up to one right when you do assault. When you do a
+
+332
+00:55:58.830 --> 00:56:14.089
+Benjamin Houghton: a softmax, the output always has to add up to one right, the probability vector distribution always adds to one, okay, so that's what I was trying to say without saying it as as well as I could. So now we're done with the video, and I will see you in the next one. Thanks.
+

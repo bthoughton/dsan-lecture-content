@@ -1,0 +1,1622 @@
+WEBVTT
+
+1
+00:00:03.020 --> 00:00:09.369
+Benjamin Houghton: Alright and welcome back to the second part of the introduction to segmentation.
+
+2
+00:00:09.880 --> 00:00:16.740
+Benjamin Houghton: And in this video we're going to talk about primarily mask our Cnn.
+
+3
+00:00:17.370 --> 00:00:26.099
+Benjamin Houghton: And in order to talk about Mask, Rcnn, we kind of need to talk about roi align and
+
+4
+00:00:26.430 --> 00:00:29.050
+Benjamin Houghton: bilinear interpolation as well.
+
+5
+00:00:29.220 --> 00:00:34.750
+Benjamin Houghton: So Roi line is used in
+
+6
+00:00:34.880 --> 00:00:39.949
+Benjamin Houghton: Mask, Rcnn, and it replaces the Roi pooling layer.
+
+7
+00:00:40.110 --> 00:00:48.630
+Benjamin Houghton: Alright. So if you remember, from our advanced object or our object detection videos.
+
+8
+00:00:49.370 --> 00:00:53.419
+Benjamin Houghton: we talked about Roi pooling, and how it is used to map
+
+9
+00:00:53.980 --> 00:01:00.000
+Benjamin Houghton: one region of space or 1 1 feature map of a certain
+
+10
+00:01:00.110 --> 00:01:04.739
+Benjamin Houghton: dimension to another right? So we can take a
+
+11
+00:01:04.849 --> 00:01:14.689
+Benjamin Houghton: region of interest, of any size or any spatial dimension, and we can map it to whatever shape we need. And the reason being is because
+
+12
+00:01:14.820 --> 00:01:39.130
+Benjamin Houghton: certain subsequent layers in the model or network might require a certain shape. Okay, so that's what this tool does, at least Roi align. It uses it uses something called bilinear interpolation, which is sort of like a you think of, like a sampling technique. Right? We've already talked about this already a little bit. We'll talk about it here in more depth now. But essentially the way this works is
+
+13
+00:01:39.990 --> 00:01:48.349
+Benjamin Houghton: in this picture here, right? We have this region. Where it looks like it. It takes up
+
+14
+00:01:48.880 --> 00:01:53.679
+Benjamin Houghton: well, let's say in this. This is directly from the Mask. Rcnn paper. But
+
+15
+00:01:53.850 --> 00:02:00.350
+Benjamin Houghton: we have this, this image where it looks like 1, 2, 3, 4, 5, 6 set.
+
+16
+00:02:00.440 --> 00:02:06.120
+Benjamin Houghton: Well, I I skipped a couple right? So it's like 1, 2, it's 3 by 3, basically yeah, it's 3.
+
+17
+00:02:06.200 --> 00:02:30.989
+Benjamin Houghton: Essentially, this black. This black region is our is our region of interest, right? The the solid line. And it is kind of over top of. Actually, it's more than if you include these pixels up here. Right? That's like 3. By what? 1, 2, 3, 4, 5, actually. So it's actually covering 3 by 5. But we need it in a 2 by 2 space.
+
+18
+00:02:32.400 --> 00:02:38.029
+Benjamin Houghton: And actually, it's not truly 3 by 5. It's really like, what what would this be? This would be?
+
+19
+00:02:38.290 --> 00:02:41.220
+Benjamin Houghton: The width would actually be like.
+
+20
+00:02:42.630 --> 00:02:53.157
+Benjamin Houghton: I don't know what that would be. A little bit less than 3. It doesn't really matter. The point is is that we can go from any shape we want and and map it right?
+
+21
+00:02:54.300 --> 00:02:56.329
+Benjamin Houghton: so the Roi pooling
+
+22
+00:02:57.050 --> 00:03:07.790
+Benjamin Houghton: is gonna is what's gonna do that. And and you see that the way this works is basically this box, this grid, right is gonna take information from
+
+23
+00:03:08.370 --> 00:03:26.480
+Benjamin Houghton: it's neighboring cells, or it's neighboring these pixels that are around it in order to determine a final value. And so when you're done with Roi pooling you, you'll have 4 values instead of, however many this this boxes right things to note here is that you know this
+
+24
+00:03:26.620 --> 00:03:28.780
+Benjamin Houghton: black box, isn't
+
+25
+00:03:30.030 --> 00:03:45.749
+Benjamin Houghton: it's not aligned with the pixels, and so maybe stop the video or think about. Why is that? Why would this be? Why would you have a situation like this, where your region of interest, your Roi doesn't align with the pixels of your feature map.
+
+26
+00:03:46.550 --> 00:03:47.550
+Benjamin Houghton: And
+
+27
+00:03:48.250 --> 00:04:11.410
+Benjamin Houghton: if you said, the reason is is because this image, this feature map, is no longer matches the dimensions of the original image. Then you were correct. Right? When we do convolutions, we typically go from large spatial dimensions to smaller spatial dimensions, or we go from a high number of pixels to a low number of pixels when we do things like Max pooling and stuff like that.
+
+28
+00:04:12.370 --> 00:04:34.260
+Benjamin Houghton: So this one pixel here might encompass the value of might be the end product of what was maybe 16 pixels right? Every these 16 pixels have been mapped down to this one. So the image is 1 16th the size of its original size. So this region of interest might not be perfectly lined up with the pixels. And so
+
+29
+00:04:34.600 --> 00:04:42.070
+Benjamin Houghton: this isn't a big deal in object detection. We can kind of just like, you know, round and estimate. But it's a big deal in segmentation.
+
+30
+00:04:42.750 --> 00:04:55.820
+Benjamin Houghton: right? Because we have to get we? We have to be pretty granular down to the pixel level. We're not just detecting an in an object anymore and determining a box where, you know we're we're segmenting out individual pixels.
+
+31
+00:04:57.070 --> 00:04:59.729
+Benjamin Houghton: So that's the purpose of roi
+
+32
+00:05:00.030 --> 00:05:09.019
+Benjamin Houghton: roi align. It's again like, I said, using segmentation models which might be sensitive to misalignments which is inherent to Roi pooling.
+
+33
+00:05:10.860 --> 00:05:13.529
+Benjamin Houghton: All right. So how does this work?
+
+34
+00:05:14.930 --> 00:05:17.520
+Benjamin Houghton: Well, I'm glad you asked, because I'm gonna tell you now.
+
+35
+00:05:18.052 --> 00:05:27.130
+Benjamin Houghton: So here is the overall, the overall workflow. Sorry, I thought. That was the eraser of roi align. So 1st step
+
+36
+00:05:28.170 --> 00:05:32.459
+Benjamin Houghton: user specifies the Roi, the region interest and the output size.
+
+37
+00:05:32.600 --> 00:05:34.469
+Benjamin Houghton: So in this example,
+
+38
+00:05:36.640 --> 00:05:57.780
+Benjamin Houghton: I I'm saying, I'm going from. Let's see, 5 by 5. And I just these are. And these numbers are the are the actual like pixel value. So I know it's a silly example. There would there would be. This would be a strange image. But let's just pretend this? Is it like the intensity of this pixel is one, and this pixel is 5, and so on and so forth. But so that's how bright right. That's the intensity of the pixel.
+
+39
+00:05:58.176 --> 00:06:07.920
+Benjamin Houghton: And I'm mapping here from a 5 by 5 space to a 2 by 2, or you know my feature map you could think of this as my feature map is 5 by 5,
+
+40
+00:06:08.070 --> 00:06:28.860
+Benjamin Houghton: and my roi is this size the size of this red box? Right? So let me draw it, outline it in green. So you know exactly what I'm talking about. This big box, right? Is my, is my roi right? This is the region of the intra of the original image, that this is what typically you might have something like a what a region proposal network.
+
+41
+00:06:29.670 --> 00:06:35.650
+Benjamin Houghton: An Rpn said, Hey, like this, you should take a look at this. This space is, there's probably an object there.
+
+42
+00:06:36.110 --> 00:06:51.579
+Benjamin Houghton: and it's this, it's here, here's where it is. And so we map that to our featured, we map that to our feature space or our, I guess our yeah, our our feature map it, it encompasses this area of the feature map, right? So there might be some misalignment.
+
+43
+00:06:53.250 --> 00:07:09.607
+Benjamin Houghton: Alright, so that's that's the 1st step we we find the Roi, and we determine our output size. Here, we're saying we want it. We're gonna map to a 2 by 2, right? Okay? So whatever size our Roi is, it's not really 2 by, it's not mapping 5 by 5. It's really like,
+
+44
+00:07:10.120 --> 00:07:15.440
+Benjamin Houghton: looks like about we're starting at 0 point 2 5 here, and we're going out to what?
+
+45
+00:07:15.590 --> 00:07:16.500
+Benjamin Houghton: 3?
+
+46
+00:07:17.900 --> 00:07:24.499
+Benjamin Houghton: Right? So what is that? That's actually 2.7 5 by 2.7 5. And we're mapping it to 2 by 2.
+
+47
+00:07:24.630 --> 00:07:26.410
+Benjamin Houghton: That's what we're actually doing here.
+
+48
+00:07:28.260 --> 00:07:29.260
+Benjamin Houghton: All right.
+
+49
+00:07:30.990 --> 00:07:31.850
+Benjamin Houghton: So
+
+50
+00:07:32.870 --> 00:07:50.300
+Benjamin Houghton: before I go any deeper, there's 1 other thing I want to point out right? So in this example, I'm going from 2.7 5 to 2 by 2, but there's no reason that I couldn't go to to say something like 3 by 3 or 4 by 4 or something that's actually even larger. And so that's how bilinear interpolation can actually be used to
+
+51
+00:07:50.300 --> 00:08:19.220
+Benjamin Houghton: like, I said, before the you can specify any input size and you can map it to any output size right? As long as the well, I guess the input size can't be larger than the image. That wouldn't really make sense right? Because you wouldn't have anything to sample from. But the input size can be any any size you want. So like here, like I'm just saying 2.7 5 by 2, 7, 5. But I could say, like, my my roi could be 2 by 2, and I want to map it or 2 and a half by 2 and a half, or whatever, and map it.
+
+52
+00:08:19.220 --> 00:08:21.599
+Benjamin Houghton: or even 2 by 3, doesn't have to be a square.
+
+53
+00:08:21.660 --> 00:08:51.460
+Benjamin Houghton: you know. It could be something like 2 by 3, and I want to map to something that's 4 by 4. That's that's perfectly fine, too. You would just make smaller grids. Right? So what would that look like? Well, in this example? Let's say, I want to map to a 4 by 4 instead. Well, now, I just have more grids. Okay, that's that's all I'm going to do right. So now I have double as many grids. And so when I'm done I'll have 4 grids. Okay. So all I've done so far is draw a grid on top of the feature map or the image right. Of course I'll use those terms interchangeably, image and feature maps.
+
+54
+00:08:52.066 --> 00:08:54.400
+Benjamin Houghton: So here's our feature map.
+
+55
+00:08:55.818 --> 00:09:15.971
+Benjamin Houghton: It's 5 by 5. This is my region interest. And I'm saying I want a 2 by 2 grid from this region of interest. So I want to draw my 2 by 2 grid on top of it. Okay, great. All right. So let's go to the next step. So the next step is to determine what we're going to call our sampling points. All right? So in this we have 4 sampling points in in each box.
+
+56
+00:09:16.320 --> 00:09:41.483
+Benjamin Houghton: this is called the sampling ratio, right? So the sample. So if you look in pi torch a keyword argument. I think it's a i think it's a keyword argument. Yeah, the default, I think, is 2 or no. Actually, I apologize. It's not 2. It's dynamically determined in pi torch, depending on the size of your roi and the size of the the feature maps and stuff like that. But 2 is a commonly used number, right? So
+
+57
+00:09:42.210 --> 00:09:44.670
+Benjamin Houghton: year and a half to
+
+58
+00:09:45.250 --> 00:09:58.218
+Benjamin Houghton: sampling points. And so actually, you can see, I've split each of these grids into equidistant points. Right? So this point. You know these, these, you know, it's a perfectly. All these squares are perfectly symmetrical right?
+
+59
+00:09:58.710 --> 00:10:07.640
+Benjamin Houghton: meaning, or they're all the same size. So you know this 1st point here, let me choose a different color. Let's do that. So it stands out. But
+
+60
+00:10:08.010 --> 00:10:09.500
+Benjamin Houghton: this point here
+
+61
+00:10:09.620 --> 00:10:21.040
+Benjamin Houghton: is a 3rd of the way down, and then this point is a 3rd of the way down. And then these 2 points, I guess what? They're a 3rd of the way over. And then these 2 points are are another 3rd of the way over. Okay, so this they're equidistant.
+
+62
+00:10:21.050 --> 00:10:44.489
+Benjamin Houghton: So we got our 4 sampling points all right. So hopefully, you're with me so far, so all we've done so far is make a bunch of little grids right. We have our 4, our, we have our 2 by 2 grid, which is what we ultimately want, and inside of those, each grid we we have, we determine these sampling points and these sampling points are going to be, basically, we're going to use these to sample the neighboring cells which we'll see here in a minute.
+
+63
+00:10:45.350 --> 00:10:47.056
+Benjamin Houghton: Alright! So
+
+64
+00:10:48.800 --> 00:10:55.470
+Benjamin Houghton: We next step is to determine the sampling points of the sampling points for nearest pixels.
+
+65
+00:10:56.340 --> 00:11:07.649
+Benjamin Houghton: Alright, so what I've done here is rather than you know, it's gonna get kind of messy if we do bilinear interpolation for this entire grid. So I just chose the top left grid. So notice how?
+
+66
+00:11:08.110 --> 00:11:13.239
+Benjamin Houghton: you know, these axes have shifted right? So now from negatives, I'm at
+
+67
+00:11:13.540 --> 00:11:21.052
+Benjamin Houghton: negative 0 point 5 up to 2, right? Because the center, right? The center here. This is point 0 0. Okay,
+
+68
+00:11:21.600 --> 00:11:34.679
+Benjamin Houghton: And now I've only taken the 1st grid. We notice that the 1st grid it ends at what? Look 1.3 7 5. Right? So right here. So I've just taken this first, st this 1st grid. And I've defined these 4 sampling points.
+
+69
+00:11:34.870 --> 00:11:47.953
+Benjamin Houghton: Okay. So the neighbors. q. 1, 1, q. 2, 1, q. 1, 2, and q. 2. These are the 4 nearest pixels for each of these sampling points. Actually,
+
+70
+00:11:48.670 --> 00:11:56.190
+Benjamin Houghton: if I had another sampling point. For some reason, let's say I wasn't using 2 sampling points. Say, I was using.
+
+71
+00:11:56.440 --> 00:12:07.080
+Benjamin Houghton: I don't know. 4, 3. Let's say I was using. I don't know 3 or 4, or 5. I don't know how many this is. Say, this, pick a number say 5. I don't know. So maybe we have a sampling point all the way down here. Okay.
+
+72
+00:12:08.220 --> 00:12:12.529
+Benjamin Houghton: then, if that's the case, if we have a sampling point all the way down there.
+
+73
+00:12:12.900 --> 00:12:23.209
+Benjamin Houghton: Well, then, this sampling points nearest neighbors is actually gonna be which which boxes is. Gonna be let's let's draw them highlight them in green. Real fast.
+
+74
+00:12:24.880 --> 00:12:28.520
+Benjamin Houghton: So it would be this box, this box.
+
+75
+00:12:28.620 --> 00:12:32.220
+Benjamin Houghton: this one and this one. So it would have different sampling
+
+76
+00:12:32.580 --> 00:12:49.241
+Benjamin Houghton: nearest neighbors, just for the ease of simplicity, though I just made it in this example that they all have the same one. But it doesn't have to be the case. We just find each sampling points distance to its neighbors. Right? Which is right. It's pretty simple to do. Actually, it's just the
+
+77
+00:12:49.930 --> 00:12:55.446
+Benjamin Houghton: You just take the floor and the ceiling of of the point right? So
+
+78
+00:12:56.080 --> 00:13:00.949
+Benjamin Houghton: if we know the sampling coordinates so like point O, 9 2 and point O 9 point
+
+79
+00:13:01.100 --> 00:13:24.590
+Benjamin Houghton: 0 point 2 9 2 and 0 point 2 9 2 for the 1st one, then the floor is 0. And yeah, the floor is 0 and the ceiling is one. So it would be point 0 0 point 0 1.1 0 and point 1 1, which is what we have up here. Right? So it's pretty easy to determine your nearest neighbors that way. And so once you've done that.
+
+80
+00:13:24.940 --> 00:13:36.937
+Benjamin Houghton: you're ready to begin sampling right? So we know where our sampling points are, and we know where we're going to sample from. I I guess I should know. It's probably a good time to say that we've picked the 4 nearest pixels.
+
+81
+00:13:37.670 --> 00:13:56.990
+Benjamin Houghton: I I guess you could probably pick more pixels than that. But typically bilinear interpolation is done with the 4 nearest pixels. Alright! But I I don't see why you couldn't choose more. If you really wanted to. Right it would probably it would if you did choose more pixels. What do you think would happen right?
+
+82
+00:13:58.728 --> 00:14:07.579
+Benjamin Houghton: Well, what would happen is, you would kind of have like a smoothing effect, because now you're gonna blend information from more places. Right?
+
+83
+00:14:07.790 --> 00:14:09.680
+Benjamin Houghton: Alright. So let's move on.
+
+84
+00:14:11.330 --> 00:14:15.137
+Benjamin Houghton: So now we're ready to perform bilinear interpolation. And
+
+85
+00:14:15.740 --> 00:14:23.760
+Benjamin Houghton: yeah, this is kind of a a big, you know. I'll you guys can pause this at home. I I don't think it's really, you know, at
+
+86
+00:14:23.960 --> 00:14:30.460
+Benjamin Houghton: really, in your interest for me to kind of explain interpolation. But you know, in interpolation.
+
+87
+00:14:31.710 --> 00:14:55.379
+Benjamin Houghton: at least from a high. I'll explain, obviously from like a higher level. But you know, if we have a point here. We're so like, say, we're in one dimensional. So we're this is 2 dimensional right? This is bilinear, 2, 2 dimensional interpolation, right? But in one dimensional interpolation. If we have a point here, this is the point we're interested in about and say, this is these are the points that we're
+
+88
+00:14:57.020 --> 00:15:21.960
+Benjamin Houghton: its neighbors. I'll call it q. 1. And I don't know. Q. 2. And we want to know. We want to interpolate it like we know the value of q. 1. Let's say this value is one, and we know. Q. 2. Let's say this value is 2, then X should be like roughly, 1.2, 5, right? That's that's all. Interpolation is because I mean, X is closer to q. 1. So it's going to be closer to one than 2, right? So we're just doing this same idea. But with 2 dimensions.
+
+89
+00:15:24.420 --> 00:15:39.160
+Benjamin Houghton: all right. And and what are we actually interpolating? Well, we're interpolating the the pixel values? Right? So let me just draw like a really simple example, real fast. So you give you some intuition of what we're doing here. Let's let's look at this this. But actually, this
+
+90
+00:15:39.630 --> 00:15:41.429
+Benjamin Houghton: no, I'm gonna I'm gonna draw.
+
+91
+00:15:42.180 --> 00:15:44.171
+Benjamin Houghton: I guess I'm gonna draw
+
+92
+00:15:44.680 --> 00:15:51.710
+Benjamin Houghton: a little. A little illustration here. So let's say, this is our sampling point, right? And we have
+
+93
+00:15:52.780 --> 00:15:55.840
+Benjamin Houghton: a value here. Let's say its value is one.
+
+94
+00:15:56.020 --> 00:16:07.350
+Benjamin Houghton: And then we have a value. Here. Let's say its values. 5. We have a value here. Its value is 2, and then we have a value here. Let's say its value is also 5. Well, we see X is really close to one and 2.
+
+95
+00:16:07.470 --> 00:16:14.840
+Benjamin Houghton: So it should be like if say, it's equidistant. So that'd be like 1.5. But then we have to factor in the 5 as well.
+
+96
+00:16:15.860 --> 00:16:18.920
+Benjamin Houghton: Right? Well, 5 and 5,
+
+97
+00:16:19.590 --> 00:16:32.689
+Benjamin Houghton: 5 and 5 is 5. Okay? And then we know that X is closer to these than it is to here, so it should be closer to 1.5 than 5, so I don't know. Maybe that gives us a number of roughly, I don't know 2.5,
+
+98
+00:16:33.050 --> 00:16:54.660
+Benjamin Houghton: or maybe it's 2.7 5 right like our. It wouldn't be exactly 2.7 5, because I don't think it would be anyways. But you get the idea right? So that's what bilinear interpolation is right where we just take the distance to each point and the distance. The closer the point is, the more it weights into the final answer. And so here's the formula for for bilinear interpolation with 4 points
+
+99
+00:16:55.220 --> 00:17:01.100
+Benjamin Houghton: alright, and we see the top we, and then in the top port portion
+
+100
+00:17:01.280 --> 00:17:10.180
+Benjamin Houghton: we multiply the vat. We multiply the the distance of the points
+
+101
+00:17:10.609 --> 00:17:16.320
+Benjamin Houghton: right? So the distance of the points divided by the total distance. Essentially all right.
+
+102
+00:17:17.200 --> 00:17:19.970
+Benjamin Houghton: And so or it would be.
+
+103
+00:17:20.520 --> 00:17:32.689
+Benjamin Houghton: yeah, it would. Well, it it's not. Yeah. So the the closer the point is. So here we have y 2 minus y, and then we have x 2 minus x and so as
+
+104
+00:17:34.980 --> 00:17:45.340
+Benjamin Houghton: as X gets closer to x, 2, q. 1, 1 becomes smaller because because q, 1, so x 2 is out here. Right? Right so. And actually, I have it on the chart here, right?
+
+105
+00:17:46.050 --> 00:17:47.310
+Benjamin Houghton: I believe.
+
+106
+00:17:48.700 --> 00:17:52.950
+Benjamin Houghton: Yeah. So right. So x 1 is here
+
+107
+00:17:54.120 --> 00:18:02.470
+Benjamin Houghton: x 2. 0, I just realized I don't have y 1 and y 2, but y 1 would be here, and y 2 would be here. It'd be the center of these pixels. Right?
+
+108
+00:18:02.770 --> 00:18:05.380
+Benjamin Houghton: Do I have that on the other slide.
+
+109
+00:18:05.790 --> 00:18:08.089
+Benjamin Houghton: I do have it. Okay, perfect.
+
+110
+00:18:08.230 --> 00:18:17.559
+Benjamin Houghton: But I'll update this other slide hopefully before you guys watch this video. But we see that y 1 and y 2 are here, and then we have x 1 and x 2.
+
+111
+00:18:18.900 --> 00:18:26.500
+Benjamin Houghton: Alright, they're the center of the pixels, right? Because they're how far. That's how we determine how far the pixels are from the sampling points.
+
+112
+00:18:26.980 --> 00:18:30.799
+Benjamin Houghton: And so right? So, q. 1, 1
+
+113
+00:18:30.930 --> 00:18:38.170
+Benjamin Houghton: as as x. 2 becomes further than x, then q. 1, 1 gets more influenced. Right?
+
+114
+00:18:39.300 --> 00:18:40.170
+Benjamin Houghton: Okay?
+
+115
+00:18:40.510 --> 00:18:44.630
+Benjamin Houghton: So it's the ratio of essentially how far a point is.
+
+116
+00:18:45.220 --> 00:18:50.900
+Benjamin Houghton: a pixel is from the the pixel gets weighted. q. 1. 1. The weight, the value of q of
+
+117
+00:18:52.520 --> 00:18:53.900
+Benjamin Houghton: of this pixel.
+
+118
+00:18:57.380 --> 00:19:15.880
+Benjamin Houghton: And I just realized there's a typo on this slide as well. This should not be. I gotta fix this slide. I apologize. This should be one. And this should be 2 actually, cause like, if you look at these, see, it's 1, 2, 3, 1, 2, 3. I don't know how that happened. Things got kinda
+
+119
+00:19:16.878 --> 00:19:27.760
+Benjamin Houghton: things got a little jumbled up in this slide. I apologize. I will fix that. But anyways, so this is one, right? Yeah. One. This is 2.
+
+120
+00:19:28.470 --> 00:19:32.660
+Benjamin Houghton: Alright. So we're gonna wait. q, 1, 1, which is about which is one
+
+121
+00:19:32.900 --> 00:19:43.830
+Benjamin Houghton: by how close it is the ratio of how close it is over the total distance. And that's that's all interpolation is. And so we do that for all 4 sampling points. We do that for s. 1,
+
+122
+00:19:43.960 --> 00:19:51.720
+Benjamin Houghton: right. This is s. 1. This is S. 2 s. 3 and s. 4. We've done so. Now we do that for all 4 sampling points, and then we take the mean of all 4 of them
+
+123
+00:19:52.690 --> 00:19:57.310
+Benjamin Houghton: right at the very end here, and that's our cell value. Our grid cell value is 4.3 7 5.
+
+124
+00:19:59.110 --> 00:20:07.460
+Benjamin Houghton: And so we do that for this top left grid, and then we do it for all the other grids. Right? Remember, this is we. Just remember, this was a 2 by 2 grid.
+
+125
+00:20:08.140 --> 00:20:15.220
+Benjamin Houghton: And so we yeah, we. We have
+
+126
+00:20:15.550 --> 00:20:22.240
+Benjamin Houghton: done that for all 4 grades. And so so that is the overall process. Right?
+
+127
+00:20:22.870 --> 00:20:33.800
+Benjamin Houghton: Once you have that you're done like. Now you have a 2 by 2 grid, which is what we wanted, and we have values that have been interpolated from the neighbors right from near neighboring pixels.
+
+128
+00:20:34.300 --> 00:20:39.306
+Benjamin Houghton: And so here's the whole. This is like what we just talked about. Right? Here's the whole slide, right?
+
+129
+00:20:39.810 --> 00:20:43.679
+Benjamin Houghton: the whole workflow. Just so you can look at it all in one slide. If you want to
+
+130
+00:20:46.120 --> 00:21:04.480
+Benjamin Houghton: right, we split it into grids. We determine, we find and determine our sampling points. In this step. In this step we find the nearest neighbors. In this step we calculate an actual cell value right? And and then, of course, we do the same, using bilinear interpolation, and we do the same thing for all the other grid values.
+
+131
+00:21:04.710 --> 00:21:09.589
+Benjamin Houghton: All right. So this is a good place for me to pause the video. And I'm going to fix this slide real fast.
+
+132
+00:21:10.380 --> 00:21:12.049
+Benjamin Houghton: so we will be right back.
+
+133
+00:21:17.400 --> 00:21:21.485
+Benjamin Houghton: Okay, so I fix this for you guys.
+
+134
+00:21:22.630 --> 00:21:29.299
+Benjamin Houghton: right? So there's no confusion. I I changed it now to where it's supposed to be right. So it's supposed to be 1, 2, 3,
+
+135
+00:21:29.740 --> 00:21:43.525
+Benjamin Houghton: 4, 5, 6, 7, 8, 9, 10. So on and so forth. Right? All right. So anyways, let's move on from Roi line, or at least the theoretical portion of it and their definition, and look at some examples.
+
+136
+00:21:44.060 --> 00:21:49.800
+Benjamin Houghton: so you know, we have Roi aligned, built directly into.
+
+137
+00:21:49.950 --> 00:21:54.149
+Benjamin Houghton: and the torch vision, which is great because you know, that allows us to do
+
+138
+00:21:54.280 --> 00:21:59.759
+Benjamin Houghton: perform, you know. Do the mask well, we can define, and we can run mask. Rcnn.
+
+139
+00:22:01.720 --> 00:22:04.859
+Benjamin Houghton: so we have here
+
+140
+00:22:05.770 --> 00:22:13.119
+Benjamin Houghton: the same array as before. 1, 2, 3, 4, 5, same output size, same sampling ratio.
+
+141
+00:22:13.360 --> 00:22:20.339
+Benjamin Houghton: That's the number. Remember, sampling ratio is the number of of sampling points, and we have
+
+142
+00:22:22.046 --> 00:22:25.699
+Benjamin Houghton: this is just reshaping the tensor into a what
+
+143
+00:22:25.870 --> 00:22:30.990
+Benjamin Houghton: this is, Batch channel, and then 5 by 5 map, feature map.
+
+144
+00:22:32.030 --> 00:22:43.689
+Benjamin Houghton: And then let's see, we have. We define the the region of interest. Remember, it's negative 0 point 2 5 2 3. Remember? So negative 0 point 2 5
+
+145
+00:22:43.960 --> 00:22:44.930
+Benjamin Houghton: to 3.
+
+146
+00:22:46.140 --> 00:22:52.550
+Benjamin Houghton: Oh, here. So yeah, let's look at this one here, right
+
+147
+00:22:52.970 --> 00:22:59.840
+Benjamin Houghton: pencil up here. So negative 0 point 2 5 to 3 in both dimensions
+
+148
+00:23:02.150 --> 00:23:06.560
+Benjamin Houghton: to 3 in. X and y alright. So
+
+149
+00:23:07.840 --> 00:23:11.730
+Benjamin Houghton: we it's the same setup as as in the diagram.
+
+150
+00:23:13.310 --> 00:23:21.005
+Benjamin Houghton: And to show you that I wasn't lying, and and to make sure I did the math right? Right? And so,
+
+151
+00:23:22.030 --> 00:23:38.890
+Benjamin Houghton: yeah, we get. The the output is is identical. Right? So here's our output from Roi aligned. This is the Re. This is the features, this is the ro. These are the so. What you would do with this, what you would take this and these would become your new features. Essentially
+
+152
+00:23:39.470 --> 00:23:42.109
+Benjamin Houghton: so. You would. You have some region of interest
+
+153
+00:23:42.480 --> 00:23:52.620
+Benjamin Houghton: that you want to use? You want to extract features from. But the the region of interest isn't the right shape for your for your neural network. So you you reshape it through Roi line.
+
+154
+00:23:56.460 --> 00:23:57.260
+Benjamin Houghton: All right.
+
+155
+00:24:03.670 --> 00:24:12.350
+Benjamin Houghton: so you don't really need to understand this code here in numpy. It's essentially what I did on the previous slides.
+
+156
+00:24:12.889 --> 00:24:31.369
+Benjamin Houghton: So this is a custom implementation in numpy that I wrote to do Roi line, and so we split the. And you can look at this if you're curious to see how how one might do it in numpy. At least the forward pass. I didn't define the backwards pass, which is just as important. But
+
+157
+00:24:32.220 --> 00:24:38.850
+Benjamin Houghton: You know, we split the region of interest into grid cells, and then
+
+158
+00:24:39.350 --> 00:24:55.769
+Benjamin Houghton: from that we can define x 1 and x 2 for each cell. Remember, we needed that we needed the x 1 and x 2, because we're going to use that for our interpolation formula. Remember this this guy here, we need x 1 and x 2 for each grid cell.
+
+159
+00:24:59.552 --> 00:25:01.639
+Benjamin Houghton: And then let's see?
+
+160
+00:25:02.240 --> 00:25:04.139
+Benjamin Houghton: Define the sampling points.
+
+161
+00:25:07.090 --> 00:25:12.930
+Benjamin Houghton: Yeah, so this gives us the same sampling points, 2.2 9 2 and
+
+162
+00:25:13.260 --> 00:25:18.959
+Benjamin Houghton: 0 point 8 3 3. Right? So this is the X, and this is the Y sampling points.
+
+163
+00:25:19.200 --> 00:25:23.380
+Benjamin Houghton: The next part is where we actually function to actually return
+
+164
+00:25:23.650 --> 00:25:41.620
+Benjamin Houghton: bilinear interpolation. So this just runs that formula for a grid cell. So we have, yeah for a single grid cell. So it it, you know. If you had, you know, however, many sampling points you had in that grid cell. You tell it where it needs the feature map, and then it needs the
+
+165
+00:25:42.220 --> 00:25:48.010
+Benjamin Houghton: the sampling point coordinates and it performs, you know. Here's our interpolation formulas.
+
+166
+00:25:49.490 --> 00:26:12.959
+Benjamin Houghton: this is just another way of writing that long formula, right? You can do the along the X-axis and then along the y-axis first.st This is kind of more intuitive like. This is how I explained it before I was like where I remember I was, where I had that little example where I was saying, interpolate between these 2 points and then these 2 points and then. Now we're going to interpolate between the result of those 2 anyways. This is just bilinear interpolation.
+
+167
+00:26:13.360 --> 00:26:15.091
+Benjamin Houghton: And then the last step is
+
+168
+00:26:16.040 --> 00:26:31.329
+Benjamin Houghton: is this yeah, the kind of putting it all together and and doing Roi align right? So here we're going to define some output array. It looks like right, and our sampling points. We split the art. We split the region of interest.
+
+169
+00:26:31.800 --> 00:26:34.989
+Benjamin Houghton: and we split the roi into a grid of cells.
+
+170
+00:26:35.250 --> 00:26:39.755
+Benjamin Houghton: We get our, we define our x 1 x, 2, and then we iterate over those common
+
+171
+00:26:40.400 --> 00:26:44.289
+Benjamin Houghton: and this is probably there might be a better way to do this than doing like a double for loop. But
+
+172
+00:26:44.400 --> 00:26:47.669
+Benjamin Houghton: one way you can do it is you can iterate over.
+
+173
+00:26:49.650 --> 00:26:55.260
+Benjamin Houghton: The the output right? So this is iterating over the grid
+
+174
+00:26:55.730 --> 00:27:22.309
+Benjamin Houghton: right? So iterating over this output array size, and when you do that you get your sampling points for that grid you perform bilinear interpolation for that grid. And then here, you know, I just added the sampling points. Really, you don't really need that. That's just for debugging, or if you wanted to look at them to make sure they're correct, and then you add your. The mean fxy is, remember, that's the value of this of the grid cell.
+
+175
+00:27:22.590 --> 00:27:37.899
+Benjamin Houghton: or it's the it's the value of the sample. Fxy is the the value of each sampling point we take the remember, we take the mean, remember we it's the last step right down here, or let's see in this step. The cell value right is the mean of all 4.
+
+176
+00:27:38.140 --> 00:27:38.980
+Benjamin Houghton: Okay,
+
+177
+00:27:40.920 --> 00:27:44.590
+Benjamin Houghton: And then, once we do that, we can add it to our output array and return the output array.
+
+178
+00:27:44.850 --> 00:27:49.310
+Benjamin Houghton: And so we print that we see that it's the same value as
+
+179
+00:27:51.150 --> 00:28:02.620
+Benjamin Houghton: the. So here's the not the pie torch example. And right. So we got the same. Got the same result. Great yay. So we coded it correctly and then looks. I'm also printing here
+
+180
+00:28:04.300 --> 00:28:08.300
+Benjamin Houghton: printing 2 things. It looks like I don't know why.
+
+181
+00:28:11.810 --> 00:28:14.840
+Benjamin Houghton: the output array these are.
+
+182
+00:28:15.870 --> 00:28:21.710
+Benjamin Houghton: I'm curious. Now I'm gonna look and see why this is burning something else. One second.
+
+183
+00:28:23.290 --> 00:28:31.930
+Benjamin Houghton: All right. So this is just the output of these are actually the values of the sampling points. I figured out.
+
+184
+00:28:33.950 --> 00:28:37.513
+Benjamin Houghton: So they're actually they're actually, if you look here.
+
+185
+00:28:38.780 --> 00:28:56.560
+Benjamin Houghton: not that this really matters, but there are these values. So down here I was. Actually this isn't. This is from a hidden cell in my Jupyter notebook, where I was kind of testing this out. So this isn't meant to be here. Okay, this is from another cell. It's after this code cell that's hidden. And
+
+186
+00:28:56.960 --> 00:29:18.990
+Benjamin Houghton: yeah, anyways, it doesn't matter. It's not supposed to be there. It's it's completely irrelevant or not irrelevant. But it's it's these numbers up here. And by the time you guys watch this video, this probably will be fixed, I will have deleted these this output. Anyways, let's keep moving and talk about mask. Rcn, so mask our cnn. Now that you understand what Roi line is, you
+
+187
+00:29:19.380 --> 00:29:23.739
+Benjamin Houghton: should have the foundation. Now, to fully understand how mask. Rcnn works.
+
+188
+00:29:24.530 --> 00:29:34.670
+Benjamin Houghton: You understand what a segmentation head looks like, right where we segment. Remember, it's kind of like you net where we are going to output a
+
+189
+00:29:34.790 --> 00:29:45.619
+Benjamin Houghton: basically when we we output an image instead of outputting, like some vector that has a prediction or a vector of bounding boxes in segmentation.
+
+190
+00:29:45.760 --> 00:29:53.649
+Benjamin Houghton: And maybe I should have made this more clear up front. We're going to literally output an image like that's what this is showing in this. This diagram. This diagram is from the mask
+
+191
+00:29:54.155 --> 00:30:20.730
+Benjamin Houghton: our Cnn paper. And we they're they're literally outputting an image in this particular instance the image is an roi right? And this roi. So now that we understand how segmentation works, and we understand roi align the rest of this. You're already familiar with right, you know, about region proposal networks, you know about feature pyramid networks. So you should have all the tools in your toolboxes. Now.
+
+192
+00:30:22.130 --> 00:30:29.220
+Benjamin Houghton: alright, so mask. Rcnn is instance segmentation, right? So we're not just distinguishing between
+
+193
+00:30:29.570 --> 00:30:34.389
+Benjamin Houghton: person, not person, or we're not just doing dog cat.
+
+194
+00:30:35.150 --> 00:30:42.769
+Benjamin Houghton: I don't know bird right now. We're doing dog one dog, 2 cat, one bird one
+
+195
+00:30:43.580 --> 00:30:47.570
+Benjamin Houghton: right? So different instances, and
+
+196
+00:30:48.640 --> 00:30:57.830
+Benjamin Houghton: the object detection portion of mask art of Rcnn is how we do that right? So we're we're extending faster. Rcnn.
+
+197
+00:30:58.650 --> 00:31:14.329
+Benjamin Houghton: And by adding a mask prediction branch. So we still have all the components of faster Rcnn. Like, we still have the feature pyramid network. We still have the we still have the backbone right? We still have the feature pyramid network, and we still have the region proposal network
+
+198
+00:31:14.860 --> 00:31:22.849
+Benjamin Houghton: all those things together. Along with this what we call the mask head or the segmentation head is going to
+
+199
+00:31:22.990 --> 00:31:25.310
+Benjamin Houghton: allow us to do instance segmentation
+
+200
+00:31:29.030 --> 00:31:29.770
+Benjamin Houghton: right?
+
+201
+00:31:32.160 --> 00:31:53.619
+Benjamin Houghton: so what is the overall architecture. So again, we have. We have the backbone right? What does the backbone do? It just gets features, that's all it does it? It doesn't do anything else we put an image in and out comes the other side a bunch of feature, a bunch of feature maps. In the. In the case of a feature pyramid network. We have a bunch of features at varying sizes. Right?
+
+202
+00:31:54.440 --> 00:31:59.910
+Benjamin Houghton: Remember the feature pyramid network has like 4 to 5 different outputs
+
+203
+00:32:00.040 --> 00:32:25.949
+Benjamin Houghton: depending on. I mean you can have really make it as many as you want. But typically, you're gonna have usually 4 or 5 different or feature. You have 4 or 5 sets of feature match. Each feature map is gonna have 256 channels, so, or 256 maps. However, you want to think about it, but they'll be varying in spatial size, or varying in in height and width, so they might be 14 by 14 or 28 by 28, or whatever
+
+204
+00:32:26.470 --> 00:32:28.669
+Benjamin Houghton: or whatever else size they might be.
+
+205
+00:32:30.190 --> 00:32:35.420
+Benjamin Houghton: Okay. So that's what the backbone does. Okay, just takes features, takes an image and
+
+206
+00:32:35.860 --> 00:32:39.910
+Benjamin Houghton: turns it basically into machine code, right or feature map.
+
+207
+00:32:41.000 --> 00:32:56.900
+Benjamin Houghton: And then after we do that, we have a region proposal network, right? So that's the same as before we have. It's just a small convolutional network that is, a 3 by 3, and then 2 twin, one by one convolutions. If you remember, if not, go back and watch the advanced object detection
+
+208
+00:32:57.573 --> 00:33:04.349
+Benjamin Houghton: video. And you can remember, you can talk about the region proposal network and
+
+209
+00:33:04.450 --> 00:33:06.249
+Benjamin Houghton: pretty good detail on that video
+
+210
+00:33:07.731 --> 00:33:15.900
+Benjamin Houghton: and that's gonna tell us what? What candidate object, what object candidate regions, or where in the image we should pay attention to. And then we do, Roi align
+
+211
+00:33:16.270 --> 00:33:22.919
+Benjamin Houghton: right. That gets everything to the right size. Because why do we need Roi align? Well, for 2 reasons. Well.
+
+212
+00:33:23.230 --> 00:33:35.359
+Benjamin Houghton: I guess just one reason, because we need. We need it to be the right size. That's as simple as that. Right? The the feature maps the roi. And remember, if we have an image like this, and there's a tree here.
+
+213
+00:33:35.540 --> 00:33:44.360
+Benjamin Houghton: Okay? And there's a person here my favorite example. Look at my drawing. I'm such a good artist, and I didn't. I didn't even
+
+214
+00:33:44.790 --> 00:33:47.870
+Benjamin Houghton: do what I needed to do here in this image to prove my point.
+
+215
+00:33:48.180 --> 00:34:02.939
+Benjamin Houghton: Try this again. Here's my tree. Let me make my tree bigger this time and my person smaller. Okay, now you're gonna understand what I was trying to say. This is the bounding box for the tree. And this is the bounding box, or the roi for the person in the tree.
+
+216
+00:34:02.940 --> 00:34:22.540
+Benjamin Houghton: So they're not the same size. And that's going to give us problems where in the classification head and the segmentation head, because after we extract the features and we do the region proposals, we have to align them, they need to be the same size, so that they can go into the because this classification or regression head, it expects a certain shape
+
+217
+00:34:22.690 --> 00:34:25.849
+Benjamin Houghton: and the segmentation head. It also expects a certain shape.
+
+218
+00:34:36.500 --> 00:34:40.400
+Benjamin Houghton: so anyways, one second.
+
+219
+00:34:44.360 --> 00:34:57.841
+Benjamin Houghton: Okay, so I apologize for that. So where were we? All right? Yeah, we were talking about Roi line. How the classification and regression had expect a certain shape. And then, and as well as the segmentation head.
+
+220
+00:34:58.230 --> 00:35:20.029
+Benjamin Houghton: well, I guess. Technically, the segmentation head doesn't. I mean, technically, yes, it does. I mean, the model is set up to where it takes a certain size. It's always mapped to the same size. Actually, this classification and regression head it's is actually Roi is actually mapped to 7 by 7. And then for the segmentation is actually mapped to 14 by 14, which we'll talk more about here in a little bit. But
+
+221
+00:35:21.820 --> 00:35:51.381
+Benjamin Houghton: it doesn't necessarily have to be the same size for the segmentation head, because it's just a convolutional layer, and convolutions can take varying sizes at least spatially. But you wouldn't have the same level of precision. Right? So there is a there is an advantage doing it, you know. Consistent model architecture, you know, make it more accurate. And just alignment with the classification. The Classification regression head. So anyways, you want to perform Roi align.
+
+222
+00:35:52.690 --> 00:35:56.861
+Benjamin Houghton: you know, one of the big things is, if you didn't do roi online
+
+223
+00:35:58.160 --> 00:36:07.970
+Benjamin Houghton: for the segmentation head. You might end up not getting, you know. Remember that. Remember, we were talking about before, where our pixel, our feature maps might be like this.
+
+224
+00:36:08.405 --> 00:36:35.584
+Benjamin Houghton: In feature, map space, but the original image is much larger. And so then we might have the scenario where our Roi is like, you know, overlapping with some pixels, not others. Right? So it is. That's probably the main reason, right? If you don't do that, then, you know, we're back in the we're back in the same problem we had with Roi pooling where segmentation models that are sensitive to this misalignment could cause misclassification at certain pixels. Because remember, we're doing this. We're doing Pixel wise
+
+225
+00:36:36.040 --> 00:37:01.749
+Benjamin Houghton: output right? So the last 2 steps we've already kind of talked about right. But the classification and regression head again. We're going to get class labels and bounding boxes for all the objects. Right? We are going to perform non Max suppression after several steps, but the one the boxes that make it through the non max suppression, the regions that make it through that are going to get labels and bounding boxes, and then the segmentation head is going to. Actually, we're going to do non, Max. Suppression again
+
+226
+00:37:01.900 --> 00:37:05.837
+Benjamin Houghton: after the after this step, and then finally,
+
+227
+00:37:07.980 --> 00:37:13.420
+Benjamin Houghton: right, whatever's left is is gonna go through. This was gonna go through segmentation head all right.
+
+228
+00:37:13.740 --> 00:37:26.640
+Benjamin Houghton: and we'll see that. You know. So I have a diagram that shows all these steps, so I might not set everything in the perfect correct order. But when we look at the diagram, we're gonna see this in in detail. This is just the general overview.
+
+229
+00:37:28.650 --> 00:37:45.699
+Benjamin Houghton: Alright. Well, next so let's go through the work. Kind of workflow. We'll go through it here, and then we have a diagram. That kind of puts it all together. But I think it's good to do this just from a theoretical like big picture how this works. And then the diagram will show you like more visually and maybe a little bit more detail.
+
+230
+00:37:45.930 --> 00:37:51.408
+Benjamin Houghton: So future extraction, right backbone. So when you hear that word, think backbone
+
+231
+00:37:52.390 --> 00:37:58.110
+Benjamin Houghton: future pyramer network is what you would use in like a modern architecture.
+
+232
+00:37:58.780 --> 00:38:13.659
+Benjamin Houghton: And you know, it's going to generate these these feature maps at at multi scales, multiple multiple multiple multi spatial scale tongue twister. All right. So yeah. But you don't have to use fpn, you could also use rec some version of resnet
+
+233
+00:38:13.770 --> 00:38:16.099
+Benjamin Houghton: just something to extract the features. But
+
+234
+00:38:16.670 --> 00:38:19.040
+Benjamin Houghton: future pair of network has a lot of advantages
+
+235
+00:38:19.490 --> 00:38:34.359
+Benjamin Houghton: that we're aware of now. The next is the region proposal network. So we generate anchor we have, you know. It uses anchors. Remember the anchors from that was the whole, you know, innovation and and Rpn. And the faster Rcnn paper. And
+
+236
+00:38:34.570 --> 00:38:49.530
+Benjamin Houghton: so we have these different anchors at different aspect ratios and different scales. We do 3 by 3 convolution, followed by 2, you know, twin or 2, 1 by one you can call them parallel, but they're independent convolutions. One kind of the convolutions does the object next score for each pixel
+
+237
+00:38:49.530 --> 00:39:06.589
+Benjamin Houghton: and the other one does the bounding boxes, and that's why you have the one by one convolution, because the one by one just looks at that pixel across all channels, and it kind of classifies that pixel. It's object score and and bounding box deltas. Right? Right? So. Well, yeah. It would be that, Pixel.
+
+238
+00:39:06.990 --> 00:39:25.285
+Benjamin Houghton: you know, that would be assuming the the bounding box is centered. If you remember how this works without getting into too many details again. Like, if you want more detail, go back and watch the other videos. But when you're doing the one by one convolution, whatever. Pixel you're looking at is the one across all channels is the one that you're assuming that anchor box would be centered at.
+
+239
+00:39:25.890 --> 00:39:49.419
+Benjamin Houghton: okay. And then we take the top K. The top K region. Proposals are selected using non max suppression, and they go to the next stage, which is the Roi line. So Roi proposals are assigned to the best Fpn feature level. So what does that mean? There's something called the log formula. It's not super relevant for today's lecture or topic, but
+
+240
+00:39:49.740 --> 00:40:06.719
+Benjamin Houghton: it is something, you know, if you're if you were going to implement this it, maybe you should be aware, maybe if you're actually gonna use this, maybe you would want to look into it. How it works I don't. I don't really think it really matters, but it's a really simple idea, right? So the idea here is that
+
+241
+00:40:06.940 --> 00:40:10.980
+Benjamin Houghton: if I have a certain object size.
+
+242
+00:40:11.210 --> 00:40:21.910
+Benjamin Houghton: then I should probably map it to a certain spatial dimension, right? So like, what what does that mean? Right? We know that we know that small objects. Right? So here's my image.
+
+243
+00:40:22.290 --> 00:40:25.170
+Benjamin Houghton: and I have a big object. I have a tree.
+
+244
+00:40:25.420 --> 00:40:44.290
+Benjamin Houghton: and then down here. I don't know. I have a squirrel, right? So we know that, like a lot of this spatial information is lost as we go get smaller and smaller, so different size objects or different size. Rois are going to match up better with different
+
+245
+00:40:44.800 --> 00:40:46.040
+Benjamin Houghton: feature levels.
+
+246
+00:40:46.270 --> 00:40:56.579
+Benjamin Houghton: Alright. So that's how that. That's that's what that formula this log formula is used to for. And that's what we mean by proposals are assigned from the best feature pyramid network. So once we determine
+
+247
+00:40:57.290 --> 00:41:06.190
+Benjamin Houghton: once the Rpn. Says, Hey, yeah, that you should look at this part of the image or something. Here. Then, before we we send that
+
+248
+00:41:06.400 --> 00:41:19.429
+Benjamin Houghton: before we, before we say, Okay, let's Roi align that region. We're going to find whatever the best feature level is. First, st all right. And so then we use Roi roi align to extract this. The sizes usually set, you know.
+
+249
+00:41:19.600 --> 00:41:29.119
+Benjamin Houghton: usually 7 by 7, or 14 by 14 at least, for the original paper. Not. I don't know why I underlined or fast. R. Cnn, the original paper mask
+
+250
+00:41:30.700 --> 00:41:32.659
+Benjamin Houghton: our Cnn all right.
+
+251
+00:41:33.900 --> 00:41:47.969
+Benjamin Houghton: And so this Roi line is a key difference, a key difference, not the key difference, obviously, between the 2 papers. Mask, Rcnn as a segmentation model and instance one that combines well, you know, and it does
+
+252
+00:41:48.170 --> 00:41:50.290
+Benjamin Houghton: object detection as well. So
+
+253
+00:41:50.910 --> 00:41:55.549
+Benjamin Houghton: it's a lot different than you know, faster or Cnn. But this is a difference.
+
+254
+00:41:56.150 --> 00:41:58.380
+Benjamin Houghton: The key, I guess we could say, it's a key difference right?
+
+255
+00:41:58.880 --> 00:42:03.989
+Benjamin Houghton: All right. So after we do, roi align, we can do our bounding box classification and refinement
+
+256
+00:42:04.100 --> 00:42:17.772
+Benjamin Houghton: right? So now we know where to look in the image just like before. Just like in faster Rcnn, we can put the Roi through a feed, a dense feed forward network right? We just flatten the layer. We fat flatten the features.
+
+257
+00:42:18.580 --> 00:42:21.730
+Benjamin Houghton: and we feed them through a
+
+258
+00:42:22.390 --> 00:42:37.329
+Benjamin Houghton: the classification head, right? A, which is a dense network. It's same thing with the the same thing with the regression head, right? The classification and the regression head. Right? Just basic like this is deep learning, 101 stuff, right? Classification, dense feed, forward
+
+259
+00:42:37.670 --> 00:42:40.210
+Benjamin Houghton: classification and regression.
+
+260
+00:42:41.780 --> 00:42:45.760
+Benjamin Houghton: And so after we do that, we're going to do non-max suppression again
+
+261
+00:42:45.820 --> 00:43:15.689
+Benjamin Houghton: and do remove the duplicate entry. So now we have our final bounding boxes like this, was you? If you were doing faster, Rcnn, you'd be done right. You you have your bounding boxes and you have your coordinates. You're and you're you're done. But oh, and you've done that, Non Max. Suppression and you get your final output right. That's the last step in in faster, Rcnn. But we're not done because we want to segment them now. So now all we're going to do, I say, all we're going to do like. It's so easy. But we're just going to take our. Our, the area or our
+
+262
+00:43:16.670 --> 00:43:20.410
+Benjamin Houghton: regions of interest are our final bounding boxes, and we're going to segment them.
+
+263
+00:43:20.630 --> 00:43:45.810
+Benjamin Houghton: So we're going to take those those like, you know, before they were 7 by 7. We're just going to take the corresponding 14 by 14 versions. And remember, I was saying before, when we do bilinear interpolation, or we do roi align, we can map from any size to any size. So in my my example before, where I had, like a tree and a squirrel. Right. They both get mapped to 4, 7 by 7, and 14 by 14, and you know.
+
+264
+00:43:47.020 --> 00:43:51.359
+Benjamin Houghton: say that the tree was I don't know what this, or maybe in feature space it was like
+
+265
+00:43:51.540 --> 00:44:09.809
+Benjamin Houghton: I don't know what it was. Maybe it was like 20 by 20 in feature space. Maybe that's too. It doesn't really matter or 20 by 10. And so then we're going to map that to 7 by 7 and 14 by 14. Those same pixels are going to map to that new dimension because we can have any input size and any output size we want. That's 1 of the beauties of Roi align.
+
+266
+00:44:09.810 --> 00:44:22.099
+Benjamin Houghton: And the reason why we use the 14 by 14 is because it's, you know, we're doing segmentation. So we want more granularity, right for our pixel by pixel classification. So that's why we use a smaller
+
+267
+00:44:22.540 --> 00:44:28.447
+Benjamin Houghton: or, I guess, a larger feature maps effort for Roi align. Okay?
+
+268
+00:44:29.250 --> 00:44:53.080
+Benjamin Houghton: right. So anyways, we take the 14 by 14 roi aligned areas that correspond to the 7 by 7 ones at least. So the bounding boxes that we keep after non max suppression, you know. When they came into this step they were 7 by 7, and we just grab their 14 by 14 counterpoint counter partners, feature maps, and we put them into the mass prediction.
+
+269
+00:44:53.110 --> 00:45:00.070
+Benjamin Houghton: And the mass prediction is just segmentation. It's just. I'm sorry, not segmentation. It's just convolutions to do segmentation
+
+270
+00:45:00.420 --> 00:45:07.459
+Benjamin Houghton: right? And so the segmentation is going to output a a mat, basically a binary mask per object.
+
+271
+00:45:09.310 --> 00:45:13.219
+Benjamin Houghton: So the reason why is why what this means is
+
+272
+00:45:16.260 --> 00:45:36.719
+Benjamin Houghton: when and also fully convolutional network. Okay, so let me break this down here. Segmentation head only produces only the final selected boxes right after Non Max oppression. Right? We talked about that. It only uses convolutional neural networks right? Because we're we're going from an image to an image. So we only do convolutions. There's no vectors. There's no
+
+273
+00:45:36.830 --> 00:45:48.100
+Benjamin Houghton: I don't know text or whatever. So weird data type. We're going from one image to another image. So we just use convolutional neural net. That's what we mean by fully convolutional neural network. And we generate a binary mask per object.
+
+274
+00:45:48.580 --> 00:46:05.939
+Benjamin Houghton: Well, technically, it's not a really a binary mask. It's going to be a multi class mask, right? So we're gonna have a mask for each class. Right? But this. So this is kind of a little bit on intuitive. But the way this is worded here. But essentially what I'm this is trying to say is that
+
+275
+00:46:07.290 --> 00:46:13.280
+Benjamin Houghton: we do a binary mass per object because we've already classified that object. If we've classified it as a tree.
+
+276
+00:46:13.440 --> 00:46:21.270
+Benjamin Houghton: right? Then we're only going to look at the tree, the rolling look at the tree mask. And so what that means is that masks are generated independently for each class
+
+277
+00:46:22.180 --> 00:46:25.949
+Benjamin Houghton: during inference only the mask, for the predicted class is used
+
+278
+00:46:26.710 --> 00:46:31.469
+Benjamin Houghton: right? We don't. If we know it's a tree, we don't. We're not going to try and look at the squirrel
+
+279
+00:46:32.030 --> 00:46:41.740
+Benjamin Houghton: segmentation channel. Right? So again, we're mapping from, we have a 14 in the input to the mask is 14 by 14
+
+280
+00:46:42.230 --> 00:46:43.310
+Benjamin Houghton: feature map
+
+281
+00:46:43.590 --> 00:47:10.109
+Benjamin Houghton: of many, many channels, all these extracted features that have been Roi aligned. And they're going to go in. And they're going to come out with. Actually, I think that they end up being 28 by 28. It does like a bilinear. It does bilinear interpolation to up sample to get bigger spatial dimensions after there's a there's a few layers in here but the output a few convolutional layers. But the output is going to be 28 by 28, and there's going to be as number many channels as there are classes.
+
+282
+00:47:10.270 --> 00:47:12.104
+Benjamin Houghton: So it's kind of like the
+
+283
+00:47:13.180 --> 00:47:20.139
+Benjamin Houghton: the unit output where we had a a mask for each class. Same idea here.
+
+284
+00:47:20.430 --> 00:47:27.769
+Benjamin Houghton: The only difference is, instead of the entire image, like it was in unit. It's just that region, that area that we were interested in
+
+285
+00:47:28.530 --> 00:47:34.949
+Benjamin Houghton: right. So that area or that that object we are interested in becomes the segmentation for that object.
+
+286
+00:47:35.500 --> 00:47:42.280
+Benjamin Houghton: And that's how we can segment. And this is kind of like. Hopefully, you excuse me.
+
+287
+00:47:43.010 --> 00:47:51.200
+Benjamin Houghton: hopefully. You understand. Now, where like, how did the like? How this understands how this works, how we can do segmentation on an instance level
+
+288
+00:47:53.490 --> 00:47:58.179
+Benjamin Houghton: meaning. We can segment each person or each cat or each dog independently.
+
+289
+00:48:00.650 --> 00:48:04.689
+Benjamin Houghton: all right. And so the final outputs right. They're fine bounding boxes.
+
+290
+00:48:05.020 --> 00:48:07.439
+Benjamin Houghton: the class label and the segmentation masks.
+
+291
+00:48:08.410 --> 00:48:16.460
+Benjamin Houghton: So the segmentation mass here, they're 28 by 28. So there is one more step, and you need to resize them to fit the final detected object.
+
+292
+00:48:19.180 --> 00:48:19.990
+Benjamin Houghton: Okay?
+
+293
+00:48:21.460 --> 00:48:24.980
+Benjamin Houghton: So if the Roi, you know.
+
+294
+00:48:27.280 --> 00:48:33.979
+Benjamin Houghton: yeah, I I guess you know you basically, yeah, you get if the original interest was, you know. Only.
+
+295
+00:48:34.950 --> 00:48:39.920
+Benjamin Houghton: let's say the region of interest was 50 by 50 in the original image.
+
+296
+00:48:40.990 --> 00:48:46.040
+Benjamin Houghton: Right? Then we would need to map from 28 by 28 to 50 by 50. Right?
+
+297
+00:48:47.560 --> 00:48:48.270
+Benjamin Houghton: Yeah.
+
+298
+00:48:50.620 --> 00:48:58.629
+Benjamin Houghton: Or if it was 50, whatever this dimension is, you know, if it was 50 by 75. We would need to map from 28 by 28 to 50 by 75.
+
+299
+00:48:59.820 --> 00:49:14.130
+Benjamin Houghton: So you would just stretch in this scenario if this was the Y dimension. And this was the X dimension. Then obviously X would be had to be stretched out a little bit to be like a bigger than y. But you get the idea right? We're just resizing an image, reshaping and sizing it.
+
+300
+00:49:14.470 --> 00:49:20.139
+Benjamin Houghton: So that's the final. That's the final step. And then you have your you have what you sought out to do, your your final outputs.
+
+301
+00:49:20.657 --> 00:49:25.799
+Benjamin Houghton: You have your your bounding boxes, your labels, and your masks, your segmentation mask.
+
+302
+00:49:26.710 --> 00:49:34.789
+Benjamin Houghton: And so here's the overall diagram. And we'll kind of walk through this one more time. We've kind of talked about all this in detail now.
+
+303
+00:49:36.100 --> 00:49:41.979
+Benjamin Houghton: the I think probably the thing we've covered the least is maybe this the segmentation head. So we'll talk about probably that the most.
+
+304
+00:49:42.270 --> 00:50:05.670
+Benjamin Houghton: But we've talked about all these things in in pretty good detail at this point. Now, so we'll start on the left, the backbone, the backbone extracts the features right? No notice how we have multiple levels. Now, this is a small backbone or a small feature pyramid network. I only have p. 4, p. 3, and p. 2. But you could go higher like you could get p. 5 and and even. P. 6. In some instances.
+
+305
+00:50:05.790 --> 00:50:21.679
+Benjamin Houghton: if you wanted to. But this is just for illustrative purposes. I just I thought this was deep enough. So. But anyways we we extract the features and we put all the features go through the region proposal network. Now they don't necessarily go all through at the same time. Right?
+
+306
+00:50:22.150 --> 00:50:25.939
+Benjamin Houghton: The region proposal network might look at each feature level independently.
+
+307
+00:50:26.580 --> 00:50:52.370
+Benjamin Houghton: So I know it's kind of a black box here, but the feature pyramid network. Remember, it's just a 3 by 3 convolution, followed by 2, 1 by ones, right? And there's there's a better diagrams of this in other and like the object in the object detection specifically advanced object detection. When we were talking about faster. Rcnn, so you can look at that diagram. It it was, too. It was too much to put on this single slide, so
+
+308
+00:50:52.370 --> 00:51:08.210
+Benjamin Houghton: I did what I what I say I don't like to do, and I just wrote drew a box to represent a convolutional neural network. Don't you just hate that? So anyways, we have these outputs, though at varying feature levels. Notice right? And so we have our objectness score and our bounding box.
+
+309
+00:51:08.650 --> 00:51:11.429
+Benjamin Houghton: And so, if the object and score is high enough.
+
+310
+00:51:12.870 --> 00:51:15.171
+Benjamin Houghton: Well, actually, I'm sorry. That's not true.
+
+311
+00:51:15.670 --> 00:51:22.080
+Benjamin Houghton: we're gonna so actually, the region proposal network. Right? It's gonna generate.
+
+312
+00:51:22.290 --> 00:51:32.060
+Benjamin Houghton: It's gonna generate a a bunch of different bounding boxes. It's gonna look kind of like chaotic, like something like this, right? And what we're gonna do is
+
+313
+00:51:33.630 --> 00:51:39.289
+Benjamin Houghton: you know, if there's a certain like, once we meet a certain threshold that there's probability of an object
+
+314
+00:51:39.320 --> 00:51:58.359
+Benjamin Houghton: right? We'll have a bunch of those boxes that, hey? Like, there's a high probability of an object here. So we'll add it to this, this plot here. So like we have all these these boxes that like have a high probability of an object. Okay? So then, we use non, Max suppression to reduce that number. So now on the right, we've noticed, we've we've reduced that down
+
+315
+00:51:58.360 --> 00:52:18.850
+Benjamin Houghton: down quite a bit right like the car and the like. The cat only has 2 boxes. Now. The the back carb over here only has, like the one box, we still see some like there's some other like other boxes that might not have an object that still exists right. But the idea is here that we've like vastly reduced the number of boxes. Okay? So now we can take that and we can perform Roi line.
+
+316
+00:52:19.150 --> 00:52:35.450
+Benjamin Houghton: And so we're gonna do that right? We're gonna choose based upon the size of the object, right? The size of the region of interest. We're gonna see which region of interest lines up with the bet like which feature pyramid level does it line up the best with right? Using that that log formula.
+
+317
+00:52:36.120 --> 00:52:48.400
+Benjamin Houghton: So if you know. Let's say I don't know. This cat lines up. Let me see. Let's say this, this car back here. Yeah. This car lines up. Good with the P. 3
+
+318
+00:52:49.088 --> 00:52:54.660
+Benjamin Houghton: feature pyramid. So then we'll just take just just these features. So this is gonna be.
+
+319
+00:52:56.640 --> 00:53:02.300
+Benjamin Houghton: Oh, I just accidentally closed my just accidentally closed.
+
+320
+00:53:02.540 --> 00:53:07.007
+Benjamin Houghton: Press the wrong button on my Zoom Meeting on my ipad. Here we go. Sorry about that.
+
+321
+00:53:11.870 --> 00:53:12.800
+Benjamin Houghton: yeah.
+
+322
+00:53:13.290 --> 00:53:22.099
+Benjamin Houghton: Having a problem now where my pencil is, I'm gonna have to. I'm technical. Ipod apologize. I have to pause the video and I'll be right back
+
+323
+00:53:25.140 --> 00:53:32.290
+Benjamin Houghton: alright. So apologize. Got my pencil working again. Right, so was
+
+324
+00:53:32.510 --> 00:53:59.990
+Benjamin Houghton: pick up where we left off right. We do the backbone feature extraction. We do the region proposal network, which is a 3 by 3, followed by the twin, one by one convolutions, and then we do our non Max suppression. And where we're talking about we were talking about. I think we were talking about mapping different regions to Rois to different appropriate features. So like so let me give you a little example, real fast using the log formula. So this little, this cat is small, so it might get mapped to where? Like, maybe P, 2
+
+325
+00:54:00.110 --> 00:54:08.210
+Benjamin Houghton: or yeah. P. 2. Because p. 2. Is it preserves spatial information? Okay? Whereas you know.
+
+326
+00:54:08.320 --> 00:54:15.619
+Benjamin Houghton: it's really small. Basically, as you go up this way, we're gonna lose spatial information. Right? So that's why we
+
+327
+00:54:15.860 --> 00:54:23.209
+Benjamin Houghton: we want to use some we want to use sometimes these larger feature maps for smaller objects, and then the larger objects can get mapped to some of the
+
+328
+00:54:23.330 --> 00:54:30.380
+Benjamin Houghton: the the feature maps higher up this in this space, right? So like this big car might get mapped to like P. 4 or something.
+
+329
+00:54:30.870 --> 00:54:33.750
+Benjamin Houghton: Anyways, the log formula.
+
+330
+00:54:33.870 --> 00:54:36.879
+Benjamin Houghton: It's a pretty simple formula, and you can look it up. But
+
+331
+00:54:37.270 --> 00:54:42.660
+Benjamin Houghton: that, it's pretty pretty easy to understand, right? Like small objects get
+
+332
+00:54:43.130 --> 00:54:54.380
+Benjamin Houghton: big feature maps because they were. Were. They preserve spatial information. Big objects get smaller feature maps because they have more semantic meaning. And we're not as worried about losing spatial information.
+
+333
+00:54:55.270 --> 00:55:20.389
+Benjamin Houghton: Right? So yeah, we we do our non expression. We do. We do our Roi line with the appropriate size feature, or the appropriate feature level, or the level features from the appropriate level of the feature pyramid network. We do our roi align. So we we map to either what? 7 by 7, or and and 14 by 14, 7 by 7 is for the classification. Network 14 by 14 is for the segmentation head.
+
+334
+00:55:22.400 --> 00:55:33.019
+Benjamin Houghton: And remember, Roi Line, it's just, you know, it's just using bilinear interpolation, which just means 2 dimensional interpolation, and that allows us to map from any shape to any other shape.
+
+335
+00:55:35.950 --> 00:55:44.219
+Benjamin Houghton: So the only like, I think the only caveat, or the only really requirement, is that the region of interest can't be.
+
+336
+00:55:44.330 --> 00:55:59.999
+Benjamin Houghton: you know, the input shape can't be larger than the input. Right? You can't say, Oh, on a map from a 100 100 by space. You can't say like, I want to go from 100 by 100 to I don't know 7 by 7, because
+
+337
+00:56:00.330 --> 00:56:15.019
+Benjamin Houghton: if the if the feature map is only 28 by 28 or something like that, right? There's not enough pick like that doesn't make sense. We can't have a we can't have a 28 by like the region. Interest can't be larger than than 28 by 28. In that example.
+
+338
+00:56:15.740 --> 00:56:21.189
+Benjamin Houghton: All right. So classification head right? We got our class probabilities
+
+339
+00:56:21.740 --> 00:56:28.220
+Benjamin Houghton: using, you know, we have the the softmax classification. And and this is literally just, you know. Just feed forward network here
+
+340
+00:56:28.620 --> 00:56:35.590
+Benjamin Houghton: right? Deep learning, 101 stuff. Softmax classification to get our class probabilities and then bounding box regression.
+
+341
+00:56:36.440 --> 00:56:37.300
+Benjamin Houghton: All right.
+
+342
+00:56:38.240 --> 00:56:46.019
+Benjamin Houghton: Once we have that we can perform now, we can perform class wise non-max oppression right before. We couldn't, because the bounding boxes hadn't been classified
+
+343
+00:56:46.470 --> 00:56:51.480
+Benjamin Houghton: right? So now, and this helps. If yep.
+
+344
+00:56:52.040 --> 00:57:01.030
+Benjamin Houghton: this helps if there might be like, you know a cat in front of a in front of a car or something, you know. Then it would help. You know, we wouldn't want to suppress
+
+345
+00:57:01.560 --> 00:57:13.068
+Benjamin Houghton: the cat box in favor of the of the car, or vice versa. Maybe the cat's like closer to the camera than the car is, so the cat is is big, and they have a high Iou
+
+346
+00:57:13.580 --> 00:57:21.061
+Benjamin Houghton: right? So anyways. We form class wise non-max oppression, and we see that now the
+
+347
+00:57:21.590 --> 00:57:28.329
+Benjamin Houghton: now we have just a 1 bounding box ideally for for the car, for each car and the cat, and then we also have.
+
+348
+00:57:28.788 --> 00:57:43.301
+Benjamin Houghton: We also have this this yellow bounding box for for the house, you know. I don't know it'd be you could consider it background. I I don't know. It just depends on what you're doing. I just, it's just for illustrative purposes, really. Okay. So don't read too much into the the house. Okay?
+
+349
+00:57:44.610 --> 00:57:53.699
+Benjamin Houghton: and then finally, we do our mass segmentation alright. So this is kind of like where the right where the rubber meets the road. This is what we've been kind of building up to all along. And
+
+350
+00:57:55.910 --> 00:58:01.990
+Benjamin Houghton: but we see here that the the Roi line feature maps right that are that. Here's the input shape.
+
+351
+00:58:02.950 --> 00:58:08.799
+Benjamin Houghton: one by 2, 56. So I'm saying dimensional. I mean this, you could do this in multiple, you know, if you had.
+
+352
+00:58:09.400 --> 00:58:16.680
+Benjamin Houghton: In this example, I have the input shape as one by 2, 5, 6 by 14, by 14. But like that's
+
+353
+00:58:17.000 --> 00:58:33.009
+Benjamin Houghton: the one represents the batch. So in this example, it might have been better if I wrote 3 right? And actually I explained that if there, if there's 3 rois you could feed them all through at the same time, I guess right? You could do a batch of 3. It doesn't really matter here. So I could say 3 by
+
+354
+00:58:33.220 --> 00:58:44.520
+Benjamin Houghton: 2, 5, 6. That's number of channels by 14 by 4, if you remember, I chose 2, 56, because that's what the that's what the the feature pyramid network typically operates in each of these
+
+355
+00:58:44.800 --> 00:58:58.489
+Benjamin Houghton: 3 outputs in this example, p. 2, p. 3 and p. 4. Have 256 channels. So that's the number of channels that's the features. And they've been Roi aligned, or they've been resized to 14 by 14. Right? So that's where we get the input shape.
+
+356
+00:58:59.840 --> 00:59:01.906
+Benjamin Houghton: And then the output shape
+
+357
+00:59:05.620 --> 00:59:13.199
+Benjamin Houghton: the output shape is, we see, one by 80, by 28 by 28. So let's kind of break that down well.
+
+358
+00:59:13.410 --> 00:59:14.630
+Benjamin Houghton: the
+
+359
+00:59:15.080 --> 00:59:32.330
+Benjamin Houghton: the output shape is again the batch size which this could be 3 in this example. If you want it to be so, don't get mad at me for that 80 by 80. So 80 channels. So that means that there's 80 different classes, 80 channels, a binary mass for the probability of each pixel belonging to the respective class of that channel.
+
+360
+00:59:34.200 --> 00:59:38.389
+Benjamin Houghton: All right. And then by 28 by 28.
+
+361
+00:59:38.920 --> 00:59:46.110
+Benjamin Houghton: That's the image size the out, the the final yeah. The final output size is 28 by 28 width by height.
+
+362
+00:59:46.910 --> 00:59:57.849
+Benjamin Houghton: And again, like we go 28 by 28. In. In feature, space is probably pretty large. It's gonna probably encompass quite a few pixels when we go back to the original image space, which we do in the final step.
+
+363
+00:59:58.590 --> 01:00:22.259
+Benjamin Houghton: and notice that, like, you know, my images have been kind of like stretched here, but they're all square, right, like they've been stretched because they're they've been, you know. The the Roi has been set to that set shape. It was set. But it was 14 by 14 by the input. And we get the 28 by 28. And I guess I should mention here that you know the segmentation head is just. It's just a series of convolutions. And then what's like a bilinear interpolation?
+
+364
+01:00:25.049 --> 01:00:38.980
+Benjamin Houghton: I don't. Let's you know. I don't think I have the diagram here, you know. Let's let's do that real fast. The the mask, Rcnn is they have a diagram of this. It's not a great diagram, but we're gonna look at it nonetheless.
+
+365
+01:00:40.760 --> 01:00:43.540
+Benjamin Houghton: So here's the Mask. Rcnn
+
+366
+01:00:44.140 --> 01:01:01.510
+Benjamin Houghton: paper. Oh, so here's their awesome explanation of their head architecture right? This is why I have to draw my own sometimes, because this doesn't really tell you a whole lot, right so. But the way you interpret. This is so, let's look at the folks on the one on the right side.
+
+367
+01:01:01.700 --> 01:01:06.869
+Benjamin Houghton: because that's our example. The one on the left uses resnet. And then here we're using a feature pyramid network.
+
+368
+01:01:07.690 --> 01:01:15.979
+Benjamin Houghton: So Roi, the Roi, the region of interest has been roi, aligned into 7 by 7 by 2, 5, 6 and 14 by 14, by 2, 5, 6.
+
+369
+01:01:16.300 --> 01:01:17.225
+Benjamin Houghton: Okay,
+
+370
+01:01:18.900 --> 01:01:21.190
+Benjamin Houghton: And then we do convolutions.
+
+371
+01:01:21.370 --> 01:01:27.369
+Benjamin Houghton: We see 14 by 14, and then we go to 28 by 28, and then 28 by 28. So we do a few convolutions
+
+372
+01:01:27.600 --> 01:01:32.619
+Benjamin Houghton: right? And then we we map to this this larger, this larger mass size.
+
+373
+01:01:38.820 --> 01:01:47.230
+Benjamin Houghton: And yeah, and so that's it. Like, one second, though.
+
+374
+01:01:49.520 --> 01:01:51.750
+Benjamin Houghton: Okay, so
+
+375
+01:01:52.170 --> 01:01:58.059
+Benjamin Houghton: right, just wanted to read this real quickly again. Just point out a couple of things here
+
+376
+01:01:59.180 --> 01:02:19.580
+Benjamin Houghton: from you can read this head architecture, this figure 4 description here, but it just tells you kind of like a little bit more about the architecture. And it tell. It says here that they actually do multiple con. So says all convolutions are 3 by 3, except the output convolution, which is a 1 by one which is similar. That's what res. That's what unit did.
+
+377
+01:02:20.670 --> 01:02:41.719
+Benjamin Houghton: and they also do deconvolution. So then they actually, I think I said Bilinear interpolation before. So I misspoke they actually do deconvolutions which are which are the same thing as transpose convolutions. So that's cool. That's what unit uses as well. It's pretty interesting. And then what else? Yeah. So they're deconvolutions with a which are
+
+378
+01:02:41.940 --> 01:02:55.821
+Benjamin Houghton: 2 by 2, with a strita, too, which is the exact same example I showed you earlier, where we just basically doubled the size of our of our of our image, right? So if we did a 2 by 2 convolu, 2 by 2. Deconvolution.
+
+379
+01:02:57.650 --> 01:03:03.610
+Benjamin Houghton: or, yeah, I think the kernel. Yeah. The kernel was 2 by 2 in our in our example, the input was 3 by 3, and then we went to us.
+
+380
+01:03:03.780 --> 01:03:15.610
+Benjamin Houghton: So that would have made us give us a 6 by 6 output. So here, if you have a a input of 14 by 14, and then you wanna and you do a 2 by 2 kernel with a stride at 2
+
+381
+01:03:15.720 --> 01:03:19.709
+Benjamin Houghton: deconvolution or transpose convolution. You'll map to 28 by 28
+
+382
+01:03:21.466 --> 01:03:26.533
+Benjamin Houghton: and I guess one other thing that's not super obvious.
+
+383
+01:03:27.600 --> 01:03:42.869
+Benjamin Houghton: but it's intuitive. If you think about this. Is that so? Notice how, when they use resnet, they actually don't do as many convolutions. So actually, they see this little dotted line here. They're saying they do convolute, like 4, 3 by 3 convolutions in a row. And
+
+384
+01:03:43.730 --> 01:03:47.190
+Benjamin Houghton: I'll kind of let you think about that like. Why, they might do that like.
+
+385
+01:03:47.320 --> 01:03:50.639
+Benjamin Houghton: Why would you think they would do that? And I'll give you a hint?
+
+386
+01:03:50.830 --> 01:04:04.869
+Benjamin Houghton: So the resnet is like many, many layers of convolutions, one after another after another after another, and we know when we do that we have a lot of semantic information, but we begin to lose spatial information.
+
+387
+01:04:05.050 --> 01:04:30.890
+Benjamin Houghton: So there's not a lot of advantage. I guess you know you're going to lose spatial information if you keep doing more convolutions, whereas with the feature pyramid network, you've you know, you don't maybe have as much semantic information depending on what level of the pyramid you're from. But you know. And remember, we chose the level that's appropriately sized, based upon the log formula. So small objects get large spatial, all right. So if you chose an object that had.
+
+388
+01:04:31.740 --> 01:04:45.619
+Benjamin Houghton: I don't know you chose an object that was small like for a small object. Maybe it's a big spatial, you know, the it's a big spatial area. And so I I guess, having the additional convolutions might give you some performance boost right?
+
+389
+01:04:45.670 --> 01:05:03.190
+Benjamin Houghton: So anyways, that's the the key. Differences like between using resnet as a backbone or using the feature pyramid network as a backbone. And then, you know, like I said, before, we map to this this 28 by 28 by by 80 channel. Notice that resident is 14 by 14,
+
+390
+01:05:03.580 --> 01:05:09.939
+Benjamin Houghton: right? So it doesn't have any transpose convolutions, whereas the this version does
+
+391
+01:05:12.110 --> 01:05:20.390
+Benjamin Houghton: alright. So that is the paper. Let's go back. I believe that's everything in the presentation. That's our last slide, right? It is.
+
+392
+01:05:20.970 --> 01:05:21.870
+Benjamin Houghton: yeah.
+
+393
+01:05:22.370 --> 01:05:27.930
+Benjamin Houghton: So that's the the overall architecture of the mask head hopefully, that makes sense.
+
+394
+01:05:28.080 --> 01:05:32.310
+Benjamin Houghton: Why, the inputs are the way they are and why the outputs are the way they are.
+
+395
+01:05:33.070 --> 01:05:42.769
+Benjamin Houghton: And you know, once we do this, we just take our our outputs right, and we just resite, reshape them, resize them to fit the original roi
+
+396
+01:05:44.020 --> 01:05:50.620
+Benjamin Houghton: right. So if the Roi was, you know, this car? It might have a a height of
+
+397
+01:05:50.790 --> 01:05:55.030
+Benjamin Houghton: I don't know. 70 by. That's a big number, let's say.
+
+398
+01:05:56.120 --> 01:06:00.650
+Benjamin Houghton: let's say it's 30 by 70.
+
+399
+01:06:01.404 --> 01:06:06.079
+Benjamin Houghton: So we need to go. We just need to resize or reshape our image
+
+400
+01:06:06.300 --> 01:06:12.490
+Benjamin Houghton: from 28 by 28 oops. Yeah, you you know what I'm where I'm going with this right?
+
+401
+01:06:13.120 --> 01:06:19.780
+Benjamin Houghton: 28 by 28 into into 30 by 70. Okay?
+
+402
+01:06:22.100 --> 01:06:23.529
+Benjamin Houghton: And then that's it. We're done.
+
+403
+01:06:23.990 --> 01:06:28.330
+Benjamin Houghton: And now we have bounding boxes. And we have segmentation masks.
+
+404
+01:06:30.340 --> 01:06:35.160
+Benjamin Houghton: And so, yeah, so this is car one over here. And this is car 2 great.
+
+405
+01:06:35.660 --> 01:06:39.520
+Benjamin Houghton: So that will conclude the video. Thank you.
+
