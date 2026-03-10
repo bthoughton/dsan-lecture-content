@@ -1,0 +1,1662 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="week-6_files/libs/clipboard/clipboard.min.js"></script>
+<script src="week-6_files/libs/quarto-html/tabby.min.js"></script>
+<script src="week-6_files/libs/quarto-html/popper.min.js"></script>
+<script src="week-6_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="week-6_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="week-6_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="week-6_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
+<link href="week-6_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.4.549">
+
+  <meta name="author" content="Prof.&nbsp;Ben Houghton">
+  <meta name="dcterms.date" content="2026-02-24">
+  <title>DSAN 6500: Week 06 - Advanced Object Detection</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="week-6_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="week-6_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="stylesheet" href="week-6_files/libs/revealjs/dist/theme/quarto.css">
+  <link href="week-6_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="week-6_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="week-6_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="week-6_files/libs/revealjs/plugin/reveal-chalkboard/font-awesome/css/all.css" rel="stylesheet">
+  <link href="week-6_files/libs/revealjs/plugin/reveal-chalkboard/style.css" rel="stylesheet">
+  <link href="week-6_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+
+  .callout {
+    margin-top: 1em;
+    margin-bottom: 1em;  
+    border-radius: .25rem;
+  }
+
+  .callout.callout-style-simple { 
+    padding: 0em 0.5em;
+    border-left: solid #acacac .3rem;
+    border-right: solid 1px silver;
+    border-top: solid 1px silver;
+    border-bottom: solid 1px silver;
+    display: flex;
+  }
+
+  .callout.callout-style-default {
+    border-left: solid #acacac .3rem;
+    border-right: solid 1px silver;
+    border-top: solid 1px silver;
+    border-bottom: solid 1px silver;
+  }
+
+  .callout .callout-body-container {
+    flex-grow: 1;
+  }
+
+  .callout.callout-style-simple .callout-body {
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .callout.callout-style-default .callout-body {
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+
+  .callout.callout-titled.callout-style-simple .callout-body {
+    margin-top: 0.2em;
+  }
+
+  .callout:not(.callout-titled) .callout-body {
+      display: flex;
+  }
+
+  .callout:not(.no-icon).callout-titled.callout-style-simple .callout-content {
+    padding-left: 1.6em;
+  }
+
+  .callout.callout-titled .callout-header {
+    padding-top: 0.2em;
+    margin-bottom: -0.2em;
+  }
+
+  .callout.callout-titled .callout-title  p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+    
+  .callout.callout-titled.callout-style-simple .callout-content  p {
+    margin-top: 0;
+  }
+
+  .callout.callout-titled.callout-style-default .callout-content  p {
+    margin-top: 0.7em;
+  }
+
+  .callout.callout-style-simple div.callout-title {
+    border-bottom: none;
+    font-size: .9rem;
+    font-weight: 600;
+    opacity: 75%;
+  }
+
+  .callout.callout-style-default  div.callout-title {
+    border-bottom: none;
+    font-weight: 600;
+    opacity: 85%;
+    font-size: 0.9rem;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+
+  .callout.callout-style-default div.callout-content {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+
+  .callout.callout-style-simple .callout-icon::before {
+    height: 1rem;
+    width: 1rem;
+    display: inline-block;
+    content: "";
+    background-repeat: no-repeat;
+    background-size: 1rem 1rem;
+  }
+
+  .callout.callout-style-default .callout-icon::before {
+    height: 0.9rem;
+    width: 0.9rem;
+    display: inline-block;
+    content: "";
+    background-repeat: no-repeat;
+    background-size: 0.9rem 0.9rem;
+  }
+
+  .callout-title {
+    display: flex
+  }
+    
+  .callout-icon::before {
+    margin-top: 1rem;
+    padding-right: .5rem;
+  }
+
+  .callout.no-icon::before {
+    display: none !important;
+  }
+
+  .callout.callout-titled .callout-body > .callout-content > :last-child {
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
+  }
+
+  .callout.callout-titled .callout-icon::before {
+    margin-top: .5rem;
+    padding-right: .5rem;
+  }
+
+  .callout:not(.callout-titled) .callout-icon::before {
+    margin-top: 1rem;
+    padding-right: .5rem;
+  }
+
+  /* Callout Types */
+
+  div.callout-note {
+    border-left-color: #4582ec !important;
+  }
+
+  div.callout-note .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAEU0lEQVRYCcVXTWhcVRQ+586kSUMMxkyaElstCto2SIhitS5Ek8xUKV2poatCcVHtUlFQk8mbaaziwpWgglJwVaquitBOfhQXFlqlzSJpFSpIYyXNjBNiTCck7x2/8/LeNDOZxDuEkgOXe++553zfefee+/OYLOXFk3+1LLrRdiO81yNqZ6K9cG0P3MeFaMIQjXssE8Z1JzLO9ls20MBZX7oG8w9GxB0goaPrW5aNMp1yOZIa7Wv6o2ykpLtmAPs/vrG14Z+6d4jpbSKuhdcSyq9wGMPXjonwmESXrriLzFGOdDBLB8Y6MNYBu0dRokSygMA/mrun8MGFN3behm6VVAwg4WR3i6FvYK1T7MHo9BK7ydH+1uurECoouk5MPRyVSBrBHMYwVobG2aOXM07sWrn5qgB60rc6mcwIDJtQrnrEr44kmy+UO9r0u9O5/YbkS9juQckLed3DyW2XV/qWBBB3ptvI8EUY3I9p/67OW+g967TNr3Sotn3IuVlfMLVnsBwH4fsnebJvyGm5GeIUA3jljERmrv49SizPYuq+z7c2H/jlGC+Ghhupn/hcapqmcudB9jwJ/3jvnvu6vu5lVzF1fXyZuZZ7U8nRmVzytvT+H3kilYvH09mLWrQdwFSsFEsxFVs5fK7A0g8gMZjbif4ACpKbjv7gNGaD8bUrlk8x+KRflttr22JEMRUbTUwwDQScyzPgedQHZT0xnx7ujw2jfVfExwYHwOsDTjLdJ2ebmeQIlJ7neo41s/DrsL3kl+W2lWvAga0tR3zueGr6GL78M3ifH0rGXrBC2aAR8uYcIA5gwV8zIE8onoh8u0Fca/ciF7j1uOzEnqcIm59sEXoGc0+z6+H45V1CvAvHcD7THztu669cnp+L0okAeIc6zjbM/24LgGM1gZk7jnRu1aQWoU9sfUOuhrmtaPIO3YY1KLLWZaEO5TKUbMY5zx8W9UJ6elpLwKXbsaZ4EFl7B4bMtDv0iRipKoDQT2sNQI9b1utXFdYisi+wzZ/ri/1m7QfDgEuvgUUEIJPq3DhX/5DWNqIXDOweC2wvIR90Oq3lDpdMIgD2r0dXvGdsEW5H6x6HLRJYU7C69VefO1x8Gde1ZFSJLfWS1jbCnhtOPxmpfv2LXOA2Xk2tvnwKKPFuZ/oRmwBwqRQDcKNeVQkYcOjtWVBuM/JuYw5b6isojIkYxyYAFn5K7ZBF10fea52y8QltAg6jnMqNHFBmGkQ1j+U43HMi2xMar1Nv0zGsf1s8nUsmUtPOOrbFIR8bHFDMB5zL13Gmr/kGlCkUzedTzzmzsaJXhYawnA3UmARpiYj5ooJZiUoxFRtK3X6pgNPv+IZVPcnwbOl6f+aBaO1CNvPW9n9LmCp01nuSaTRF2YxHqZ8DYQT6WsXT+RD6eUztwYLZ8rM+rcPxamv1VQzFUkzFXvkiVrySGQgJNvXHJAxiU3/NwiC03rSf05VBaPtu/Z7/B8Yn/w7eguloAAAAAElFTkSuQmCC');
+  }
+
+  div.callout-note.callout-style-default .callout-title {
+    background-color: #dae6fb
+  }
+
+  div.callout-important {
+    border-left-color: #d9534f !important;
+  }
+
+  div.callout-important .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAEKklEQVRYCcVXTWhcVRS+575MJym48A+hSRFr00ySRQhURRfd2HYjk2SSTokuBCkU2o0LoSKKraKIBTcuFCoidGFD08nkBzdREbpQ1EDNIv8qSGMFUboImMSZd4/f9zJv8ibJMC8xJQfO3HPPPef7zrvvvnvviIkpC9nsw0UttFunbUhpFzFtarSd6WJkStVMw5xyVqYTvkwfzuf/5FgtkVoB0729j1rjXwThS7Vio+Mo6DNnvLfahoZ+i/o32lULuJ3NNiz7q6+pyAUkJaFF6JwaM2lUJlV0MlnQn5aTRbEu0SEqHUa0A4AdiGuB1kFXRfVyg5d87+Dg4DL6m2TLAub60ilj7A1Ec4odSAc8X95sHh7+ZRPCFo6Fnp7HfU/fBng/hi10CjCnWnJjsxvDNxWw0NfV6Rv5GgP3I3jGWXumdTD/3cbEOP2ZbOZp69yniG3FQ9z1jD7bnBu9Fc2tKGC2q+uAJOQHBDRiZX1x36o7fWBs7J9ownbtO+n0/qWkvW7UPIfc37WgT6ZGR++EOJyeQDSb9UB+DZ1G6DdLDzyS+b/kBCYGsYgJbSQHuThGKRcw5xdeQf8YdNHsc6ePXrlSYMBuSIAFTGAtQo+VuALo4BX83N190NWZWbynBjhOHsmNfFWLeL6v+ynsA58zDvvAC8j5PkbOcXCMg2PZFk3q8MjI7WAG/Dp9AwP7jdGBOOQkAvlFUB+irtm16I1Zw9YBcpGTGXYmk3kQIC/Cds55l+iMI3jqhjAuaoe+am2Jw5GT3Nbz3CkE12NavmzN5+erJW7046n/CH1RO/RVa8lBLozXk9uqykkGAyRXLWlLv5jyp4RFsG5vGVzpDLnIjTWgnRy2Rr+tDKvRc7Y8AyZq10jj8DqXdnIRNtFZb+t/ZRtXcDiVnzpqx8mPcDWxgARUqx0W1QB9MeUZiNrV4qP+Ehc+BpNgATsTX8ozYKL2NtFYAHc84fG7ndxUPr+AR/iQSns7uSUufAymwDOb2+NjK27lEFocm/EE2WpyIy/Hi66MWuMKJn8RvxIcj87IM5Vh9663ziW36kR0HNenXuxmfaD8JC7tfKbrhFr7LiZCrMjrzTeGx+PmkosrkNzW94ObzwocJ7A1HokLolY+AvkTiD/q1H0cN48c5EL8Crkttsa/AXQVDmutfyku0E7jShx49XqV3MFK8IryDhYVbj7Sj2P2eBxwcXoe8T8idsKKPRcnZw1b+slFTubwUwhktrfnAt7J++jwQtLZcm3sr9LQrjRzz6cfMv9aLvgmnAGvpoaGLxM4mAEaLV7iAzQ3oU0IvD5x9ix3yF2RAAuYAOO2f7PEFWCXZ4C9Pb2UsgDeVnFSpbFK7/IWu7TPTvBqzbGdCHOJQSxiEjt6IyZmxQyEJHv6xyQsYk//moVFsN2zP6fRImjfq7/n/wFDguUQFNEwugAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-important.callout-style-default .callout-title {
+    background-color: #f7dddc
+  }
+
+  div.callout-warning {
+    border-left-color: #f0ad4e !important;
+  }
+
+  div.callout-warning .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAETklEQVRYCeVWW2gcVRg+58yaTUnizqbipZeX4uWhBEniBaoUX1Ioze52t7sRq6APio9V9MEaoWlVsFasRq0gltaAPuxms8lu0gcviE/FFOstVbSIxgcv6SU7EZqmdc7v9+9mJtNks51NTUH84ed889/PP+cmxP+d5FIbMJmNbpREu4WUkiTtCicKny0l1pIKmBzovF2S+hIJHX8iEu3hZJ5lNZGqyRrGSIQpq15AzF28jgpeY6yk6GVdrfFqdrD6Iw+QlB8g0YS2g7dyQmXM/IDhBhT0UCiRf59lfqmmDvzRt6kByV/m4JjtzuaujMUM2c5Z2d6JdKrRb3K2q6mA+oYVz8JnDdKPmmNthzkAk/lN63sYPgevrguc72aZX/L9C6x09GYyxBgCX4NlvyGUHOKELlm5rXeR1kchuChJt4SSwyddZRXgvwMGvYo4QSlk3/zkHD8UHxwVJA6zjZZqP8v8kK8OWLnIZtLyCAJagYC4rTGW/9Pqj92N/c+LUaAj27movwbi19tk/whRCIE7Q9vyI6yvRpftAKVTdUjOW40X3h5OXsKCdmFcx0xlLJoSuQngnrJe7Kcjm4OMq9FlC7CMmScQANuNvjfP3PjGXDBaUQmbp296S5L4DrpbrHN1T87ZVEZVCzg1FF0Ft+dKrlLukI+/c9ENo+TvlTDbYFvuKPtQ9+l052rXrgKoWkDAFnvh0wTOmYn8R5f4k/jN/fZiCM1tQx9jQQ4ANhqG4hiL0qIFTGViG9DKB7GYzgubnpofgYRwO+DFjh0Zin2m4b/97EDkXkc+f6xYAPX0KK2I/7fUQuwzuwo/L3AkcjugPNixC8cHf0FyPjWlItmLxWw4Ou9YsQCr5fijMGoD/zpdRy95HRysyXA74MWOnscpO4j2y3HAVisw85hX5+AFBRSHt4ShfLFkIMXTqyKFc46xdzQM6XbAi702a7sy04J0+feReMFKp5q9esYLCqAZYw/k14E/xcLLsFElaornTuJB0svMuJINy8xkIYuL+xPAlWRceH6+HX7THJ0djLUom46zREu7tTkxwmf/FdOZ/sh6Q8qvEAiHpm4PJ4a/doJe0gH1t+aHRgCzOvBvJedEK5OFE5jpm4AGP2a8Dxe3gGJ/pAutug9Gp6he92CsSsWBaEcxGx0FHytmIpuqGkOpldqNYQK8cSoXvd+xLxXADw0kf6UkJNFtdo5MOgaLjiQOQHcn+A6h5NuL2s0qsC2LOM75PcF3yr5STuBSAcGG+meA14K/CI21HcS4LBT6tv0QAh8Dr5l93AhZzG5ZJ4VxAqdZUEl9z7WJ4aN+svMvwHHL21UKTd1mqvChH7/Za5xzXBBKrUcB0TQ+Ulgkfbi/H/YT5EptrGzsEK7tR1B7ln9BBwckYfMiuSqklSznIuoIIOM42MQO+QnduCoFCI0bpkzjCjddHPN/F+2Yu+sd9bKNpVwHhbS3LluK/0zgfwD0xYI5dXuzlQAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-warning.callout-style-default .callout-title {
+    background-color: #fcefdc
+  }
+
+  div.callout-tip {
+    border-left-color: #02b875 !important;
+  }
+
+  div.callout-tip .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAADr0lEQVRYCe1XTWgTQRj9ZjZV8a9SPIkKgj8I1bMHsUWrqYLVg4Ue6v9BwZOxSYsIerFao7UiUryIqJcqgtpimhbBXoSCVxUFe9CTiogUrUp2Pt+3aUI2u5vdNh4dmMzOzHvvezuz8xNFM0mjnbXaNu1MvFWRXkXEyE6aYOYJpdW4IXuA4r0fo8qqSMDBU0v1HJUgVieAXxzCsdE/YJTdFcVIZQNMyhruOMJKXYFoLfIfIvVIMWdsrd+Rpd86ZmyzzjJmLStqRn0v8lzkb4rVIXvnpScOJuAn2ACC65FkPzEdEy4TPWRLJ2h7z4cArXzzaOdKlbOvKKX25Wl00jSnrwVxAg3o4dRxhO13RBSdNvH0xSARv3adTXbBdTf64IWO2vH0LT+cv4GR1DJt+DUItaQogeBX/chhbTBxEiZ6gftlDNXTrvT7co4ub5A6gp9HIcHvzTa46OS5fBeP87Qm0fQkr4FsYgVQ7Qg+ZayaDg9jhg1GkWj8RG6lkeSacrrHgDaxdoBiZPg+NXV/KifMuB6//JmYH4CntVEHy/keA6x4h4CU5oFy8GzrBS18cLJMXcljAKB6INjWsRcuZBWVaS3GDrqB7rdapVIeA+isQ57Eev9eCqzqOa81CY05VLd6SamW2wA2H3SiTbnbSxmzfp7WtKZkqy4mdyAlGx7ennghYf8voqp9cLSgKdqNfa6RdRsAAkPwRuJZNbpByn+RrJi1RXTwdi8RQF6ymDwGMAtZ6TVE+4uoKh+MYkcLsT0Hk8eAienbiGdjJHZTpmNjlbFJNKDVAp2fJlYju6IreQxQ08UJDNYdoLSl6AadO+fFuCQqVMB1NJwPm69T04Wv5WhfcWyfXQB+wXRs1pt+nCknRa0LVzSA/2B+a9+zQJadb7IyyV24YAxKp2Jqs3emZTuNnKxsah+uabKbMk7CbTgJx/zIgQYErIeTKRQ9yD9wxVof5YolPHqaWo7TD6tJlh7jQnK5z2n3+fGdggIOx2kaa2YI9QWarc5Ce1ipNWMKeSG4DysFF52KBmTNMmn5HqCFkwy34rDg05gDwgH3bBi+sgFhN/e8QvRn8kbamCOhgrZ9GJhFDgfcMHzFb6BAtjKpFhzTjwv1KCVuxHvCbsSiEz4CANnj84cwHdFXAbAOJ4LTSAawGWFn5tDhLMYz6nWeU2wJfIhmIJBefcd/A5FWQWGgrWzyORZ3Q6HuV+Jf0Bj+BTX69fm1zWgK7By1YTXchFDORywnfQ7GpzOo6S+qECrsx2ifVQAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-tip.callout-style-default .callout-title {
+    background-color: #ccf1e3
+  }
+
+  div.callout-caution {
+    border-left-color: #fd7e14 !important;
+  }
+
+  div.callout-caution .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAACV0lEQVRYCdVWzWoUQRCuqp2ICBLJXgITZL1EfQDBW/bkzUMUD7klD+ATSHBEfAIfQO+iXsWDxJsHL96EHAwhgzlkg8nBg25XWb0zIb0zs9muYYWkoKeru+vn664fBqElyZNuyh167NXJ8Ut8McjbmEraKHkd7uAnAFku+VWdb3reSmRV8PKSLfZ0Gjn3a6Xlcq9YGb6tADjn+lUfTXtVmaZ1KwBIvFI11rRXlWlatwIAAv2asaa9mlB9wwygiDX26qaw1yYPzFXg2N1GgG0FMF8Oj+VIx7E/03lHx8UhvYyNZLN7BwSPgekXXLribw7w5/c8EF+DBK5idvDVYtEEwMeYefjjLAdEyQ3M9nfOkgnPTEkYU+sxMq0BxNR6jExrAI31H1rzvLEfRIdgcv1XEdj6QTQAS2wtstEALLG1yEZ3QhH6oDX7ExBSFEkFINXH98NTrme5IOaaA7kIfiu2L8A3qhH9zRbukdCqdsA98TdElyeMe5BI8Rs2xHRIsoTSSVFfCFCWGPn9XHb4cdobRIWABNf0add9jakDjQJpJ1bTXOJXnnRXHRf+dNL1ZV1MBRCXhMbaHqGI1JkKIL7+i8uffuP6wVQAzO7+qVEbF6NbS0LJureYcWXUUhH66nLR5rYmva+2tjRFtojkM2aD76HEGAD3tPtKM309FJg5j/K682ywcWJ3PASCcycH/22u+Bh7Aa0ehM2Fu4z0SAE81HF9RkB21c5bEn4Dzw+/qNOyXr3DCTQDMBOdhi4nAgiFDGCinIa2owCEChUwD8qzd03PG+qdW/4fDzjUMcE1ZpIAAAAASUVORK5CYII=');
+  }
+
+  div.callout-caution.callout-style-default .callout-title {
+    background-color: #ffe5d0
+  }
+
+  </style>
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">DSAN 6500: Week 06 - Advanced Object Detection</h1>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Prof.&nbsp;Ben Houghton 
+</div>
+</div>
+</div>
+
+  <p class="date">2026-02-24</p>
+</section>
+<section id="video-advanced-object-detection---part-1" class="slide level2 scrollable">
+<h2>Video: Advanced Object Detection - Part 1</h2>
+<p>The following is a recording on this topic, I hope you find it useful!</p>
+<p>Feel free to watch at 1.5x or 2x speed.</p>
+<p><strong>Note</strong>: If you find something missing or incorrect in the recording, then please let me know!</p>
+<video id="myVideo1" width="750" height="500" controls="controls" preload="none">
+<source src="video-1.mp4" type="video/mp4">
+<p>Your browser does not support the video tag. </p>
+<script>
+    document.getElementById('myVideo1').addEventListener('loadedmetadata', function() {
+        this.playbackRate = 1.5;
+    });
+</script>
+</video></section>
+<section id="video-advanced-object-detection---part-2" class="slide level2 scrollable">
+<h2>Video: Advanced Object Detection - Part 2</h2>
+<p>The following is a recording on this topic, I hope you find it useful!</p>
+<p>Feel free to watch at 1.5x or 2x speed.</p>
+<p><strong>Note</strong>: If you find something missing or incorrect in the recording, then please let me know!</p>
+<video id="myVideo2" width="750" height="500" controls="controls" preload="none">
+<source src="video-2.mp4" type="video/mp4">
+<p>Your browser does not support the video tag. </p>
+<script>
+    document.getElementById('myVideo2').addEventListener('loadedmetadata', function() {
+        this.playbackRate = 1.5;
+    });
+</script>
+</video></section>
+<section id="faster-r-cnn-overview" class="slide level2">
+<h2>Faster R-CNN Overview</h2>
+<div class="columns">
+<div class="column" style="width:60%;">
+<ul>
+<li><a href="https://arxiv.org/pdf/1506.01497">Faster R-CNN</a> (circa 2016) is an improved version of Fast R-CNN
+<ul>
+<li>Like its predecessors, it is a two-stage object detection model</li>
+<li>Introduces a Region Proposal Network (RPN)</li>
+</ul></li>
+<li>Significantly reduced detection time compared to predecessors</li>
+<li>Eliminates the need for external region proposal methods like Selective Search in Fast R-CNN</li>
+</ul>
+</div><div class="column" style="width:40%;">
+<p><img data-src="./img/faster-r-cnn-overview.png"></p>
+</div>
+</div>
+<!-- ## Overview of Faster R-CNN
+Faster R-CNN consists of **two main stages**:
+1. **Region Proposal Network (RPN):**  
+   - Generates **region proposals** (candidate object locations) directly from feature maps.
+   - Replaces computationally expensive region proposal methods (e.g., Selective Search in Fast R-CNN).
+
+2. **Fast R-CNN Detection Head:**  
+   - Classifies each proposed region and refines its bounding box.
+   - Uses **RoI pooling (or RoI Align in later versions)** to extract fixed-size features. -->
+</section>
+<section id="faster-r-cnn-architecture" class="slide level2">
+<h2>Faster R-CNN Architecture</h2>
+<p>Comprised of three key components:</p>
+<ul>
+<li><strong>Backbone</strong>: Feature extraction network
+<ul>
+<li>A CNN (e.g., <strong>ResNet50, VGG16</strong>) extracts <strong>feature maps</strong> from the input image.</li>
+</ul></li>
+<li><strong>Region Proposal Network (RPN)</strong>: Proposes potential object locations
+<ul>
+<li>Proposes potential object locations in the image</li>
+<li>Uses <strong>anchors</strong> (predefined boxes of different scales/aspect ratios)</li>
+</ul></li>
+<li><strong>RoI Pooling &amp; Classification Head</strong>: Classifies proposed regions and refines bounding boxes
+<ul>
+<li>Top K proposals are selected using <strong>Non-Maximum Suppression (NMS)</strong></li>
+<li>Proposal are resized to a fixed size using <strong>RoI Pooling (or RoI Align in later versions)</strong></li>
+<li>Classifies proposed regions and refines bounding boxes.</li>
+</ul></li>
+</ul>
+</section>
+<section id="anchor-boxes" class="slide level2">
+<h2>Anchor Boxes</h2>
+
+<img data-src="./img/anchor-boxes.png" class="r-stretch"></section>
+<section id="faster-r-cnn-backbone" class="slide level2">
+<h2>Faster R-CNN Backbone</h2>
+<ul>
+<li>The backbone is a CNN that extracts feature maps from the input image</li>
+<li>Extracted features are shared between the <strong>RPN</strong> and the <strong>RoI classification head</strong></li>
+<li>Original Faster R-CNN paper uses <strong>ZFNet</strong> and <strong>VGG16</strong> as the backbone
+<ul>
+<li>Modern implementations use the following CNNs:
+<ul>
+<li><strong>ResNet</strong> and its variants - most popular</li>
+<li><strong>Feature Pyramid Networks (FPN)</strong></li>
+<li><strong>EfficientNet</strong></li>
+</ul></li>
+</ul></li>
+</ul>
+</section>
+<section id="faster-r-cnn-region-proposal-network-rpn" class="slide level2">
+<h2>Faster R-CNN Region Proposal Network (RPN)</h2>
+<ol type="1">
+<li>A <strong>small CNN Network</strong> slides over the feature map (typically <span class="math inline">\(3 \times 3\)</span>) with a stride of 1 pixel, followed by parallel <span class="math inline">\(1 \times 1\)</span> convolutions.
+<ul>
+<li><span class="math inline">\(3 \times 3\)</span> sliding window <a href="https://arxiv.org/pdf/1506.01497#page=3">has an effective receptive field of 228 pixels at the original image size using VGG16</a></li>
+</ul></li>
+<li>At each position, <strong>anchors</strong> (predefined boxes of d ifferent scales/aspect ratios) are considered if an object is present and what the bounding box offsets are.</li>
+<li>The network predicts:
+<ul>
+<li><strong>Object Score</strong>: Whether each anchor contains an object or not.</li>
+<li><strong>Bounding Box Offsets</strong>: Adjustments to refine the anchor’s location.</li>
+</ul></li>
+</ol>
+<p>Note that each pixel in the input feature map is associated with a spatial location in the original image. Therefore by “sliding across input feature map” or splitting the input feature map into overlapping grid cells, we consider <span class="math inline">\(k\)</span> anchors (usually <span class="math inline">\(k=9\)</span>) for each of the <span class="math inline">\(WH\)</span> spatial locations where <span class="math inline">\(W\)</span> and <span class="math inline">\(H\)</span> are the width and height of the feature map.</p>
+</section>
+<section id="rpn-objectness-score" class="slide level2">
+<h2>RPN Objectness Score</h2>
+<p>The objectness score is a tensor of shape <span class="math inline">\(W \times H \times 2k\)</span>, represented by <span class="math inline">\(2k\)</span> channels of the RPN output Network. The scores are arranged in the original spatial order of the feature map and each channel is associated with a specific anchor’s object or background probability.</p>
+
+<!-- Then the objectness score tensor is as follows, where $p^{o,1}_{i,j}$ is the probability of an object for anchor box 1 at position $(i,j)$ and $p^{b,1}_{i,j}$ is the probability of background for anchor box 1 at position $(i,j)$.
+
+$$
+\begin{bmatrix} p^{o,1}_{1,1} & p^{o,1}_{1,2} & \cdots & p^{o,1}_{1,W} \\ p^{o,1}_{2,1} & p^{o,1}_{2,2} & \cdots & p^{o,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{o,1}_{H,1} & p^{o,1}_{H,2} & \cdots & p^{o,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} p^{b,1}_{1,1} & p^{b,1}_{1,2} & \cdots & p^{b,1}_{1,W} \\ p^{b,1}_{2,1} & p^{b,1}_{2,2} & \cdots & p^{b,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{b,1}_{H,1} & p^{b,1}_{H,2} & \cdots & p^{b,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} p^{o,2}_{1,1} & p^{o,2}_{1,2} & \cdots & p^{o,2}_{1,W} \\ p^{o,2}_{2,1} & p^{o,2}_{2,2} & \cdots & p^{o,2}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{o,2}_{H,1} & p^{o,2}_{H,2} & \cdots & p^{o,2}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} p^{b,2}_{1,1} & p^{b,2}_{1,2} & \cdots & p^{b,2}_{1,W} \\ p^{b,2}_{2,1} & p^{b,2}_{2,2} & \cdots & p^{b,2}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{b,2}_{H,1} & p^{b,2}_{H,2} & \cdots & p^{b,2}_{H,W} \end{bmatrix}
+
+\cdots
+
+\begin{bmatrix} p^{o,k}_{1,1} & p^{o,k}_{1,2} & \cdots & p^{o,k}_{1,W} \\ p^{o,k}_{2,1} & p^{o,k}_{2,2} & \cdots & p^{o,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{o,k}_{H,1} & p^{o,k}_{H,2} & \cdots & p^{o,k}_{H,W} \end{bmatrix}
+
+\begin{bmatrix} p^{b,k}_{1,1} & p^{b,k}_{1,2} & \cdots & p^{b,k}_{1,W} \\ p^{b,k}_{2,1} & p^{b,k}_{2,2} & \cdots & p^{b,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ p^{b,k}_{H,1} & p^{b,k}_{H,2} & \cdots & p^{b,k}_{H,W} \end{bmatrix}
+
+
+$$
+
+
+The bounding box offset for each anchor box is a tensor of shape $H \times W \times 2k$, represented by 2 channels of the RPN output Network.  -->
+<img data-src="./img/objectness-score.png" class="r-stretch"></section>
+<section id="rpn-bounding-box-offset" class="slide level2">
+<h2>RPN Bounding Box Offset</h2>
+<p>The bounding box offset is a tensor of shape <span class="math inline">\(H \times W \times 4k\)</span>, represented by <span class="math inline">\(4k\)</span> channels of the RPN output Network. The scores are arranged in the original spatial order of the feature map and each channel is associated with one of a specific anchor box’s 4 bounding box transfomrations.</p>
+
+<!-- $$
+\begin{bmatrix} t^{x,1}_{1,1} & t^{x,1}_{1,2} & \cdots & t^{x,1}_{1,W} \\ t^{x,1}_{2,1} & t^{x,1}_{2,2} & \cdots & t^{x,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{x,1}_{H,1} & t^{x,1}_{H,2} & \cdots & t^{x,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{y,1}_{1,1} & t^{y,1}_{1,2} & \cdots & t^{y,1}_{1,W} \\ t^{y,1}_{2,1} & t^{y,1}_{2,2} & \cdots & t^{y,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{y,1}_{H,1} & t^{y,1}_{H,2} & \cdots & t^{y,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{w,1}_{1,1} & t^{w,1}_{1,2} & \cdots & t^{w,1}_{1,W} \\ t^{w,1}_{2,1} & t^{w,1}_{2,2} & \cdots & t^{w,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{w,1}_{H,1} & t^{w,1}_{H,2} & \cdots & t^{w,1}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{h,1}_{1,1} & t^{h,1}_{1,2} & \cdots & t^{h,1}_{1,W} \\ t^{h,1}_{2,1} & t^{h,1}_{2,2} & \cdots & t^{h,1}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{h,1}_{H,1} & t^{h,1}_{H,2} & \cdots & t^{h,1}_{H,W} \end{bmatrix}
+
+\cdots
+
+\begin{bmatrix} t^{x,k}_{1,1} & t^{x,k}_{1,2} & \cdots & t^{x,k}_{1,W} \\ t^{x,k}_{2,1} & t^{x,k}_{2,2} & \cdots & t^{x,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{x,k}_{H,1} & t^{x,k}_{H,2} & \cdots & t^{x,k}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{y,k}_{1,1} & t^{y,k}_{1,2} & \cdots & t^{y,k}_{1,W} \\ t^{y,k}_{2,1} & t^{y,k}_{2,2} & \cdots & t^{y,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{y,k}_{H,1} & t^{y,k}_{H,2} & \cdots & t^{y,k}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{w,k}_{1,1} & t^{w,k}_{1,2} & \cdots & t^{w,k}_{1,W} \\ t^{w,k}_{2,1} & t^{w,k}_{2,2} & \cdots & t^{w,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{w,k}_{H,1} & t^{w,k}_{H,2} & \cdots & t^{w,k}_{H,W} \end{bmatrix}
+,
+\begin{bmatrix} t^{h,k}_{1,1} & t^{h,k}_{1,2} & \cdots & t^{h,k}_{1,W} \\ t^{h,k}_{2,1} & t^{h,k}_{2,2} & \cdots & t^{h,k}_{2,W} \\ \vdots & \vdots & \ddots & \vdots \\ t^{h,k}_{H,1} & t^{h,k}_{H,2} & \cdots & t^{h,k}_{H,W} \end{bmatrix}
+
+$$ -->
+<img data-src="./img/bbox-transformations.png" class="r-stretch"></section>
+<section id="faster-r-cnn-roi-pooling-classification-head" class="slide level2">
+<h2>Faster R-CNN ROI Pooling &amp; Classification Head</h2>
+<ul>
+<li>The ROI Pooling &amp; Classification Head is a small network that classifies proposed regions and refines bounding boxes.</li>
+<li><strong>Steps:</strong>
+<ol type="1">
+<li>The <strong>Top-K proposals</strong> (usually <strong>~2000</strong> in training, <strong>~300</strong> in inference) are selected using <strong>class agnostic Non-Maximum Suppression (NMS)</strong>.</li>
+<li>The proposals are resized to a fixed size using <strong>RoI Pooling (or RoI Align in later versions like Mask R-CNN)</strong>.</li>
+<li>The proposals are classified and bounding boxes are refined using fully connected layers.</li>
+<li>The classified proposals are finally passed through a <strong>class-wise Non-Maximum Suppression (NMS)</strong> to remove redundant detections.</li>
+</ol></li>
+</ul>
+</section>
+<section id="faster-r-cnn-diagram" class="slide level2">
+<h2>Faster R-CNN Diagram</h2>
+
+<img data-src="./img/faster-r-cnn.png" class="r-stretch"></section>
+<section id="training-faster-r-cnn" class="slide level2 scrollable">
+<h2>Training Faster R-CNN</h2>
+<p><strong>Multi-Task Loss Function</strong> Faster R-CNN optimizes: <span class="math display">\[
+\mathcal{L} = \mathcal{L}_{\text{RPN}} + \mathcal{L}_{\text{Detection}}
+\]</span> Each part consists of:</p>
+<ul>
+<li><strong>RPN Loss:</strong>
+<ul>
+<li>Classification loss <span class="math inline">\(\mathcal{L}_{cls}\)</span> for object vs.&nbsp;background (Binary Cross Entropy or Categorical Cross Entropy).</li>
+<li>Bounding box regression loss <span class="math inline">\(\mathcal{L}_{bbox}\)</span>, Smooth L1 loss.</li>
+</ul></li>
+<li><strong>Detection Head Loss:</strong>
+<ul>
+<li>Classification loss <span class="math inline">\(\mathcal{L}_{cls}\)</span>, Softmax Cross Entropy.</li>
+<li>Bounding box regression loss <span class="math inline">\(\mathcal{L}_{bbox}\)</span>, Smooth L1 loss.</li>
+</ul></li>
+</ul>
+<p><strong>Two-Step Training</strong></p>
+<ol type="1">
+<li><strong>Train RPN first</strong>: It learns to propose good region candidates.</li>
+<li><strong>Train the detection head</strong>: Using RPN proposals to classify objects and refine bounding boxes.</li>
+</ol>
+<p>Alternatively, a <strong>joint training</strong> approach is also possible.</p>
+</section>
+<section id="faster-r-cnn-vs.-previous-models" class="slide level2">
+<h2>Faster R-CNN vs.&nbsp;Previous Models</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Region Proposal Method</th>
+<th>Speed</th>
+<th>Accuracy</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>R-CNN</strong></td>
+<td>Selective Search</td>
+<td>Slow</td>
+<td>High</td>
+</tr>
+<tr class="even">
+<td><strong>Fast R-CNN</strong></td>
+<td>Selective Search</td>
+<td>Faster</td>
+<td>High</td>
+</tr>
+<tr class="odd">
+<td><strong>Faster R-CNN</strong></td>
+<td>RPN (learned proposals)</td>
+<td>Much faster</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<p>✅ <strong>Faster than Fast R-CNN</strong> (due to RPN).<br>
+✅ <strong>End-to-end trainable</strong> (removes hand-designed region proposal methods).<br>
+✅ <strong>Accurate across multiple object sizes</strong>.</p>
+<p>⚠️ <strong>Still not real-time</strong> (inference takes <strong>~100-200ms per image</strong>).<br>
+⚠️ <strong>Anchors require tuning</strong> for different datasets.</p>
+</section>
+<section id="yolo-you-only-look-once-architecture-explained" class="slide level2">
+<h2>YOLO (You Only Look Once) Architecture Explained</h2>
+<ul>
+<li><a href="https://arxiv.org/pdf/1506.02640">YOLO (You Only Look Once)</a> is a <strong>real-time object detection model</strong> designed for speed and efficiency.</li>
+<li><strong>YOLO treats object detection as a singular problem</strong>, predicting <strong>bounding boxes and class probabilities in a single pass</strong> through the network.</li>
+<li>This differs from region-based approaches like Faster R-CNN, which first generate proposals and then classify them</li>
+</ul>
+<p>✅ <strong>Single-Pass Detection</strong> → No region proposals, direct predictions<br>
+✅ <strong>Grid-Based Prediction</strong> → Image is divided into a grid, and each cell predicts objects<br>
+✅ <strong>Real-Time Speed</strong> → Optimized for fast inference, ideal for applications like surveillance and self-driving cars<br>
+⚠️ <strong>Lower accuracy</strong> compared to two-stage detectors like Faster R-CNN</p>
+</section>
+<section id="yolo-architecture" class="slide level2">
+<h2>YOLO Architecture</h2>
+<ol type="1">
+<li><strong>Backbone (Feature Extraction)</strong>
+<ul>
+<li>The backbone is a <strong>deep CNN</strong> (originally inspired by GoogLeNet).<br>
+</li>
+<li>It extracts <strong>spatial features</strong> from the input image.<br>
+</li>
+<li>Latest versions use <strong>CSPDarkNet (YOLOv4, YOLOv5) or EfficientNet (YOLOv7, YOLOv8)</strong> for stronger feature representation.</li>
+</ul></li>
+<li><strong>Detection Head (Bounding Box and Class Prediction)</strong>
+<ul>
+<li>The image is divided into an <span class="math inline">\(S \times S\)</span> grid (e.g., <span class="math inline">\(7 \times 7\)</span> in YOLOv1).<br>
+</li>
+<li>Each grid cell is responsible for predicting <strong>up to B bounding boxes (including transforms) and their confidence scores</strong>.</li>
+</ul></li>
+<li><strong>Post-Processing (Non-Maximum Suppression - NMS)</strong>
+<ul>
+<li>Since multiple grid cells may detect the same object, <strong>Non-Maximum Suppression (NMS)</strong> is applied.<br>
+</li>
+<li>NMS removes redundant detections by <strong>keeping the highest-confidence box</strong> and discarding overlapping ones.</li>
+</ul></li>
+</ol>
+</section>
+<section id="yolo-detection-head-output" class="slide level2">
+<h2>YOLO Detection Head Output</h2>
+<ul>
+<li>The image is divided into an <span class="math inline">\(S \times S\)</span> grid (e.g., <span class="math inline">\(7 \times 7\)</span> in YOLOv1).</li>
+<li>Each grid cell is responsible for predicting <strong>up to <span class="math inline">\(B\)</span> bounding boxes and their confidence scores</strong>.<br>
+</li>
+<li>Each bounding box includes:
+<ul>
+<li><span class="math inline">\(x, y\)</span> → Center of the box (relative to the grid cell)<br>
+</li>
+<li><span class="math inline">\(w, h\)</span> → Width and height (relative to the grid cell, anchor box in later versions of YOLO)<br>
+</li>
+<li><strong>Confidence score</strong> (<span class="math inline">\(p\)</span>) → How likely an object is in the box<br>
+</li>
+</ul></li>
+<li><strong>Class probability vector</strong> (<span class="math inline">\(c_1, c_2, \ldots, c_C\)</span>) → If an object is detected, which class of <span class="math inline">\(C\)</span> classes it belongs to, note class probability is shared across all bounding boxes.</li>
+</ul>
+</section>
+<section id="yolo-detection-head-output-example" class="slide level2">
+<h2>YOLO Detection Head Output Example</h2>
+<p>This results in a final output tensor of shape:</p>
+<p><span class="math display">\[
+S \times S \times (B \times 5 + C)
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(S \times S\)</span> → Number of grid cells<br>
+</li>
+<li><span class="math inline">\(B\)</span> → Number of bounding boxes per cell<br>
+</li>
+<li><span class="math inline">\(5\)</span> → <span class="math inline">\(x, y, w, h\)</span> and object confidence score (<span class="math inline">\(p\)</span>) per box<br>
+</li>
+<li><span class="math inline">\(C\)</span> → Number of object classes</li>
+</ul>
+<p>Example for YOLOv1:</p>
+<ul>
+<li><span class="math inline">\(S = 7\)</span>, <span class="math inline">\(B = 2\)</span>, <span class="math inline">\(C = 20\)</span> (Pascal VOC dataset)</li>
+<li>Output tensor: <span class="math display">\[
+7 \times 7 \times (2 \times 5 + 20) = 7 \times 7 \times 30
+\]</span></li>
+</ul>
+</section>
+<section id="yolo-grid-cell-output-tensor" class="slide level2">
+<h2>YOLO Grid Cell Output Tensor</h2>
+<p>Below is the output tensor for a single grid cell. Here <span class="math inline">\(x_i\)</span>, <span class="math inline">\(y_i\)</span>, <span class="math inline">\(w_i\)</span>, <span class="math inline">\(h_i\)</span> are the bounding box transformations and <span class="math inline">\(p_i\)</span> is the confidence score of the <span class="math inline">\(i^{th}\)</span> bounding box. The <span class="math inline">\(c_j\)</span> is the class probability of the <span class="math inline">\(j^{th}\)</span> class. Here <span class="math inline">\(B\)</span> is the number of bounding boxes per grid cell.</p>
+<p><span class="math display">\[
+\begin{bmatrix}
+    x_1 &amp; y_1 &amp; w_1 &amp; h_1 &amp; p_1 \\
+    x_2 &amp; y_2 &amp; w_2 &amp; h_2 &amp; p_2 \\
+    \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
+    x_{B} &amp; y_{B} &amp; w_{B} &amp; h_{B} &amp; p_{B} \\
+\end{bmatrix}
+\quad
+\begin{bmatrix}
+    c_1 &amp; c_2 &amp; \cdots &amp; c_{C} \\
+\end{bmatrix}
+\]</span></p>
+</section>
+<section id="yolo-detection-head-ouptut-tensor" class="slide level2">
+<h2>YOLO Detection Head Ouptut Tensor</h2>
+<p>Below is the output tensor for of the YOLO detection head. Here <span class="math inline">\(x_i\)</span>, <span class="math inline">\(y_i\)</span>, <span class="math inline">\(w_i\)</span>, <span class="math inline">\(h_i\)</span> are the bounding box transformations and <span class="math inline">\(p_i\)</span> is the confidence score of the <span class="math inline">\(i^{th}\)</span> bounding box. The <span class="math inline">\(c^k_j\)</span> is the class probability of the <span class="math inline">\(j^{th}\)</span> class for the <span class="math inline">\(k^{th}\)</span> grid cell. The total number of bounding boxes is <span class="math inline">\(S \times S \times B\)</span> where <span class="math inline">\(S\)</span> is the number of grid cells in the horizontal and vertical directions and <span class="math inline">\(B\)</span> is the number of bounding boxes per grid cell.</p>
+<p><span class="math display">\[
+\begin{bmatrix}
+    x_1 &amp; y_1 &amp; w_1 &amp; h_1 &amp; p_1 \\
+    x_2 &amp; y_2 &amp; w_2 &amp; h_2 &amp; p_2 \\
+    \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
+    x_{S \times S \times B} &amp; y_{S \times S \times B} &amp; w_{S \times S \times B} &amp; h_{S \times S \times B} &amp; p_{S \times S \times B} \\
+\end{bmatrix}
+\quad
+\begin{bmatrix}
+    c^1_1 &amp; c^1_2 &amp; \cdots &amp; c^1_{C} \\
+    c^2_1 &amp; c^2_2 &amp; \cdots &amp; c^2_{C} \\
+    \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+    c^{S \times S}_1 &amp; c^{S \times S}_2 &amp; \cdots &amp; c^{S \times S}_{C} \\
+\end{bmatrix}
+\]</span></p>
+</section>
+<section id="yolo-detection-head-output-1" class="slide level2">
+<h2>YOLO Detection Head Output</h2>
+
+<img data-src="./img/yolo-detection-head.png" class="r-stretch"></section>
+<section id="yolo-diagram" class="slide level2">
+<h2>YOLO Diagram</h2>
+
+<img data-src="./img/yolo-overview.png" class="r-stretch"></section>
+<section id="advantages-and-limitations-of-yolo" class="slide level2">
+<h2>Advantages and Limitations of YOLO</h2>
+<h3 id="advantages">Advantages</h3>
+<ul>
+<li>🚀 <strong>Fast inference</strong> – No region proposals, direct detection in a single forward pass.<br>
+</li>
+<li>📏 <strong>Global context awareness</strong> – Predicts based on the entire image, not just local patches.<br>
+</li>
+<li>🎯 <strong>High accuracy</strong> – Newer YOLO versions balance speed and accuracy well.</li>
+</ul>
+<h3 id="limitations">Limitations</h3>
+<ul>
+<li>Struggles with <strong>small objects</strong> (especially earlier versions).<br>
+</li>
+<li><strong>Lower localization accuracy</strong> compared to two-stage detectors like Faster R-CNN.<br>
+</li>
+<li>Can miss <strong>overlapping objects</strong> since each grid cell predicts only a limited number of boxes.</li>
+</ul>
+</section>
+<section id="anchor-boxes-with-yolo" class="slide level2">
+<h2>Anchor Boxes with YOLO</h2>
+<ul>
+<li>YOLO divides the image into an <strong>S × S grid</strong> of cells</li>
+<li>Each grid cell predicts a fixed number of <strong>anchor boxes</strong> (also called priors)</li>
+<li>Anchors are <strong>preset shapes</strong> (width, height) that represent common object aspect ratios — e.g., tall/narrow for people, wide/short for cars</li>
+<li>For each anchor, the model predicts:
+<ul>
+<li><strong>Offsets</strong> (dx, dy, dw, dh) to adjust the anchor’s position and size to fit the actual object</li>
+<li>A <strong>confidence score</strong> — how likely this anchor contains an object</li>
+<li><strong>Class probabilities</strong> — what kind of object it is</li>
+</ul></li>
+<li>The model does <em>not</em> predict bounding boxes from scratch; it learns <strong>how to nudge each anchor</strong> to better match the ground truth</li>
+<li>This makes training easier and more stable because the model starts from reasonable guesses rather than random coordinates</li>
+<li>Anchors are typically chosen by <strong>clustering</strong> the training set bounding boxes (e.g., using k-means on box dimensions)</li>
+</ul>
+</section>
+<section id="evolution-of-yolo-versions" class="slide level2">
+<h2>Evolution of YOLO Versions</h2>
+<table>
+<colgroup>
+<col style="width: 40%">
+<col style="width: 59%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Version</th>
+<th>Improvements</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>YOLOv1 (2015)</strong></td>
+<td>First implementation, <strong>7×7 grid, 2 boxes per cell</strong>, fast but less accurate.</td>
+</tr>
+<tr class="even">
+<td><strong>YOLOv2 (2016, YOLO9000)</strong></td>
+<td>Introduced <strong>anchor boxes</strong>, improved accuracy, trained on <strong>9000 classes</strong>.</td>
+</tr>
+<tr class="odd">
+<td><strong>YOLOv3 (2018)</strong></td>
+<td>Added <strong>multi-scale detection (FPN)</strong>, better feature extraction with <strong>DarkNet-53</strong>.</td>
+</tr>
+<tr class="even">
+<td><strong>YOLOv4 (2020)</strong></td>
+<td>Uses <strong>CSPDarkNet</strong> and <strong>Path Aggregation Network (PANet)</strong>, higher accuracy.</td>
+</tr>
+<tr class="odd">
+<td><strong>YOLOv5 (2020, Ultralytics)</strong></td>
+<td>Optimized for PyTorch, smaller models, real-time edge deployment.</td>
+</tr>
+<tr class="even">
+<td><strong>YOLOv7 (2022)</strong></td>
+<td>Introduces <strong>extended E-ELAN architecture</strong>, better model scaling.</td>
+</tr>
+<tr class="odd">
+<td><strong>YOLOv8 (2023)</strong></td>
+<td>More modular, improved architecture for custom training.</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="faster-r-cnn-vs.-yolo" class="slide level2">
+<h2>Faster R-CNN vs.&nbsp;YOLO</h2>
+<table>
+<colgroup>
+<col style="width: 32%">
+<col style="width: 46%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>Faster R-CNN</th>
+<th>YOLO</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Detection Method</strong></td>
+<td>Two-stage (RPN + classifier)</td>
+<td>Single-stage (direct regression)</td>
+</tr>
+<tr class="even">
+<td><strong>Speed</strong></td>
+<td>Slower (~5 FPS)</td>
+<td>Faster (up to 155 FPS)</td>
+</tr>
+<tr class="odd">
+<td><strong>Accuracy</strong></td>
+<td>Higher for small objects</td>
+<td>Good but struggles with small objects</td>
+</tr>
+<tr class="even">
+<td><strong>Use Cases</strong></td>
+<td>High-precision tasks (medical, aerial imagery)</td>
+<td>Real-time applications (autonomous driving, surveillance)</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="yolo-summary" class="slide level2">
+<h2>YOLO Summary</h2>
+<p>✅ <strong>YOLO is a single-stage object detector</strong> that <strong>splits an image into a grid</strong> and directly predicts <strong>bounding boxes, class probabilities, and confidence scores</strong> in one pass.<br>
+✅ <strong>It is extremely fast</strong> and <strong>well-suited for real-time applications</strong> like autonomous vehicles and video surveillance.<br>
+✅ <strong>Newer YOLO versions</strong> (YOLOv4, YOLOv5, YOLOv7, YOLOv8) improve accuracy while maintaining real-time performance.</p>
+</section>
+<section id="feature-fusion-in-object-detection" class="slide level2">
+<h2>Feature Fusion in Object Detection 🚀</h2>
+<p>Feature fusion is a <strong>critical technique</strong> in object detection that helps networks integrate information from different layers or scales to improve accuracy, particularly for <strong>multi-scale objects</strong>.</p>
+<p>Single-scale feature maps may fail to detect small objects due to loss of fine details. Feature fusion solves this by:</p>
+<p>✅ <strong>Enhancing spatial details</strong> (small objects)<br>
+✅ <strong>Combining high-level semantics with low-level textures</strong><br>
+✅ <strong>Improving robustness across object scales</strong></p>
+<ul>
+<li>There are four types of feature fusion techniques:
+<ul>
+<li>Feature Pyramid Fusion (Top-Down Fusion)</li>
+<li>Bottom-Up Feature Aggregation</li>
+<li>Scale-Aware Fusion (Parallel Multi-Scale Features)</li>
+<li>Attention-Based Feature Fusion</li>
+</ul></li>
+</ul>
+</section>
+<section id="feature-pyramid-fusion-top-down-fusion" class="slide level2 scrollable">
+<h2>Feature Pyramid Fusion (Top-Down Fusion)</h2>
+<p>Used in: <strong>FPN (Feature Pyramid Network), Faster R-CNN, RetinaNet</strong></p>
+<p>📌 <strong>Concept:</strong></p>
+<ul>
+<li>High-resolution, low-level feature maps capture <strong>fine details</strong> but lack strong semantics.<br>
+</li>
+<li>Low-resolution, high-level feature maps have <strong>strong semantics</strong> but lose spatial details.<br>
+</li>
+<li><strong>Solution:</strong> Pass high-level semantic information <strong>downward</strong> to enrich finer feature maps.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<ul>
+<li><strong>FPN</strong> creates a feature pyramid where each level receives <strong>both high-resolution details and deep semantic context.</strong></li>
+</ul>
+<p><strong>Advantage:</strong></p>
+<ul>
+<li>Boosts <strong>small object detection</strong> without adding too much computational cost.</li>
+</ul>
+</section>
+<section id="bottom-up-feature-aggregation" class="slide level2 scrollable">
+<h2>Bottom-Up Feature Aggregation</h2>
+<p>Used in: <strong>PANet (Path Aggregation Network), YOLOv4, YOLOv5</strong></p>
+<p>📌 <strong>Concept:</strong></p>
+<ul>
+<li>Unlike FPN, which propagates information <strong>top-down</strong>, PANet <strong>reintroduces</strong> low-level spatial features back into deeper layers.<br>
+</li>
+<li>This <strong>strengthens fine details</strong> while preserving rich semantics.</li>
+</ul>
+<p><strong>Example:</strong></p>
+<ul>
+<li><strong>YOLOv4 PANet</strong> → Combines <strong>deep semantic features</strong> with <strong>shallow feature maps</strong> to refine predictions.</li>
+</ul>
+<p><strong>Advantage:</strong></p>
+<ul>
+<li>Improves <strong>both small and large object detection</strong>.</li>
+</ul>
+</section>
+<section id="scale-aware-fusion-parallel-multi-scale-features" class="slide level2 scrollable">
+<h2>Scale-Aware Fusion (Parallel Multi-Scale Features)</h2>
+<p>Used in: <strong>SSD (Single Shot Detector), YOLOv3</strong></p>
+<p>📌 <strong>Concept:</strong><br>
+- Instead of merging features from different levels, the detector <strong>makes predictions at multiple feature map scales</strong>.<br>
+- Each feature map specializes in detecting objects of a particular <strong>size range</strong>.</p>
+<p><strong>Example:</strong></p>
+<ul>
+<li><strong>SSD</strong> detects:
+<ul>
+<li><strong>Large objects</strong> from deep, coarse feature maps<br>
+</li>
+<li><strong>Small objects</strong> from shallow, fine-grained feature maps</li>
+</ul></li>
+</ul>
+<p><strong>Advantage:</strong></p>
+<ul>
+<li>Simple and <strong>fast</strong>, but not as refined as FPN-style fusion.</li>
+</ul>
+</section>
+<section id="attention-based-feature-fusion" class="slide level2 scrollable">
+<h2>Attention-Based Feature Fusion</h2>
+<p>Used in: <strong>Transformer-based detectors (DETR, YOLOv7-E)</strong></p>
+<p>📌 <strong>Concept:</strong><br>
+- Instead of simple up/down fusion, networks <strong>learn</strong> how much importance each feature level has.<br>
+- Uses <strong>attention mechanisms</strong> (like self-attention in Transformers) to adaptively merge information.</p>
+<p><strong>Example:</strong></p>
+<ul>
+<li><strong>DETR (Detection Transformer)</strong> dynamically assigns <strong>importance scores</strong> to different feature levels.</li>
+</ul>
+<p><strong>Advantage:</strong></p>
+<ul>
+<li>More flexible and can adapt to different object scales <strong>without hand-crafted feature pyramids</strong>.</li>
+</ul>
+</section>
+<section id="comparison-of-feature-fusion-methods" class="slide level2">
+<h2>Comparison of Feature Fusion Methods</h2>
+<table>
+<colgroup>
+<col style="width: 37%">
+<col style="width: 18%">
+<col style="width: 20%">
+<col style="width: 22%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature Fusion Type</th>
+<th>Examples</th>
+<th>Strengths</th>
+<th>Weaknesses</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Top-Down (FPN)</strong></td>
+<td>Faster R-CNN, RetinaNet</td>
+<td>Enhances small object detection</td>
+<td>Requires extra computation</td>
+</tr>
+<tr class="even">
+<td><strong>Bottom-Up (PANet)</strong></td>
+<td>YOLOv4, YOLOv5</td>
+<td>Strengthens fine details</td>
+<td>More complex than FPN</td>
+</tr>
+<tr class="odd">
+<td><strong>Parallel Multi-Scale</strong></td>
+<td>SSD, YOLOv3</td>
+<td>Fast and simple</td>
+<td>Less refined feature interaction</td>
+</tr>
+<tr class="even">
+<td><strong>Attention-Based</strong></td>
+<td>DETR, Transformer-based models</td>
+<td>Dynamically learns feature importance</td>
+<td>Computationally expensive</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="fpn-in-object-detection" class="slide level2">
+<h2>FPN in Object Detection</h2>
+<ul>
+<li><p>The FPN is a top-down feature fusion technique that is used in two-stage detectors like Faster R-CNN.</p></li>
+<li><p>The <strong>Feature Pyramid Network (FPN)</strong> constructs a <strong>multi-scale feature pyramid</strong> from a <strong>deep CNN backbone (e.g., ResNet-50, ResNet-101, etc.)</strong>.</p></li>
+<li><p>Allows the network to detect objects at multiple scales by extracting <strong>feature maps at different resolutions</strong>.</p></li>
+<li><p><strong>Input to FPN</strong> is typically an image of size <strong>( H W )</strong> (RGB image).<br>
+</p></li>
+<li><p><strong>Output consists of feature maps</strong> at different pyramid levels (<strong>P2, P3, P4, P5, P6</strong>) with progressively decreasing spatial resolutions.</p></li>
+</ul>
+</section>
+<section id="bottom-up-pathway-backbone-feature-extraction" class="slide level2">
+<h2>Bottom-Up Pathway (Backbone Feature Extraction)</h2>
+<p>FPN starts with a <strong>standard CNN backbone (e.g., ResNet-50/101)</strong>, which produces multiple intermediate feature maps:</p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 28%">
+<col style="width: 32%">
+<col style="width: 17%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature Map</th>
+<th>Corresponding Backbone Layer</th>
+<th>Spatial Size (Relative to Input)</th>
+<th>Stride (w.r.t Input)</th>
+<th>Channels</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>C1</strong></td>
+<td>Initial convolutional layers</td>
+<td><span class="math inline">\(H \times W\)</span></td>
+<td>1</td>
+<td>64</td>
+</tr>
+<tr class="even">
+<td><strong>C2</strong></td>
+<td>ResNet Stage 1</td>
+<td><span class="math inline">\(H/2 \times W/2\)</span></td>
+<td>2</td>
+<td>256</td>
+</tr>
+<tr class="odd">
+<td><strong>C3</strong></td>
+<td>ResNet Stage 2</td>
+<td><span class="math inline">\(H/4 \times W/4\)</span></td>
+<td>4</td>
+<td>512</td>
+</tr>
+<tr class="even">
+<td><strong>C4</strong></td>
+<td>ResNet Stage 3</td>
+<td><span class="math inline">\(H/8 \times W/8\)</span></td>
+<td>8</td>
+<td>1024</td>
+</tr>
+<tr class="odd">
+<td><strong>C5</strong></td>
+<td>ResNet Stage 4</td>
+<td><span class="math inline">\(H/16 \times W/16\)</span></td>
+<td>16</td>
+<td>2048</td>
+</tr>
+</tbody>
+</table>
+<p>👉 <strong>Note:</strong> The feature channels increase from <strong>256 → 512 → 1024 → 2048</strong> as we go deeper in the backbone.</p>
+</section>
+<section id="top-down-pathway-fpn-feature-pyramid" class="slide level2 scrollable">
+<h2>Top-Down Pathway (FPN Feature Pyramid)</h2>
+<p><strong>FPN pyramid levels (P2–P6)</strong> are created by combining bottom-up features with <strong>upsampled high-level features</strong>:</p>
+<table>
+<colgroup>
+<col style="width: 19%">
+<col style="width: 30%">
+<col style="width: 23%">
+<col style="width: 11%">
+<col style="width: 14%">
+</colgroup>
+<thead>
+<tr class="header">
+<th><strong>FPN Level</strong></th>
+<th><strong>Constructed From</strong></th>
+<th><strong>Spatial Size</strong></th>
+<th><strong>Stride</strong></th>
+<th><strong>Channels</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>P3</strong></td>
+<td><strong>1×1 Conv on C3</strong> + Upsampled P4</td>
+<td><span class="math inline">\(H/4 \times W/4\)</span></td>
+<td>4</td>
+<td>256</td>
+</tr>
+<tr class="even">
+<td><strong>P4</strong></td>
+<td><strong>1×1 Conv on C4</strong> + Upsampled P5</td>
+<td><span class="math inline">\(H/8 \times W/8\)</span></td>
+<td>8</td>
+<td>256</td>
+</tr>
+<tr class="odd">
+<td><strong>P5</strong></td>
+<td><strong>1×1 Conv on C5</strong></td>
+<td><span class="math inline">\(H/16 \times W/16\)</span></td>
+<td>16</td>
+<td>256</td>
+</tr>
+<tr class="even">
+<td><strong>P6</strong></td>
+<td><strong>3×3 Conv on P5 (stride 2, no lateral)</strong></td>
+<td><span class="math inline">\(H/32 \times W/32\)</span></td>
+<td>32</td>
+<td>256</td>
+</tr>
+</tbody>
+</table>
+<p>👉 <strong>Key Observations:</strong></p>
+<ul>
+<li><strong>Each feature map in FPN has 256 channels</strong>, regardless of its spatial size.<br>
+</li>
+<li><strong>Higher-resolution feature maps (P3, P4) are enhanced with upsampled deeper features</strong> to retain semantic meaning.<br>
+</li>
+<li><strong>P6 is an extra level</strong> added via a <strong>3x3 stride-2 convolution on P5</strong> (used in RetinaNet for detecting very large objects).</li>
+</ul>
+</section>
+<section id="fpn-inputoutput-shape-example" class="slide level2">
+<h2>FPN Input/Output Shape Example</h2>
+<p>If an image of size <strong><span class="math inline">\(800 \times 800\)</span></strong> is passed through an FPN built on <strong>ResNet-50</strong>, the feature maps at each level will have the following dimensions:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Feature Map</th>
+<th>Spatial Size</th>
+<th>Stride</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>C2</strong></td>
+<td><span class="math inline">\(400 \times 400\)</span></td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td><strong>C3</strong></td>
+<td><span class="math inline">\(200 \times 200\)</span></td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<td><strong>C4</strong></td>
+<td><span class="math inline">\(100 \times 100\)</span></td>
+<td>8</td>
+</tr>
+<tr class="even">
+<td><strong>C5</strong></td>
+<td><span class="math inline">\(50 \times 50\)</span></td>
+<td>16</td>
+</tr>
+<tr class="odd">
+<td><strong>P3</strong></td>
+<td><span class="math inline">\(200 \times 200\)</span></td>
+<td>8</td>
+</tr>
+<tr class="even">
+<td><strong>P4</strong></td>
+<td><span class="math inline">\(100 \times 100\)</span></td>
+<td>16</td>
+</tr>
+<tr class="odd">
+<td><strong>P5</strong></td>
+<td><span class="math inline">\(50 \times 50\)</span></td>
+<td>32</td>
+</tr>
+<tr class="even">
+<td><strong>P6</strong></td>
+<td><span class="math inline">\(25 \times 25\)</span></td>
+<td>64</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="fpn-diagram" class="slide level2 scrollable">
+<h2>FPN Diagram</h2>
+<p><a href="./img/feature-pyramid-network.png"><img data-src="./img/feature-pyramid-network.png"></a></p>
+</section>
+<section id="how-fpn-is-used-in-object-detection" class="slide level2">
+<h2>How FPN is Used in Object Detection</h2>
+<p><strong>Faster R-CNN with FPN:</strong></p>
+<ul>
+<li>The <strong>Region Proposal Network (RPN)</strong> generates proposals at multiple levels (<strong>P3 to P6</strong>).<br>
+</li>
+<li><strong>RoIAlign</strong> maps region proposals to the most appropriate feature map based on their size.
+<ul>
+<li><strong>RoIPooling</strong> uses integer division to map the region proposal to the feature map which can cause misalignment.</li>
+<li><strong>RoIAlign</strong> uses bilinear interpolation to map the region proposal to the feature map which reduces the misalignment.</li>
+</ul></li>
+</ul>
+<p><strong>RetinaNet with FPN:</strong></p>
+<ul>
+<li>Bounding box classification and regression happen <strong>independently at each level</strong> (P3–P7).
+<ul>
+<li>Each level has its own <strong>anchor boxes</strong>, allowing better handling of <strong>small, medium, and large objects</strong>.</li>
+</ul></li>
+</ul>
+<!-- ## Summary
+✅ **FPN constructs a feature pyramid (P2–P6) from a deep CNN backbone (e.g., ResNet-50, ResNet-101).**  
+✅ **Each feature map has a fixed 256 channels but varies in spatial size and stride.**  
+✅ **Lower-level features (P3) handle small objects, while higher-level features (P5, P6) detect large objects.**  
+✅ **Used in both two-stage (Faster R-CNN) and one-stage (RetinaNet) detectors to improve scale robustness.**   -->
+</section>
+<section id="final-thoughts-on-feature-fusion" class="slide level2">
+<h2>Final Thoughts on Feature Fusion</h2>
+<ul>
+<li><strong>FPN &amp; PANet</strong> are commonly used in two-stage detectors like Faster R-CNN.<br>
+</li>
+<li><strong>SSD &amp; YOLOv3-style multi-scale detection</strong> is preferred in real-time single-stage detectors.<br>
+</li>
+<li><strong>Attention-based fusion</strong> (Transformers) is the next evolution in feature fusion for object detection.</li>
+</ul>
+</section>
+<section>
+<section id="study-guide" class="title-slide slide level1 center">
+<h1>Study Guide</h1>
+
+</section>
+<section id="faster-r-cnn" class="slide level2">
+<h2>Faster R-CNN</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>How Faster R-CNN improves on Fast R-CNN (eliminates Selective Search)</li>
+<li>The three components: Backbone, Region Proposal Network (RPN), RoI Pooling &amp; Classification Head</li>
+<li>What anchor boxes are and why multiple scales/aspect ratios are used</li>
+<li>How the RPN generates objectness scores and bounding box offsets</li>
+<li>RoI Pooling vs.&nbsp;RoI Align (integer division vs.&nbsp;bilinear interpolation)</li>
+<li>Multi-task loss: classification loss + bounding box regression loss + RPN losses</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>What is the key innovation of Faster R-CNN over Fast R-CNN?</li>
+<li>What does the Region Proposal Network predict for each anchor?</li>
+<li>Why does Faster R-CNN use anchors at multiple scales and aspect ratios?</li>
+</ul>
+</section>
+<section id="yolo-you-only-look-once" class="slide level2">
+<h2>YOLO (You Only Look Once)</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>YOLO as a single-stage detector: detection as a regression problem in one forward pass</li>
+<li>Grid-based prediction: image divided into <span class="math inline">\(S \times S\)</span> grid, each cell predicts <span class="math inline">\(B\)</span> bounding boxes</li>
+<li>Detection head output: <span class="math inline">\((x, y, w, h, \text{confidence})\)</span> per box + class probabilities per cell</li>
+<li>Output tensor shape: <span class="math inline">\(S \times S \times (B \times 5 + C)\)</span></li>
+<li>Post-processing with Non-Maximum Suppression (NMS)</li>
+<li>Advantages (speed, real-time) and limitations (small objects, dense objects)</li>
+<li>Evolution of YOLO versions (v1 through v8+)</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>How does YOLO differ from Faster R-CNN in its detection approach?</li>
+<li>What is the shape of the YOLO output tensor for a <span class="math inline">\(7 \times 7\)</span> grid with 2 bounding boxes and 20 classes?</li>
+<li>Why does YOLO struggle with small objects compared to two-stage detectors?</li>
+</ul>
+</section>
+<section id="faster-r-cnn-vs.-yolo-1" class="slide level2">
+<h2>Faster R-CNN vs.&nbsp;YOLO</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>Two-stage (RPN + classifier) vs.&nbsp;single-stage (direct regression)</li>
+<li>Speed vs.&nbsp;accuracy trade-offs</li>
+<li>Use cases: precision-critical (medical, aerial) vs.&nbsp;real-time (surveillance, autonomous driving)</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>In what scenario would you pick Faster R-CNN over YOLO?</li>
+<li>Why is YOLO faster than Faster R-CNN?</li>
+</ul>
+</section>
+<section id="feature-fusion-in-object-detection-1" class="slide level2">
+<h2>Feature Fusion in Object Detection</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>Why feature fusion is needed (multi-scale object detection)</li>
+<li>Four types of feature fusion:
+<ul>
+<li>Feature Pyramid Fusion (top-down) — used in FPN</li>
+<li>Bottom-Up Feature Aggregation — used in PANet</li>
+<li>Scale-Aware Fusion (parallel multi-scale) — used in SSD, YOLO multi-scale</li>
+<li>Attention-Based Fusion — used in Transformers</li>
+</ul></li>
+<li>Comparison of methods (accuracy, speed, complexity)</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>Why do single-scale feature maps fail for small object detection?</li>
+<li>What is the difference between top-down and bottom-up feature fusion?</li>
+</ul>
+</section>
+<section id="feature-pyramid-network-fpn" class="slide level2">
+<h2>Feature Pyramid Network (FPN)</h2>
+<p><strong>Topics to review:</strong></p>
+<ul>
+<li>FPN constructs a multi-scale feature pyramid from a CNN backbone</li>
+<li>Bottom-up pathway: backbone features C2–C5 with increasing channels (256→2048) and decreasing resolution</li>
+<li>Top-down pathway: upsampled high-level features combined with lateral connections to create P3–P6</li>
+<li>All FPN output levels have 256 channels regardless of spatial size</li>
+<li>How FPN is used in Faster R-CNN (RPN proposals at multiple levels) and RetinaNet (independent predictions per level)</li>
+<li>RoI Align maps proposals to the appropriate pyramid level based on object size</li>
+</ul>
+<p><strong>Example questions:</strong></p>
+<ul>
+<li>What are the spatial dimensions of P3, P4, P5 for an 800×800 input with a ResNet-50 backbone?</li>
+<li>Why does FPN use 1×1 convolutions on the backbone features?</li>
+<li>How does FPN help detect both small and large objects?</li>
+</ul>
+<div class="quarto-auto-generated-content">
+<div class="footer footer-default">
+
+</div>
+</div>
+</section></section>
+    </div>
+  </div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="week-6_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="week-6_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="week-6_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="week-6_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="week-6_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="week-6_files/libs/revealjs/plugin/reveal-chalkboard/plugin.js"></script>
+  <script src="week-6_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="week-6_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="week-6_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="week-6_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="week-6_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': true,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleChalkboard(event)\"><kbd>b</kbd> Toggle Chalkboard</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleNotesCanvas(event)\"><kbd>c</kbd> Toggle Notes Canvas</a></li>\n<li class=\"slide-tool-item\" data-item=\"6\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.downloadDrawings(event)\"><kbd>d</kbd> Download Drawings</a></li>\n<li class=\"slide-tool-item\" data-item=\"7\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'chalkboard': {"buttons":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1050,
+
+        height: 700,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 5.0e-2,
+
+        math: {
+          mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, RevealChalkboard, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+    window.document.addEventListener("DOMContentLoaded", function (event) {
+      const toggleBodyColorMode = (bsSheetEl) => {
+        const mode = bsSheetEl.getAttribute("data-mode");
+        const bodyEl = window.document.querySelector("body");
+        if (mode === "dark") {
+          bodyEl.classList.add("quarto-dark");
+          bodyEl.classList.remove("quarto-light");
+        } else {
+          bodyEl.classList.add("quarto-light");
+          bodyEl.classList.remove("quarto-dark");
+        }
+      }
+      const toggleBodyColorPrimary = () => {
+        const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+        if (bsSheetEl) {
+          toggleBodyColorMode(bsSheetEl);
+        }
+      }
+      toggleBodyColorPrimary();  
+      const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+      tabsets.forEach(function(tabset) {
+        const tabby = new Tabby('#' + tabset.id);
+      });
+      const isCodeAnnotation = (el) => {
+        for (const clz of el.classList) {
+          if (clz.startsWith('code-annotation-')) {                     
+            return true;
+          }
+        }
+        return false;
+      }
+      const clipboard = new window.ClipboardJS('.code-copy-button', {
+        text: function(trigger) {
+          const codeEl = trigger.previousElementSibling.cloneNode(true);
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+      });
+      clipboard.on('success', function(e) {
+        // button target
+        const button = e.trigger;
+        // don't keep focus
+        button.blur();
+        // flash "checked"
+        button.classList.add('code-copy-button-checked');
+        var currentTitle = button.getAttribute("title");
+        button.setAttribute("title", "Copied!");
+        let tooltip;
+        if (window.bootstrap) {
+          button.setAttribute("data-bs-toggle", "tooltip");
+          button.setAttribute("data-bs-placement", "left");
+          button.setAttribute("data-bs-title", "Copied!");
+          tooltip = new bootstrap.Tooltip(button, 
+            { trigger: "manual", 
+              customClass: "code-copy-button-tooltip",
+              offset: [0, -8]});
+          tooltip.show();    
+        }
+        setTimeout(function() {
+          if (tooltip) {
+            tooltip.hide();
+            button.removeAttribute("data-bs-title");
+            button.removeAttribute("data-bs-toggle");
+            button.removeAttribute("data-bs-placement");
+          }
+          button.setAttribute("title", currentTitle);
+          button.classList.remove('code-copy-button-checked');
+        }, 1000);
+        // clear code selection
+        e.clearSelection();
+      });
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+        const config = {
+          allowHTML: true,
+          maxWidth: 500,
+          delay: 100,
+          arrow: false,
+          appendTo: function(el) {
+              return el.closest('section.slide') || el.parentElement;
+          },
+          interactive: true,
+          interactiveBorder: 10,
+          theme: 'light-border',
+          placement: 'bottom-start',
+        };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
+          config['offset'] = [0,0];
+          config['maxWidth'] = 700;
+        window.tippy(el, config); 
+      }
+      const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+      for (var i=0; i<noterefs.length; i++) {
+        const ref = noterefs[i];
+        tippyHover(ref, function() {
+          // use id or data attribute instead here
+          let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+          try { href = new URL(href).hash; } catch {}
+          const id = href.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          return note.innerHTML;
+        });
+      }
+      const findCites = (el) => {
+        const parentEl = el.parentElement;
+        if (parentEl) {
+          const cites = parentEl.dataset.cites;
+          if (cites) {
+            return {
+              el,
+              cites: cites.split(' ')
+            };
+          } else {
+            return findCites(el.parentElement)
+          }
+        } else {
+          return undefined;
+        }
+      };
+      var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+      for (var i=0; i<bibliorefs.length; i++) {
+        const ref = bibliorefs[i];
+        const citeInfo = findCites(ref);
+        if (citeInfo) {
+          tippyHover(citeInfo.el, function() {
+            var popup = window.document.createElement('div');
+            citeInfo.cites.forEach(function(cite) {
+              var citeDiv = window.document.createElement('div');
+              citeDiv.classList.add('hanging-indent');
+              citeDiv.classList.add('csl-entry');
+              var biblioDiv = window.document.getElementById('ref-' + cite);
+              if (biblioDiv) {
+                citeDiv.innerHTML = biblioDiv.innerHTML;
+              }
+              popup.appendChild(citeDiv);
+            });
+            return popup.innerHTML;
+          });
+        }
+      }
+    });
+    </script>
+    
+
+</body></html>

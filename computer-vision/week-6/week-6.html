@@ -113,6 +113,7 @@ window.Quarto = {
   <li><a href="#yolo-detection-head-output-1" id="toc-yolo-detection-head-output-1" class="nav-link" data-scroll-target="#yolo-detection-head-output-1">YOLO Detection Head Output</a></li>
   <li><a href="#yolo-diagram" id="toc-yolo-diagram" class="nav-link" data-scroll-target="#yolo-diagram">YOLO Diagram</a></li>
   <li><a href="#advantages-and-limitations-of-yolo" id="toc-advantages-and-limitations-of-yolo" class="nav-link" data-scroll-target="#advantages-and-limitations-of-yolo">Advantages and Limitations of YOLO</a></li>
+  <li><a href="#anchor-boxes-with-yolo" id="toc-anchor-boxes-with-yolo" class="nav-link" data-scroll-target="#anchor-boxes-with-yolo">Anchor Boxes with YOLO</a></li>
   <li><a href="#evolution-of-yolo-versions" id="toc-evolution-of-yolo-versions" class="nav-link" data-scroll-target="#evolution-of-yolo-versions">Evolution of YOLO Versions</a></li>
   <li><a href="#faster-r-cnn-vs.-yolo" id="toc-faster-r-cnn-vs.-yolo" class="nav-link" data-scroll-target="#faster-r-cnn-vs.-yolo">Faster R-CNN vs.&nbsp;YOLO</a></li>
   <li><a href="#yolo-summary" id="toc-yolo-summary" class="nav-link" data-scroll-target="#yolo-summary">YOLO Summary</a></li>
@@ -138,7 +139,7 @@ window.Quarto = {
   <li><a href="#feature-pyramid-network-fpn" id="toc-feature-pyramid-network-fpn" class="nav-link" data-scroll-target="#feature-pyramid-network-fpn">Feature Pyramid Network (FPN)</a></li>
   </ul></li>
   </ul>
-</nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="presentation.html"><i class="bi bi-file-slides"></i>RevealJS</a></li></ul></div></nav>
 </div>
 <main class="content" id="quarto-document-content">
 
@@ -463,7 +464,7 @@ $$ -->
 <ul>
 <li><span class="math inline">x, y</span> → Center of the box (relative to the grid cell)<br>
 </li>
-<li><span class="math inline">w, h</span> → Width and height (relative to the grid cell, anchor box it later versions of YOLO)<br>
+<li><span class="math inline">w, h</span> → Width and height (relative to the grid cell, anchor box in later versions of YOLO)<br>
 </li>
 <li><strong>Confidence score</strong> (<span class="math inline">p</span>) → How likely an object is in the box<br>
 </li>
@@ -498,8 +499,8 @@ S \times S \times (B \times 5 + C)
 <section id="yolo-grid-cell-output-tensor" class="level2">
 <h2 class="anchored" data-anchor-id="yolo-grid-cell-output-tensor">YOLO Grid Cell Output Tensor</h2>
 <p>Below is the output tensor for a single grid cell. Here <span class="math inline">x_i</span>, <span class="math inline">y_i</span>, <span class="math inline">w_i</span>, <span class="math inline">h_i</span> are the bounding box transformations and <span class="math inline">p_i</span> is the confidence score of the <span class="math inline">i^{th}</span> bounding box. The <span class="math inline">c_j</span> is the class probability of the <span class="math inline">j^{th}</span> class. Here <span class="math inline">B</span> is the number of bounding boxes per grid cell.</p>
-$$
-<span class="math display">\begin{bmatrix}
+<p><span class="math display">
+\begin{bmatrix}
     x_1 &amp; y_1 &amp; w_1 &amp; h_1 &amp; p_1 \\
     x_2 &amp; y_2 &amp; w_2 &amp; h_2 &amp; p_2 \\
     \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\
@@ -508,7 +509,8 @@ $$
 \quad
 \begin{bmatrix}
     c_1 &amp; c_2 &amp; \cdots &amp; c_{C} \\
-\end{bmatrix}</span>
+\end{bmatrix}
+</span></p>
 </section>
 <section id="yolo-detection-head-ouptut-tensor" class="level2">
 <h2 class="anchored" data-anchor-id="yolo-detection-head-ouptut-tensor">YOLO Detection Head Ouptut Tensor</h2>
@@ -559,6 +561,23 @@ $$
 <li>Can miss <strong>overlapping objects</strong> since each grid cell predicts only a limited number of boxes.</li>
 </ul>
 </section>
+</section>
+<section id="anchor-boxes-with-yolo" class="level2">
+<h2 class="anchored" data-anchor-id="anchor-boxes-with-yolo">Anchor Boxes with YOLO</h2>
+<ul>
+<li>YOLO divides the image into an <strong>S × S grid</strong> of cells</li>
+<li>Each grid cell predicts a fixed number of <strong>anchor boxes</strong> (also called priors)</li>
+<li>Anchors are <strong>preset shapes</strong> (width, height) that represent common object aspect ratios — e.g., tall/narrow for people, wide/short for cars</li>
+<li>For each anchor, the model predicts:
+<ul>
+<li><strong>Offsets</strong> (dx, dy, dw, dh) to adjust the anchor’s position and size to fit the actual object</li>
+<li>A <strong>confidence score</strong> — how likely this anchor contains an object</li>
+<li><strong>Class probabilities</strong> — what kind of object it is</li>
+</ul></li>
+<li>The model does <em>not</em> predict bounding boxes from scratch; it learns <strong>how to nudge each anchor</strong> to better match the ground truth</li>
+<li>This makes training easier and more stable because the model starts from reasonable guesses rather than random coordinates</li>
+<li>Anchors are typically chosen by <strong>clustering</strong> the training set bounding boxes (e.g., using k-means on box dimensions)</li>
+</ul>
 </section>
 <section id="evolution-of-yolo-versions" class="level2">
 <h2 class="anchored" data-anchor-id="evolution-of-yolo-versions">Evolution of YOLO Versions</h2>
@@ -667,8 +686,8 @@ $$
 </ul></li>
 </ul>
 </section>
-<section id="feature-pyramid-fusion-top-down-fusion" class="level2">
-<h2 class="anchored" data-anchor-id="feature-pyramid-fusion-top-down-fusion">Feature Pyramid Fusion (Top-Down Fusion)</h2>
+<section id="feature-pyramid-fusion-top-down-fusion" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="feature-pyramid-fusion-top-down-fusion">Feature Pyramid Fusion (Top-Down Fusion)</h2>
 <p>Used in: <strong>FPN (Feature Pyramid Network), Faster R-CNN, RetinaNet</strong></p>
 <p>📌 <strong>Concept:</strong></p>
 <ul>
@@ -687,8 +706,8 @@ $$
 <li>Boosts <strong>small object detection</strong> without adding too much computational cost.</li>
 </ul>
 </section>
-<section id="bottom-up-feature-aggregation" class="level2">
-<h2 class="anchored" data-anchor-id="bottom-up-feature-aggregation">Bottom-Up Feature Aggregation</h2>
+<section id="bottom-up-feature-aggregation" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="bottom-up-feature-aggregation">Bottom-Up Feature Aggregation</h2>
 <p>Used in: <strong>PANet (Path Aggregation Network), YOLOv4, YOLOv5</strong></p>
 <p>📌 <strong>Concept:</strong></p>
 <ul>
@@ -705,8 +724,8 @@ $$
 <li>Improves <strong>both small and large object detection</strong>.</li>
 </ul>
 </section>
-<section id="scale-aware-fusion-parallel-multi-scale-features" class="level2">
-<h2 class="anchored" data-anchor-id="scale-aware-fusion-parallel-multi-scale-features">Scale-Aware Fusion (Parallel Multi-Scale Features)</h2>
+<section id="scale-aware-fusion-parallel-multi-scale-features" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="scale-aware-fusion-parallel-multi-scale-features">Scale-Aware Fusion (Parallel Multi-Scale Features)</h2>
 <p>Used in: <strong>SSD (Single Shot Detector), YOLOv3</strong></p>
 <p>📌 <strong>Concept:</strong><br>
 - Instead of merging features from different levels, the detector <strong>makes predictions at multiple feature map scales</strong>.<br>
@@ -725,8 +744,8 @@ $$
 <li>Simple and <strong>fast</strong>, but not as refined as FPN-style fusion.</li>
 </ul>
 </section>
-<section id="attention-based-feature-fusion" class="level2">
-<h2 class="anchored" data-anchor-id="attention-based-feature-fusion">Attention-Based Feature Fusion</h2>
+<section id="attention-based-feature-fusion" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="attention-based-feature-fusion">Attention-Based Feature Fusion</h2>
 <p>Used in: <strong>Transformer-based detectors (DETR, YOLOv7-E)</strong></p>
 <p>📌 <strong>Concept:</strong><br>
 - Instead of simple up/down fusion, networks <strong>learn</strong> how much importance each feature level has.<br>
@@ -971,8 +990,8 @@ $$
 </tbody>
 </table>
 </section>
-<section id="fpn-diagram" class="level2 nostretch">
-<h2 class="nostretch anchored" data-anchor-id="fpn-diagram">FPN Diagram</h2>
+<section id="fpn-diagram" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="fpn-diagram">FPN Diagram</h2>
 <p><a href="./img/feature-pyramid-network.png"><img src="./img/feature-pyramid-network.png" class="img-fluid"></a></p>
 </section>
 <section id="how-fpn-is-used-in-object-detection" class="level2">
