@@ -54,6 +54,11 @@ HEADER
   cd "$LANDING_DIR"
   quarto render index.qmd --output index.html
   cd "$SCRIPT_DIR"
+
+  if [ -f "$SCRIPT_DIR/icon.png" ]; then
+    sed -i 's#</head>#  <link rel="icon" type="image/png" href="/icon.png" />\
+</head>#' "$LANDING_DIR/index.html"
+  fi
 }
 
 generate_landing_page
@@ -62,6 +67,13 @@ echo "==> Syncing site root index..."
 rsync -avz -e "$SSH_CMD" \
   "$SCRIPT_DIR/index.html" \
   "$REMOTE:$REMOTE_ROOT/index.html"
+
+if [ -f "$SCRIPT_DIR/icon.png" ]; then
+  echo "==> Syncing favicon..."
+  rsync -avz -e "$SSH_CMD" \
+    "$SCRIPT_DIR/icon.png" \
+    "$REMOTE:$REMOTE_ROOT/icon.png"
+fi
 
 echo "==> Syncing lectures landing page..."
 rsync -avz -e "$SSH_CMD" \

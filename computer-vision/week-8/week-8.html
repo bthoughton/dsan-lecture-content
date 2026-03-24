@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Prof.&nbsp;Ben Houghton">
+<meta name="dcterms.date" content="2026-03-24">
+
+<title>Vision Transformers</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="week-8_files/libs/clipboard/clipboard.min.js"></script>
+<script src="week-8_files/libs/quarto-html/quarto.js"></script>
+<script src="week-8_files/libs/quarto-html/popper.min.js"></script>
+<script src="week-8_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="week-8_files/libs/quarto-html/anchor.min.js"></script>
+<link href="week-8_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="week-8_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="week-8_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="week-8_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="week-8_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../custom.css">
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#introduction-to-vision-transformers" id="toc-introduction-to-vision-transformers" class="nav-link active" data-scroll-target="#introduction-to-vision-transformers">Introduction to Vision Transformers</a>
+  <ul class="collapse">
+  <li><a href="#why-vision-transformers" id="toc-why-vision-transformers" class="nav-link" data-scroll-target="#why-vision-transformers">Why Vision Transformers?</a></li>
+  <li><a href="#cnn-vs-vit-motivation-diagram" id="toc-cnn-vs-vit-motivation-diagram" class="nav-link" data-scroll-target="#cnn-vs-vit-motivation-diagram">CNN vs ViT Motivation Diagram</a></li>
+  <li><a href="#vision-transformer-vit-overview" id="toc-vision-transformer-vit-overview" class="nav-link" data-scroll-target="#vision-transformer-vit-overview">Vision Transformer (ViT) Overview</a></li>
+  <li><a href="#vit-architecture-overview" id="toc-vit-architecture-overview" class="nav-link" data-scroll-target="#vit-architecture-overview">ViT Architecture Overview</a></li>
+  <li><a href="#vit-paper-diagram" id="toc-vit-paper-diagram" class="nav-link" data-scroll-target="#vit-paper-diagram">ViT Paper Diagram</a></li>
+  <li><a href="#applications-of-vit" id="toc-applications-of-vit" class="nav-link" data-scroll-target="#applications-of-vit">Applications of ViT</a></li>
+  <li><a href="#vit-advantages" id="toc-vit-advantages" class="nav-link" data-scroll-target="#vit-advantages">ViT Advantages</a></li>
+  <li><a href="#vit-limitations" id="toc-vit-limitations" class="nav-link" data-scroll-target="#vit-limitations">ViT Limitations</a></li>
+  </ul></li>
+  <li><a href="#detection-transformers" id="toc-detection-transformers" class="nav-link" data-scroll-target="#detection-transformers">Detection Transformers</a>
+  <ul class="collapse">
+  <li><a href="#what-are-detection-transformers" id="toc-what-are-detection-transformers" class="nav-link" data-scroll-target="#what-are-detection-transformers">What are Detection Transformers?</a></li>
+  <li><a href="#why-detection-transformers" id="toc-why-detection-transformers" class="nav-link" data-scroll-target="#why-detection-transformers">Why Detection Transformers?</a></li>
+  <li><a href="#evolution-of-detection-transformers" id="toc-evolution-of-detection-transformers" class="nav-link" data-scroll-target="#evolution-of-detection-transformers">Evolution of Detection Transformers</a></li>
+  </ul></li>
+  <li><a href="#detection-transformer-detr" id="toc-detection-transformer-detr" class="nav-link" data-scroll-target="#detection-transformer-detr">DEtection TRansformer (DETR)</a>
+  <ul class="collapse">
+  <li><a href="#introduction-to-detr" id="toc-introduction-to-detr" class="nav-link" data-scroll-target="#introduction-to-detr">Introduction to DETR</a></li>
+  <li><a href="#object-detection-the-traditional-approach" id="toc-object-detection-the-traditional-approach" class="nav-link" data-scroll-target="#object-detection-the-traditional-approach">Object Detection: The Traditional Approach</a></li>
+  <li><a href="#detr-a-revolutionary-solution" id="toc-detr-a-revolutionary-solution" class="nav-link" data-scroll-target="#detr-a-revolutionary-solution">DETR: A Revolutionary Solution</a></li>
+  <li><a href="#detr-diagram" id="toc-detr-diagram" class="nav-link" data-scroll-target="#detr-diagram">DETR Diagram</a></li>
+  <li><a href="#input-processing" id="toc-input-processing" class="nav-link" data-scroll-target="#input-processing">1. Input Processing</a></li>
+  <li><a href="#transformer-encoder" id="toc-transformer-encoder" class="nav-link" data-scroll-target="#transformer-encoder">2. Transformer Encoder</a></li>
+  <li><a href="#transformer-decoder" id="toc-transformer-decoder" class="nav-link" data-scroll-target="#transformer-decoder">3. Transformer Decoder</a></li>
+  <li><a href="#prediction-heads" id="toc-prediction-heads" class="nav-link" data-scroll-target="#prediction-heads">4. Prediction Heads</a></li>
+  <li><a href="#hungarian-matching-loss" id="toc-hungarian-matching-loss" class="nav-link" data-scroll-target="#hungarian-matching-loss">5. Hungarian Matching &amp; Loss</a></li>
+  <li><a href="#summary-of-workflow" id="toc-summary-of-workflow" class="nav-link" data-scroll-target="#summary-of-workflow">Summary of Workflow</a></li>
+  <li><a href="#advantages-and-key-limitations" id="toc-advantages-and-key-limitations" class="nav-link" data-scroll-target="#advantages-and-key-limitations">Advantages and Key Limitations</a></li>
+  <li><a href="#hungarian-matching-intuition" id="toc-hungarian-matching-intuition" class="nav-link" data-scroll-target="#hungarian-matching-intuition">Hungarian Matching (Intuition)</a></li>
+  <li><a href="#detr-matching-cost-function" id="toc-detr-matching-cost-function" class="nav-link" data-scroll-target="#detr-matching-cost-function">DETR Matching Cost Function</a></li>
+  <li><a href="#training-dynamics" id="toc-training-dynamics" class="nav-link" data-scroll-target="#training-dynamics">Training Dynamics</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="presentation.html"><i class="bi bi-file-slides"></i>RevealJS</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Vision Transformers</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Prof.&nbsp;Ben Houghton </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 24, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction-to-vision-transformers" class="level1">
+<h1>Introduction to Vision Transformers</h1>
+<section id="why-vision-transformers" class="level2">
+<h2 class="anchored" data-anchor-id="why-vision-transformers">Why Vision Transformers?</h2>
+<ul>
+<li>CNNs have been dominant in vision tasks for over a decade (circa 2012-2014)</li>
+<li>Strong spatial inductive biases (translation equivariance, locality)</li>
+</ul>
+<p><strong>But:</strong></p>
+<ul>
+<li>Limited receptive field</li>
+<li>Struggle with long-range dependencies</li>
+<li>Require careful architectural design (ResNet, FPN, etc.)</li>
+</ul>
+<p><strong>Key Motivations of Vision Transformers:</strong></p>
+<ul>
+<li>Ability to capture global dependencies</li>
+<li>Reduced inductive bias compared to CNNs
+<ul>
+<li>CNNs have a strong bias towards translation equivariance and locality</li>
+</ul></li>
+<li>Potential for unified architectures across modalities (e.g.&nbsp;text, vision, audio)</li>
+<li>Better scaling properties with data and model size</li>
+</ul>
+</section>
+<section id="cnn-vs-vit-motivation-diagram" class="level2">
+<h2 class="anchored" data-anchor-id="cnn-vs-vit-motivation-diagram">CNN vs ViT Motivation Diagram</h2>
+<!-- CNN's learning is fundamentally different to ViT's learning. ViT's use the entire image to generate a global context, whereas CNNs use a "local context" (i.e. a small patch of the image). -->
+<p><img src="./img/cnn-vs-vit.png" class="img-fluid"></p>
+</section>
+<section id="vision-transformer-vit-overview" class="level2">
+<h2 class="anchored" data-anchor-id="vision-transformer-vit-overview">Vision Transformer (ViT) Overview</h2>
+<ul>
+<li>The <a href="https://arxiv.org/pdf/2010.11929">Vision Transformer (ViT)</a> was introduced in 2020 by Alexey Dosovitskiy et al.</li>
+<li>Was introduced to perform image classification, but has since been adapted for a wide range of vision tasks <!-- - At the time of publication, ViT outperformed state-of-the-art CNNs --></li>
+</ul>
+<p><strong>Key Differences to comparable CNNs:</strong></p>
+<ul>
+<li>Larger model size (more parameters)</li>
+<li>Better performance on large datasets, less performance on smaller datasets</li>
+<li>Better scaling behavior with model size</li>
+</ul>
+<p><strong>When to use ViT:</strong></p>
+<ul>
+<li>Large datasets available</li>
+<li>Strong computational resources</li>
+<li>Need for transfer learning</li>
+<li>Robustness requirements</li>
+</ul>
+</section>
+<section id="vit-architecture-overview" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="vit-architecture-overview">ViT Architecture Overview</h2>
+<ul>
+<li><strong>New</strong> ViT concept</li>
+<li><strong>Reused</strong> Transformer concept</li>
+</ul>
+<p><strong>Image Patch Embedding</strong></p>
+<ul>
+<li>Divide input image into fixed-size patches (typically 16x16)</li>
+<li>Flatten each patch into a 1D vector</li>
+<li>Linear projection to embedding dimension</li>
+<li>Add position embeddings</li>
+</ul>
+<p><strong>Transformer Encoder</strong></p>
+<ul>
+<li>Multi-head self-attention layers</li>
+<li>Feed-forward networks (MLP blocks)</li>
+<li>Layer normalization</li>
+<li>Residual connections</li>
+</ul>
+<p><strong>Classification Head</strong></p>
+<ul>
+<li>Special <code>[CLS]</code> token for classification (only the patch-token at <span class="math inline">0^{th}</span> position is used in the MLP)</li>
+<li>MLP for final prediction</li>
+</ul>
+</section>
+<section id="vit-paper-diagram" class="level2 nostretch">
+<h2 class="nostretch anchored" data-anchor-id="vit-paper-diagram">ViT Paper Diagram</h2>
+<p><a href="https://arxiv.org/pdf/2010.11929#page=3"><img src="./img/vit-paper-diagram.png" class="img-fluid"></a></p>
+</section>
+<section id="applications-of-vit" class="level2">
+<h2 class="anchored" data-anchor-id="applications-of-vit">Applications of ViT</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Image Classification</strong></p>
+<ul>
+<li>Standard benchmark tasks</li>
+<li>Fine-grained classification</li>
+<li>Multi-label classification</li>
+</ul>
+<p><strong>Object Detection</strong></p>
+<ul>
+<li>DETR (DEtection TRansformer)</li>
+<li>Deformable DETR</li>
+<li>Swin Transformer</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Semantic Segmentation</strong></p>
+<ul>
+<li>SETR (SEgmentation TRansformer)</li>
+<li>SegFormer</li>
+<li>Mask Transformers</li>
+</ul>
+<p><strong>Video Understanding</strong></p>
+<ul>
+<li>TimeSformer</li>
+<li>ViViT</li>
+<li>Video Instance Segmentation</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="vit-advantages" class="level2">
+<h2 class="anchored" data-anchor-id="vit-advantages">ViT Advantages</h2>
+<ol type="1">
+<li><strong>Global Processing</strong>
+<ul>
+<li>Natural handling of long-range dependencies</li>
+<li>No need for explicit multi-scale processing</li>
+<li>Better feature integration</li>
+</ul></li>
+<li><strong>Scalability</strong>
+<ul>
+<li>Excellent scaling with model size</li>
+<li>Strong transfer learning capabilities</li>
+<li>Data-efficient when pre-trained properly</li>
+</ul></li>
+<li><strong>Flexibility</strong>
+<ul>
+<li>Unified architecture across tasks</li>
+<li>Easy to extend to multiple modalities</li>
+<li>Interpretable attention maps</li>
+</ul></li>
+</ol>
+</section>
+<section id="vit-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="vit-limitations">ViT Limitations</h2>
+<ol type="1">
+<li><strong>Computational Requirements</strong>
+<ul>
+<li>Quadratic complexity with sequence length</li>
+<li>High memory usage</li>
+<li>Expensive pre-training</li>
+</ul></li>
+<li><strong>Data Requirements</strong>
+<ul>
+<li>Needs large datasets for pre-training</li>
+<li>Less sample-efficient than CNNs initially</li>
+<li>May overfit on small datasets</li>
+</ul></li>
+<li><strong>Architecture Constraints</strong>
+<ul>
+<li>Fixed input size due to position embeddings</li>
+<li>Limited inherent spatial inductive bias</li>
+<li>Resolution constraints</li>
+</ul></li>
+</ol>
+</section>
+</section>
+<section id="detection-transformers" class="level1">
+<h1>Detection Transformers</h1>
+<section id="what-are-detection-transformers" class="level2">
+<h2 class="anchored" data-anchor-id="what-are-detection-transformers">What are Detection Transformers?</h2>
+<ul>
+<li>Vision Transformer architectures specialized for object detection</li>
+<li>Emerged as an alternative to CNN-based detectors</li>
+<li>Combine transformer’s global attention with detection tasks</li>
+<li>First introduced with <a href="https://arxiv.org/pdf/2005.12872">DETR (DEtection TRansformer)</a> in 2020</li>
+</ul>
+<section id="key-characteristics" class="level3">
+<h3 class="anchored" data-anchor-id="key-characteristics">Key Characteristics</h3>
+<div class="columns">
+<div class="column">
+<ol type="1">
+<li><strong>Architecture</strong>
+<ul>
+<li>Transformer encoder-decoder backbone</li>
+<li>CNN feature extraction (typically)</li>
+<li>End-to-end trainable design</li>
+<li>Set-based predictions</li>
+</ul></li>
+</ol>
+</div><div class="column">
+<ol start="2" type="1">
+<li><strong>Advantages</strong>
+<ul>
+<li>Global context modeling</li>
+<li>No hand-crafted components needed</li>
+<li>Simplified detection pipeline</li>
+<li>Natural multi-object handling</li>
+</ul></li>
+</ol>
+</div>
+</div>
+</section>
+</section>
+<section id="why-detection-transformers" class="level2">
+<h2 class="anchored" data-anchor-id="why-detection-transformers">Why Detection Transformers?</h2>
+<p><strong>Advantages Over Traditional Detectors</strong></p>
+<ol type="1">
+<li><strong>Simplification</strong>
+<ul>
+<li>No anchor boxes needed</li>
+<li>No non-maximum suppression (NMS)</li>
+<li>Fewer hand-designed components</li>
+</ul></li>
+<li><strong>Performance</strong>
+<ul>
+<li>Competitive or better accuracy</li>
+<li>Better handling of occlusions</li>
+<li>Strong performance on crowded scenes</li>
+</ul></li>
+<li><strong>Flexibility</strong>
+<ul>
+<li>Easy to extend to other tasks</li>
+<li>Panoptic segmentation</li>
+<li>Multi-task learning</li>
+</ul></li>
+</ol>
+</section>
+<section id="evolution-of-detection-transformers" class="level2">
+<h2 class="anchored" data-anchor-id="evolution-of-detection-transformers">Evolution of Detection Transformers</h2>
+<p><strong>First Generation</strong></p>
+<ul>
+<li><a href="https://arxiv.org/pdf/2005.12872">DETR (2020)</a>
+<ul>
+<li>First successful transformer-based detector</li>
+<li>Proved viability of transformers for detection</li>
+<li>Slow convergence, struggled with small objects</li>
+</ul></li>
+</ul>
+<section id="key-improvements" class="level3">
+<h3 class="anchored" data-anchor-id="key-improvements">Key Improvements</h3>
+<div class="columns">
+<div class="column">
+<ul>
+<li><a href="https://arxiv.org/pdf/2010.04159">Deformable DETR</a>
+<ul>
+<li>Sparse attention mechanisms</li>
+<li>Better convergence</li>
+<li>Improved small object detection</li>
+</ul></li>
+</ul>
+</div><div class="column">
+<ul>
+<li><a href="https://arxiv.org/pdf/2104.01372">Conditional DETR</a>
+<ul>
+<li>Content-dependent queries (e.g.&nbsp;different queries for different images)</li>
+<li>Faster training</li>
+<li>Better localization</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="detection-transformer-detr" class="level1">
+<h1>DEtection TRansformer (DETR)</h1>
+<section id="introduction-to-detr" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-to-detr">Introduction to DETR</h2>
+<ul>
+<li><a href="https://arxiv.org/pdf/2005.12872">DETR (DEtection TRansformer)</a> was introduced by Facebook AI Research in 2020</li>
+<li>First successful application of transformers to object detection</li>
+<li>Fundamentally changes how we approach object detection</li>
+</ul>
+<p><strong>High Level Concept</strong></p>
+<ul>
+<li>Reframes object detection as a direct set prediction problem</li>
+<li>Uses transformer encoder-decoder architecture</li>
+<li>Predicts a fixed-size set of objects in parallel</li>
+<li>Matches predictions to ground truth using bipartite matching</li>
+</ul>
+</section>
+<section id="object-detection-the-traditional-approach" class="level2">
+<h2 class="anchored" data-anchor-id="object-detection-the-traditional-approach">Object Detection: The Traditional Approach</h2>
+<div class="columns">
+<div class="column" style="width:45%;">
+<ul>
+<li>Multiple separate stages:
+<ul>
+<li>Region proposal network</li>
+<li>Feature extraction</li>
+<li>Classification &amp; regression</li>
+<li>Post-processing</li>
+</ul></li>
+</ul>
+</div><div class="column" style="width:30%;">
+<p><img src="./img/faster-r-cnn-paper-diagram.png" class="img-fluid"></p>
+</div>
+</div>
+<section id="key-limitations" class="level3">
+<h3 class="anchored" data-anchor-id="key-limitations">Key Limitations</h3>
+<div class="columns">
+<div class="column">
+<ol type="1">
+<li><strong>Non-Differentiable Components</strong>
+<ul>
+<li>Non-maximum suppression (NMS)</li>
+<li>Anchor box assignment rules</li>
+<li>Post-processing heuristics</li>
+</ul></li>
+</ol>
+</div><div class="column">
+<ol start="2" type="1">
+<li><strong>Manual Design Choices</strong>
+<ul>
+<li>Anchor box sizes and ratios</li>
+<li>NMS thresholds</li>
+<li>Feature pyramid design</li>
+</ul></li>
+</ol>
+</div>
+</div>
+</section>
+</section>
+<section id="detr-a-revolutionary-solution" class="level2">
+<h2 class="anchored" data-anchor-id="detr-a-revolutionary-solution">DETR: A Revolutionary Solution</h2>
+<ul>
+<li>Direct Set Prediction
+<ul>
+<li>Single-stage prediction of all objects</li>
+<li>Fixed-size set of predictions (e.g., <span class="math inline">N=100</span>)</li>
+<li>Each prediction: {class label, bounding box}</li>
+<li>Built-in handling of duplicates
+<ul>
+<li>Loss function ensures each object is detected exactly once</li>
+</ul></li>
+</ul></li>
+</ul>
+<p><img src="./img/detr-paper-overview.png" class="img-fluid"></p>
+<section id="key-advantages" class="level3">
+<h3 class="anchored" data-anchor-id="key-advantages">Key Advantages</h3>
+<div class="columns">
+<div class="column">
+<ol type="1">
+<li><strong>End-to-End Training</strong>
+<ul>
+<li>Fully differentiable pipeline</li>
+<li>Single unified loss function</li>
+<li>No hand-tuned parameters</li>
+<li>Joint optimization of all components</li>
+</ul></li>
+</ol>
+</div><div class="column">
+<ol start="2" type="1">
+<li><strong>Architectural Benefits</strong>
+<ul>
+<li>Global context through self-attention</li>
+<li>Natural handling of overlapping objects</li>
+<li>Extensible to panoptic segmentation</li>
+<li>Simpler implementation</li>
+</ul></li>
+</ol>
+</div>
+</div>
+</section>
+</section>
+<section id="detr-diagram" class="level2">
+<h2 class="anchored" data-anchor-id="detr-diagram">DETR Diagram</h2>
+<p><strong>Data Flow:</strong></p>
+<ol type="1">
+<li>Image → CNN → Flattened Features + Position Embeddings</li>
+<li>Features → Encoder → Global Context</li>
+<li>Queries + Context → Decoder → Object Predictions</li>
+</ol>
+<p><img src="./img/detr-paper-diagram.png" class="img-fluid"></p>
+</section>
+<section id="input-processing" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="input-processing">1. Input Processing</h2>
+<section id="image-preprocessing" class="level3">
+<h3 class="anchored" data-anchor-id="image-preprocessing"><strong>Image Preprocessing</strong></h3>
+<ul>
+<li>Input image is resized and normalized</li>
+<li>Typically fixed-size input (e.g.&nbsp;<span class="math inline">800 \times 800</span>)</li>
+</ul>
+</section>
+<section id="cnn-backbone" class="level3">
+<h3 class="anchored" data-anchor-id="cnn-backbone"><strong>CNN Backbone</strong></h3>
+<ul>
+<li>A standard convolutional network (usually ResNet-50 or -101) extracts a <strong>feature map</strong> from the image</li>
+<li>Let’s denote the output feature map as <strong><span class="math inline">F \in \mathbb{R}^{C \times H \times W}</span></strong>, where:
+<ul>
+<li><span class="math inline">C</span> is the number of channels (e.g., 2048)</li>
+<li><span class="math inline">H \times W</span> is the spatial resolution (e.g., 25 × 25)</li>
+</ul></li>
+</ul>
+</section>
+<section id="flattening-positional-embedding" class="level3">
+<h3 class="anchored" data-anchor-id="flattening-positional-embedding"><strong>Flattening + Positional Embedding</strong></h3>
+<ul>
+<li>Flatten spatial dimensions: <span class="math inline">F \rightarrow</span> sequence of length <span class="math inline">HW</span> (each vector <span class="math inline">\in \mathbb{R}^C</span>)</li>
+<li>Add <strong>learnable 2D positional encodings</strong> to retain spatial information</li>
+<li>This becomes the input sequence to the <strong>transformer encoder</strong></li>
+</ul>
+</section>
+</section>
+<section id="transformer-encoder" class="level2">
+<h2 class="anchored" data-anchor-id="transformer-encoder">2. Transformer Encoder</h2>
+<section id="purpose" class="level3">
+<h3 class="anchored" data-anchor-id="purpose">Purpose:</h3>
+<ul>
+<li>Learn global relationships between image regions</li>
+<li>Composed of <strong>L layers</strong> of multi-head self-attention + feedforward networks</li>
+</ul>
+</section>
+<section id="input" class="level3">
+<h3 class="anchored" data-anchor-id="input">Input:</h3>
+<ul>
+<li>Sequence of image tokens + positional encodings</li>
+</ul>
+</section>
+<section id="output" class="level3">
+<h3 class="anchored" data-anchor-id="output">Output:</h3>
+<ul>
+<li>A sequence of contextually rich feature tokens (still <span class="math inline">HW</span> tokens)</li>
+</ul>
+</section>
+</section>
+<section id="transformer-decoder" class="level2">
+<h2 class="anchored" data-anchor-id="transformer-decoder">3. Transformer Decoder</h2>
+<section id="a.-object-queries" class="level3">
+<h3 class="anchored" data-anchor-id="a.-object-queries">a. <strong>Object Queries</strong></h3>
+<ul>
+<li>Learnable positional embeddings: a fixed set of <strong><span class="math inline">N</span> object queries</strong> (e.g., <span class="math inline">N=100</span>)</li>
+<li>Each object query is a vector that the decoder learns to associate with a potential object</li>
+</ul>
+</section>
+<section id="b.-cross-attention" class="level3">
+<h3 class="anchored" data-anchor-id="b.-cross-attention">b. <strong>Cross-Attention</strong></h3>
+<ul>
+<li>Decoder uses each object query to attend to the encoder output (image tokens)</li>
+<li>Each query is updated with information from relevant parts of the image</li>
+</ul>
+</section>
+<section id="output-1" class="level3">
+<h3 class="anchored" data-anchor-id="output-1">Output:</h3>
+<ul>
+<li>Decoder produces <span class="math inline">N</span> output embeddings (one for each query)</li>
+<li>These embeddings are then <strong>projected to object predictions</strong></li>
+</ul>
+</section>
+</section>
+<section id="prediction-heads" class="level2">
+<h2 class="anchored" data-anchor-id="prediction-heads">4. Prediction Heads</h2>
+<p>Each decoder output goes through two small feed-forward networks (FFNs):</p>
+<ul>
+<li><p><strong>Class Prediction Head</strong>:</p>
+<ul>
+<li>Predicts class label (including “no object” class)</li>
+</ul></li>
+<li><p><strong>Box Prediction Head</strong>:</p>
+<ul>
+<li>Predicts 4 bounding box coordinates in <span class="math inline">[cx, cy, w, h]</span> format (normalized to <span class="math inline">[0,1]</span>)</li>
+</ul></li>
+</ul>
+<p>So the final output is:</p>
+<ul>
+<li>A set of <span class="math inline">N</span> class predictions</li>
+<li>A set of <span class="math inline">N</span> bounding boxes</li>
+</ul>
+</section>
+<section id="hungarian-matching-loss" class="level2">
+<h2 class="anchored" data-anchor-id="hungarian-matching-loss">5. Hungarian Matching &amp; Loss</h2>
+<p>Here’s the key innovation:</p>
+<section id="a.-matching" class="level3">
+<h3 class="anchored" data-anchor-id="a.-matching">a. <strong>Matching</strong>:</h3>
+<ul>
+<li>Use the <strong>Hungarian algorithm</strong> to find an optimal 1-to-1 matching between predicted boxes and ground truth objects</li>
+<li>Cost is based on class prediction + box similarity (IoU)</li>
+</ul>
+</section>
+<section id="b.-loss-function" class="level3">
+<h3 class="anchored" data-anchor-id="b.-loss-function">b. <strong>Loss Function</strong>:</h3>
+<ul>
+<li>Classification loss: Cross-entropy</li>
+<li>Bounding box loss: L1 (MAE) + GIoU</li>
+</ul>
+<p>This <strong>end-to-end matching</strong> ensures <strong>each object is detected exactly once</strong></p>
+</section>
+</section>
+<section id="summary-of-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-workflow">Summary of Workflow</h2>
+<table class="table">
+<colgroup>
+<col style="width: 31%">
+<col style="width: 31%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Stage</th>
+<th>Input</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Image → CNN</td>
+<td>Raw image</td>
+<td>Feature map (H×W×C)</td>
+</tr>
+<tr class="even">
+<td>Flatten + PosEmbed</td>
+<td>Feature map</td>
+<td>Sequence of tokens</td>
+</tr>
+<tr class="odd">
+<td>Transformer Encoder</td>
+<td>Tokens</td>
+<td>Contextualized tokens</td>
+</tr>
+<tr class="even">
+<td>Decoder + Object Queries</td>
+<td>Queries + encoder tokens</td>
+<td>Object embeddings</td>
+</tr>
+<tr class="odd">
+<td>Prediction Heads</td>
+<td>Object embeddings</td>
+<td>Class + Box for each query</td>
+</tr>
+<tr class="even">
+<td>Matching &amp; Loss</td>
+<td>Predictions + GT</td>
+<td>Training signal</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="advantages-and-key-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="advantages-and-key-limitations">Advantages and Key Limitations</h2>
+<section id="advantages" class="level3">
+<h3 class="anchored" data-anchor-id="advantages">Advantages</h3>
+<ul>
+<li><strong>No anchors</strong>, <strong>no NMS</strong>, <strong>no hand-designed proposals</strong></li>
+<li>Global context via attention</li>
+<li>Simpler pipeline, easier to train once stabilized</li>
+</ul>
+</section>
+<section id="key-limitations-1" class="level3">
+<h3 class="anchored" data-anchor-id="key-limitations-1">Key Limitations</h3>
+<ul>
+<li><strong>Slow convergence</strong>: Requires hundreds of epochs</li>
+<li>Needs <strong>large data</strong> to perform well (typically ImageNet-pretrained backbone)</li>
+<li>Struggles with small objects in early versions</li>
+</ul>
+</section>
+</section>
+<section id="hungarian-matching-intuition" class="level2 nostretch">
+<h2 class="nostretch anchored" data-anchor-id="hungarian-matching-intuition">Hungarian Matching (Intuition)</h2>
+<!-- **Visual Suggestion:** Table of predictions vs. ground truths with lines connecting pairs -->
+<div class="quarto-figure quarto-figure-left">
+<figure class="figure">
+<p><a href="https://arxiv.org/pdf/2005.12872#page=2"><img src="./img/bipartite-matching.png" class="img-fluid quarto-figure quarto-figure-left figure-img" style="width:40.0%"></a></p>
+</figure>
+</div>
+<ul>
+<li>Hungarian algorithm solves the <strong>assignment problem</strong>:</li>
+<li>Match predictions to ground truths to minimize total cost</li>
+<li>Each prediction gets <strong>one target</strong> (or “no object”)</li>
+<li>Matches are chosen <strong>greedily for best alignment</strong>, not learned</li>
+</ul>
+<p><strong>Key Insight:</strong></p>
+<p>“Matching is not differentiable, but it doesn’t need to be. We don’t need to backprop through who got assigned what, just use that assignment to apply the right loss.”</p>
+</section>
+<section id="detr-matching-cost-function" class="level2">
+<h2 class="anchored" data-anchor-id="detr-matching-cost-function">DETR Matching Cost Function</h2>
+<p><strong>What Makes a Good Match?</strong></p>
+<p><span class="math display">
+\text{Cost}(i, j) = \lambda_{cls} \cdot CE(c_i, c_j) + \lambda_{L1} \cdot \|b_i - b_j\|_1 + \lambda_{GIoU} \cdot (1 - \text{GIoU}(b_i, b_j))
+</span></p>
+<p><strong>Breakdown:</strong></p>
+<ul>
+<li><span class="math inline">CE(c_i, c_j)</span>: Class mismatch (Cross-entropy)
+<ul>
+<li><span class="math inline">\lambda_{cls}</span>: Class mismatch weight<br>
+</li>
+</ul></li>
+<li><span class="math inline">\|b_i - b_j\|_1</span>: Bounding box location distance (<span class="math inline">L1</span>)
+<ul>
+<li><span class="math inline">\lambda_{L1}</span>: Bounding box location distance weight</li>
+</ul></li>
+<li><span class="math inline">\text{GIoU}</span>: Shape + overlap quality (Generalized IoU)
+<ul>
+<li><span class="math inline">\lambda_{GIoU}</span>: GIoU weight</li>
+</ul></li>
+</ul>
+<!-- **Visual Suggestion:** Side-by-side box matching with cost scores -->
+</section>
+<section id="training-dynamics" class="level2">
+<h2 class="anchored" data-anchor-id="training-dynamics">Training Dynamics</h2>
+<p><strong>What Happens After Matching?</strong></p>
+<ol type="1">
+<li>Matched prediction → Cross-entropy + bbox regression losses</li>
+<li>Unmatched prediction → “No object” class loss only</li>
+<li>Gradients backprop through losses, not through matching</li>
+</ol>
+<p><strong>Key Insight:</strong></p>
+<p>“It’s like assigning students to papers to grade: the assignment is fixed, and you judge them on how well they did. You don’t change who graded what based on the grades.”</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
