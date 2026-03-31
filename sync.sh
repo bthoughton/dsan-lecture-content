@@ -11,7 +11,9 @@ SSH_CMD="ssh -i $KEY"
 LECTURE_SOURCE="/home/ben/dsan-6500-2026/lectures"
 
 echo "==> Pulling latest lecture files from source repo..."
-rsync -avz --update "$LECTURE_SOURCE/" "$SCRIPT_DIR/computer-vision/"
+rsync -avz --checksum --delete \
+  --exclude='index.qmd' \
+  "$LECTURE_SOURCE/" "$SCRIPT_DIR/computer-vision/"
 
 generate_landing_page() {
   mkdir -p "$LANDING_DIR"
