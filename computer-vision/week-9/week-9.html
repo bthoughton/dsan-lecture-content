@@ -1,0 +1,2718 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Prof.&nbsp;Ben Houghton">
+<meta name="dcterms.date" content="2026-03-01">
+
+<title>Object Tracking</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="week-9_files/libs/clipboard/clipboard.min.js"></script>
+<script src="week-9_files/libs/quarto-html/quarto.js"></script>
+<script src="week-9_files/libs/quarto-html/popper.min.js"></script>
+<script src="week-9_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="week-9_files/libs/quarto-html/anchor.min.js"></script>
+<link href="week-9_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="week-9_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="week-9_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="week-9_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="week-9_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="week-9_files/libs/quarto-diagram/mermaid.min.js"></script>
+<script src="week-9_files/libs/quarto-diagram/mermaid-init.js"></script>
+<link href="week-9_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../custom.css">
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#object-tracking-overview" id="toc-object-tracking-overview" class="nav-link active" data-scroll-target="#object-tracking-overview">Object Tracking Overview</a>
+  <ul class="collapse">
+  <li><a href="#tracking-vs-detection" id="toc-tracking-vs-detection" class="nav-link" data-scroll-target="#tracking-vs-detection">Tracking vs Detection</a></li>
+  <li><a href="#single-object-tracking-sot-vs-multi-object-tracking-mot" id="toc-single-object-tracking-sot-vs-multi-object-tracking-mot" class="nav-link" data-scroll-target="#single-object-tracking-sot-vs-multi-object-tracking-mot">Single-Object Tracking (SOT) vs Multi-Object Tracking (MOT)</a></li>
+  <li><a href="#why-tracking-is-hard" id="toc-why-tracking-is-hard" class="nav-link" data-scroll-target="#why-tracking-is-hard">Why Tracking Is Hard</a></li>
+  <li><a href="#lecture-roadmap" id="toc-lecture-roadmap" class="nav-link" data-scroll-target="#lecture-roadmap">Lecture Roadmap</a></li>
+  </ul></li>
+  <li><a href="#datasets" id="toc-datasets" class="nav-link" data-scroll-target="#datasets">Datasets</a>
+  <ul class="collapse">
+  <li><a href="#benchmarks-mot17-dancetrack" id="toc-benchmarks-mot17-dancetrack" class="nav-link" data-scroll-target="#benchmarks-mot17-dancetrack">Benchmarks: MOT17 &amp; DanceTrack</a></li>
+  </ul></li>
+  <li><a href="#classical-tracking-foundations" id="toc-classical-tracking-foundations" class="nav-link" data-scroll-target="#classical-tracking-foundations">Classical Tracking Foundations</a>
+  <ul class="collapse">
+  <li><a href="#optical-flow" id="toc-optical-flow" class="nav-link" data-scroll-target="#optical-flow">Optical Flow</a></li>
+  <li><a href="#optical-flow-brightness-constancy" id="toc-optical-flow-brightness-constancy" class="nav-link" data-scroll-target="#optical-flow-brightness-constancy">Optical Flow: Brightness Constancy</a></li>
+  <li><a href="#optical-flow-methods" id="toc-optical-flow-methods" class="nav-link" data-scroll-target="#optical-flow-methods">Optical Flow Methods</a></li>
+  <li><a href="#optical-flow-demo" id="toc-optical-flow-demo" class="nav-link" data-scroll-target="#optical-flow-demo">Optical Flow Demo</a></li>
+  <li><a href="#tracking-with-sparse-optical-flow-lucas-kanade" id="toc-tracking-with-sparse-optical-flow-lucas-kanade" class="nav-link" data-scroll-target="#tracking-with-sparse-optical-flow-lucas-kanade">Tracking with Sparse Optical Flow (Lucas-Kanade)</a></li>
+  <li><a href="#kalman-filter" id="toc-kalman-filter" class="nav-link" data-scroll-target="#kalman-filter">Kalman Filter</a></li>
+  <li><a href="#kalman-filter-predict-correct-loop" id="toc-kalman-filter-predict-correct-loop" class="nav-link" data-scroll-target="#kalman-filter-predict-correct-loop">Kalman Filter: Predict-Correct Loop</a></li>
+  <li><a href="#kalman-filter-tracking-demo-otb-car1" id="toc-kalman-filter-tracking-demo-otb-car1" class="nav-link" data-scroll-target="#kalman-filter-tracking-demo-otb-car1">Kalman Filter Tracking Demo (OTB Car1)</a></li>
+  <li><a href="#mean-shift-camshift" id="toc-mean-shift-camshift" class="nav-link" data-scroll-target="#mean-shift-camshift">Mean-Shift / CAMShift</a></li>
+  <li><a href="#what-does-the-car-look-like-to-a-histogram-tracker" id="toc-what-does-the-car-look-like-to-a-histogram-tracker" class="nav-link" data-scroll-target="#what-does-the-car-look-like-to-a-histogram-tracker">What Does the Car “Look Like” to a Histogram Tracker?</a></li>
+  </ul></li>
+  <li><a href="#sot" id="toc-sot" class="nav-link" data-scroll-target="#sot">SOT</a>
+  <ul class="collapse">
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#siamfc-template-matching-via-cross-correlation" id="toc-siamfc-template-matching-via-cross-correlation" class="nav-link" data-scroll-target="#siamfc-template-matching-via-cross-correlation">SiamFC: Template Matching via Cross-Correlation</a></li>
+  </ul></li>
+  <li><a href="#modern-mot-landscape" id="toc-modern-mot-landscape" class="nav-link" data-scroll-target="#modern-mot-landscape">Modern MOT Landscape</a>
+  <ul class="collapse">
+  <li><a href="#tracking-by-detection-dominant-baseline-family" id="toc-tracking-by-detection-dominant-baseline-family" class="nav-link" data-scroll-target="#tracking-by-detection-dominant-baseline-family">Tracking-by-Detection (Dominant Baseline Family)</a></li>
+  <li><a href="#joint-detection-embedding-jde-bridge" id="toc-joint-detection-embedding-jde-bridge" class="nav-link" data-scroll-target="#joint-detection-embedding-jde-bridge">Joint Detection + Embedding (JDE Bridge)</a></li>
+  <li><a href="#hybrid-detector-learned-association" id="toc-hybrid-detector-learned-association" class="nav-link" data-scroll-target="#hybrid-detector-learned-association">Hybrid (Detector + Learned Association)</a></li>
+  <li><a href="#end-to-end-transformer-motr-style" id="toc-end-to-end-transformer-motr-style" class="nav-link" data-scroll-target="#end-to-end-transformer-motr-style">End-to-End Transformer (MOTR-style)</a></li>
+  </ul></li>
+  <li><a href="#tracking-by-detection-the-modern-paradigm" id="toc-tracking-by-detection-the-modern-paradigm" class="nav-link" data-scroll-target="#tracking-by-detection-the-modern-paradigm">Tracking-by-Detection: The Modern Paradigm</a>
+  <ul class="collapse">
+  <li><a href="#core-idea" id="toc-core-idea" class="nav-link" data-scroll-target="#core-idea">Core Idea</a></li>
+  <li><a href="#the-association-problem" id="toc-the-association-problem" class="nav-link" data-scroll-target="#the-association-problem">The Association Problem</a></li>
+  <li><a href="#hungarian-algorithm" id="toc-hungarian-algorithm" class="nav-link" data-scroll-target="#hungarian-algorithm">Hungarian Algorithm</a></li>
+  <li><a href="#hungarian-algorithm-for-tracking" id="toc-hungarian-algorithm-for-tracking" class="nav-link" data-scroll-target="#hungarian-algorithm-for-tracking">Hungarian Algorithm for Tracking</a></li>
+  </ul></li>
+  <li><a href="#sort-simple-online-and-realtime-tracking" id="toc-sort-simple-online-and-realtime-tracking" class="nav-link" data-scroll-target="#sort-simple-online-and-realtime-tracking">SORT: Simple Online and Realtime Tracking</a>
+  <ul class="collapse">
+  <li><a href="#sort-pipeline" id="toc-sort-pipeline" class="nav-link" data-scroll-target="#sort-pipeline">SORT Pipeline</a></li>
+  <li><a href="#sort-strengths-and-weaknesses" id="toc-sort-strengths-and-weaknesses" class="nav-link" data-scroll-target="#sort-strengths-and-weaknesses">SORT: Strengths and Weaknesses</a></li>
+  </ul></li>
+  <li><a href="#deepsort" id="toc-deepsort" class="nav-link" data-scroll-target="#deepsort">DeepSORT</a>
+  <ul class="collapse">
+  <li><a href="#the-re-id-embedding" id="toc-the-re-id-embedding" class="nav-link" data-scroll-target="#the-re-id-embedding">The Re-ID Embedding</a></li>
+  <li><a href="#deepsort-pipeline" id="toc-deepsort-pipeline" class="nav-link" data-scroll-target="#deepsort-pipeline">DeepSORT Pipeline</a></li>
+  <li><a href="#deepsort-motion-appearance-association" id="toc-deepsort-motion-appearance-association" class="nav-link" data-scroll-target="#deepsort-motion-appearance-association">DeepSORT: Motion + Appearance Association</a></li>
+  <li><a href="#appearance-types" id="toc-appearance-types" class="nav-link" data-scroll-target="#appearance-types">Appearance Types</a></li>
+  <li><a href="#bytetrack-strong-tracking-by-detection-upgrade" id="toc-bytetrack-strong-tracking-by-detection-upgrade" class="nav-link" data-scroll-target="#bytetrack-strong-tracking-by-detection-upgrade">ByteTrack (Strong Tracking-by-Detection Upgrade)</a></li>
+  <li><a href="#sort-vs-deepsort-vs-bytetrack" id="toc-sort-vs-deepsort-vs-bytetrack" class="nav-link" data-scroll-target="#sort-vs-deepsort-vs-bytetrack">SORT vs DeepSORT vs ByteTrack</a></li>
+  </ul></li>
+  <li><a href="#joint-detection-and-tracking" id="toc-joint-detection-and-tracking" class="nav-link" data-scroll-target="#joint-detection-and-tracking">Joint Detection and Tracking</a>
+  <ul class="collapse">
+  <li><a href="#joint-detection-and-tracking-how-jde-motivates-hybrid" id="toc-joint-detection-and-tracking-how-jde-motivates-hybrid" class="nav-link" data-scroll-target="#joint-detection-and-tracking-how-jde-motivates-hybrid">Joint Detection and Tracking (How JDE Motivates Hybrid)</a></li>
+  <li><a href="#hybrid-tracking" id="toc-hybrid-tracking" class="nav-link" data-scroll-target="#hybrid-tracking">Hybrid Tracking</a></li>
+  <li><a href="#hybrid-tracking-typical-pipeline" id="toc-hybrid-tracking-typical-pipeline" class="nav-link" data-scroll-target="#hybrid-tracking-typical-pipeline">Hybrid Tracking: Typical Pipeline</a></li>
+  <li><a href="#minimum-viable-association-module" id="toc-minimum-viable-association-module" class="nav-link" data-scroll-target="#minimum-viable-association-module">Minimum Viable Association Module</a></li>
+  </ul></li>
+  <li><a href="#transformer-based-tracking-motr" id="toc-transformer-based-tracking-motr" class="nav-link" data-scroll-target="#transformer-based-tracking-motr">Transformer-based Tracking (MOTR)</a>
+  <ul class="collapse">
+  <li><a href="#motr-overview" id="toc-motr-overview" class="nav-link" data-scroll-target="#motr-overview">MOTR Overview</a></li>
+  <li><a href="#detect-and-track-decoder-queries" id="toc-detect-and-track-decoder-queries" class="nav-link" data-scroll-target="#detect-and-track-decoder-queries">Detect and Track Decoder Queries</a></li>
+  <li><a href="#full-workflow" id="toc-full-workflow" class="nav-link" data-scroll-target="#full-workflow">Full Workflow</a></li>
+  <li><a href="#qim-query-interaction-module" id="toc-qim-query-interaction-module" class="nav-link" data-scroll-target="#qim-query-interaction-module">QIM (Query Interaction Module)</a></li>
+  </ul></li>
+  <li><a href="#mot-evaluation-metrics" id="toc-mot-evaluation-metrics" class="nav-link" data-scroll-target="#mot-evaluation-metrics">MOT Evaluation Metrics</a>
+  <ul class="collapse">
+  <li><a href="#mota-motp-idf1-and-id-switches" id="toc-mota-motp-idf1-and-id-switches" class="nav-link" data-scroll-target="#mota-motp-idf1-and-id-switches">MOTA, MOTP, IDF1, and ID Switches</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="presentation.html"><i class="bi bi-file-slides"></i>RevealJS</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">Object Tracking</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Prof.&nbsp;Ben Houghton </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 1, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="object-tracking-overview" class="level1">
+<h1>Object Tracking Overview</h1>
+<ul>
+<li><strong>Object detection</strong> answers: <em>“what is where?”</em> in a <strong>single frame</strong></li>
+<li><strong>Object tracking</strong> answers: <em>“which detection in frame <span class="math inline">t</span> is the same object in frame <span class="math inline">t+1</span>?”</em></li>
+<li>The core challenge is maintaining <strong>consistent identities</strong> across time</li>
+<li>Detection is <strong>spatial</strong>. Tracking is <strong>spatiotemporal identity</strong>.</li>
+</ul>
+<section id="tracking-vs-detection" class="level2">
+<h2 class="anchored" data-anchor-id="tracking-vs-detection">Tracking vs Detection</h2>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Output</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Detection</td>
+<td>Bounding boxes per frame</td>
+<td>Single frame</td>
+</tr>
+<tr class="even">
+<td>Tracking</td>
+<td>Bounding boxes with <strong>consistent IDs</strong></td>
+<td>Across time</td>
+</tr>
+</tbody>
+</table>
+<p>Consider two frames of video:</p>
+<ul>
+<li><strong>Frame 1</strong>: Person A is on the left, Person B is on the right</li>
+<li><strong>Frame 2</strong>: The two people have swapped positions</li>
+</ul>
+<p>A detector will find two people in both frames. But only a <em>tracker</em> can tell you which person is which, that is the <strong>identity association</strong> problem.</p>
+</section>
+<section id="single-object-tracking-sot-vs-multi-object-tracking-mot" class="level2">
+<h2 class="anchored" data-anchor-id="single-object-tracking-sot-vs-multi-object-tracking-mot">Single-Object Tracking (SOT) vs Multi-Object Tracking (MOT)</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Single-Object Tracking (SOT)</strong></p>
+<ul>
+<li>Given a bounding box in frame 1, follow <strong>that one target</strong> through the video</li>
+<li>Use cases:
+<ul>
+<li>Surveillance zoom-in on a suspect</li>
+<li>Sports player highlight reel</li>
+<li>Drone follow-mode</li>
+</ul></li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Multi-Object Tracking (MOT)</strong></p>
+<ul>
+<li>Detect and track <strong>all objects</strong> of interest across every frame</li>
+<li>Use cases:
+<ul>
+<li>Autonomous driving (track all vehicles and pedestrians)</li>
+<li>Crowd analysis</li>
+<li>Retail analytics</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</section>
+<section id="why-tracking-is-hard" class="level2">
+<h2 class="anchored" data-anchor-id="why-tracking-is-hard">Why Tracking Is Hard</h2>
+<ul>
+<li><strong>Occlusion</strong>: objects disappear behind others or leave the frame entirely</li>
+<li><strong>Appearance changes</strong>: lighting shifts, pose changes, deformation</li>
+<li><strong>Camera motion</strong>: ego-motion (the camera moves) vs object motion</li>
+<li><strong>Scale changes</strong>: objects approach or recede from the camera</li>
+<li><strong>Crowded scenes</strong>: many similar-looking objects in close proximity</li>
+</ul>
+</section>
+<section id="lecture-roadmap" class="level2">
+<h2 class="anchored" data-anchor-id="lecture-roadmap">Lecture Roadmap</h2>
+<ol type="1">
+<li><strong>Foundations</strong>: Optical flow, Kalman filtering, and assignment with Hungarian matching.</li>
+<li><strong>Tracking-by-detection baselines</strong>: SORT and DeepSORT.</li>
+<li><strong>Association improvements</strong>: ByteTrack and why matching strategy matters.</li>
+<li><strong>Bridge to modern systems</strong>: Joint and <strong>hybrid</strong> tracking methods.</li>
+<li><strong>End-to-end transformers</strong>: MOTR query design, QIM, and workflow.</li>
+<li><strong>Evaluation + deployment</strong>: metrics, benchmarks, failure modes, and tracker selection.</li>
+</ol>
+</section>
+</section>
+<section id="datasets" class="level1">
+<h1>Datasets</h1>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>SOT</th>
+<th>MOT</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Input</td>
+<td>One bbox</td>
+<td>Many detections</td>
+</tr>
+<tr class="even">
+<td>Core problem</td>
+<td>Localization</td>
+<td>Identity association</td>
+</tr>
+<tr class="odd">
+<td>Benchmark</td>
+<td>OTB, LaSOT, VOT</td>
+<td>MOTChallenge</td>
+</tr>
+<tr class="even">
+<td>Metrics</td>
+<td>IoU, precision</td>
+<td>MOTA, ID switches</td>
+</tr>
+</tbody>
+</table>
+<p>We will use a few sequences from the <strong>OTB (Object Tracking Benchmark)</strong> throughout this lecture. Each sequence is a folder of numbered frames (<code>img/*.jpg</code>) plus a <code>groundtruth_rect.txt</code> file with one bounding box per frame.</p>
+<table class="table">
+<colgroup>
+<col style="width: 27%">
+<col style="width: 30%">
+<col style="width: 41%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Sequence</th>
+<th>Challenge</th>
+<th>Good demo for</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Car1</strong></td>
+<td>Illumination, scale</td>
+<td>Baseline tracker, optical flow</td>
+</tr>
+<tr class="even">
+<td><strong>CarScale</strong></td>
+<td>Large scale change</td>
+<td>Kalman filter limits, adaptive trackers</td>
+</tr>
+<tr class="odd">
+<td><strong>David</strong></td>
+<td>Illumination change, pose</td>
+<td>Mean-shift, Siamese trackers</td>
+</tr>
+<tr class="even">
+<td><strong>Jumping</strong></td>
+<td>Fast motion, motion blur</td>
+<td>Failure analysis, comparing trackers</td>
+</tr>
+</tbody>
+</table>
+<div id="2a4754af" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>bash</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>BASE_URL<span class="op">=</span><span class="st">"https://web.archive.org/web/http://cvlab.hanyang.ac.kr/tracker_benchmark/seq"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>DATA_DIR<span class="op">=</span><span class="st">"$HOME/data/OTB"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>SEQUENCES<span class="op">=</span><span class="st">"Car1 CarScale David Jumping"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>mkdir <span class="op">-</span>p <span class="st">"$DATA_DIR"</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> SEQ <span class="kw">in</span> $SEQUENCES<span class="op">;</span> do</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> [ <span class="op">-</span>d <span class="st">"$DATA_DIR/$SEQ"</span> ]<span class="op">;</span> then</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>        echo <span class="st">"$SEQ already exists, skipping"</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">continue</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    fi</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    echo <span class="st">"Downloading $SEQ..."</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    curl <span class="op">-</span>fSL <span class="st">"$BASE_URL/$SEQ.zip"</span> <span class="op">-</span>o <span class="st">"$DATA_DIR/$SEQ.zip"</span> <span class="dv">2</span><span class="op">&gt;/</span>dev<span class="op">/</span>null</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">!</span> <span class="bu">file</span> <span class="st">"$DATA_DIR/$SEQ.zip"</span> <span class="op">|</span> grep <span class="op">-</span>q <span class="st">"Zip archive"</span><span class="op">;</span> then</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        echo <span class="st">"  FAILED: $SEQ.zip is not a valid zip, skipping"</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        rm <span class="op">-</span>f <span class="st">"$DATA_DIR/$SEQ.zip"</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">continue</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    fi</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    unzip <span class="op">-</span>qo <span class="st">"$DATA_DIR/$SEQ.zip"</span> <span class="op">-</span>d <span class="st">"$DATA_DIR"</span> <span class="op">-</span>x <span class="st">"__MACOSX/*"</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    rm <span class="st">"$DATA_DIR/$SEQ.zip"</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    echo <span class="st">"  $SEQ: $(ls "</span>$DATA_DIR<span class="op">/</span>$SEQ<span class="op">/</span>img<span class="st">" | wc -l) frames"</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>done</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>rm <span class="op">-</span>rf <span class="st">"$DATA_DIR/__MACOSX"</span> <span class="dv">2</span><span class="op">&gt;/</span>dev<span class="op">/</span>null</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>echo <span class="st">""</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>echo <span class="st">"Done! Sequences saved to $DATA_DIR"</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>ls <span class="st">"$DATA_DIR"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Downloading Car1...
+  Car1: 1020 frames
+Downloading CarScale...
+caution: excluded filename not matched:  __MACOSX/*
+  CarScale: 253 frames
+Downloading David...
+caution: excluded filename not matched:  __MACOSX/*
+  David: 770 frames
+Downloading Jumping...
+caution: excluded filename not matched:  __MACOSX/*
+  Jumping: 313 frames
+
+Done! Sequences saved to /home/ben/data/OTB
+Car1
+CarScale
+David
+Jumping</code></pre>
+</div>
+</div>
+<div id="168a1ac8" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Read in the OTB dataset and play frames with gif player</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the path to the OTB dataset</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>otb_path <span class="op">=</span> Path(<span class="st">"/home/ben/data/OTB"</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Get car sequence path</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>car_seq <span class="op">=</span> [path <span class="cf">for</span> path <span class="kw">in</span> otb_path.iterdir() <span class="cf">if</span> path.name <span class="op">==</span> <span class="st">"Car1"</span>][<span class="dv">0</span>]</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co"># Load frames in sorted order</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>frame_paths <span class="op">=</span> <span class="bu">sorted</span>((car_seq <span class="op">/</span> <span class="st">"img"</span>).glob(<span class="st">"*.jpg"</span>))</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Load ground truth (handles both comma and tab delimiters)</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>lines <span class="op">=</span> (car_seq <span class="op">/</span> <span class="st">"groundtruth_rect.txt"</span>).read_text().strip().split(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>gt <span class="op">=</span> np.array([[<span class="bu">float</span>(x) <span class="cf">for</span> x <span class="kw">in</span> re.split(<span class="vs">r'[,\t\s]+'</span>, line)] <span class="cf">for</span> line <span class="kw">in</span> lines])</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the car sequence frames</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>frames <span class="op">=</span> []</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw bounding boxes</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>frames <span class="op">=</span> []</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, frame_path <span class="kw">in</span> <span class="bu">enumerate</span>(frame_paths):</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> cv2.imread(<span class="bu">str</span>(frame_path))</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    x, y, w, h <span class="op">=</span> gt[i].astype(<span class="bu">int</span>)</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    cv2.rectangle(frame, (x, y), (x <span class="op">+</span> w, y <span class="op">+</span> h), (<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">255</span>), <span class="dv">2</span>)</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="co"># Show a few samples</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">5</span>, figsize<span class="op">=</span>(<span class="dv">18</span>, <span class="dv">7</span>))</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, idx <span class="kw">in</span> <span class="bu">zip</span>(axes.flat, np.linspace(<span class="dv">0</span>, <span class="bu">len</span>(frames)<span class="op">-</span><span class="dv">1</span>, <span class="dv">10</span>, dtype<span class="op">=</span><span class="bu">int</span>)):</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    ax.imshow(frames[idx])</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f"Frame </span><span class="sc">{</span>idx<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    ax.axis(<span class="st">"off"</span>)</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week-9_files/figure-html/cell-3-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="4878e3cd" class="cell" data-execution_count="14">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot the first 8 frames</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the path to the OTB dataset</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>otb_path <span class="op">=</span> Path(<span class="st">"/home/ben/data/OTB"</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Get car sequence path</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>car_seq <span class="op">=</span> [path <span class="cf">for</span> path <span class="kw">in</span> otb_path.iterdir() <span class="cf">if</span> path.name <span class="op">==</span> <span class="st">"Car1"</span>][<span class="dv">0</span>]</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Load frames in sorted order</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>frame_paths <span class="op">=</span> <span class="bu">sorted</span>((car_seq <span class="op">/</span> <span class="st">"img"</span>).glob(<span class="st">"*.jpg"</span>))</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Load ground truth (handles both comma and tab delimiters)</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>lines <span class="op">=</span> (car_seq <span class="op">/</span> <span class="st">"groundtruth_rect.txt"</span>).read_text().strip().split(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>gt <span class="op">=</span> np.array([[<span class="bu">float</span>(x) <span class="cf">for</span> x <span class="kw">in</span> re.split(<span class="vs">r'[,\t\s]+'</span>, line)] <span class="cf">for</span> line <span class="kw">in</span> lines])</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the car sequence frames</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>frames <span class="op">=</span> []</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Draw bounding boxes</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>frames <span class="op">=</span> []</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, frame_path <span class="kw">in</span> <span class="bu">enumerate</span>(frame_paths):</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> cv2.imread(<span class="bu">str</span>(frame_path))</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    x, y, w, h <span class="op">=</span> gt[i].astype(<span class="bu">int</span>)</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co"># # Show a few samples</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="co"># fig, axes = plt.subplots(2, 5, figsize=(18, 7))</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="co"># for ax, idx in zip(axes.flat, np.linspace(0, len(frames)-1, 10, dtype=int)):</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.imshow(frames[idx])</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.set_title(f"Frame {idx}")</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.axis("off")</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.tight_layout()</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.show()</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot a single frame</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>ax.imshow(frames[<span class="dv">150</span>])</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>ax.axis(<span class="st">"off"</span>)</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week-9_files/figure-html/cell-4-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="benchmarks-mot17-dancetrack" class="level2">
+<h2 class="anchored" data-anchor-id="benchmarks-mot17-dancetrack">Benchmarks: MOT17 &amp; DanceTrack</h2>
+<ul>
+<li><a href="https://motchallenge.net/data/MOT17/"><strong>MOT17</strong></a> is the classic crowded pedestrian tracking benchmark (street/city surveillance style scenes).</li>
+<li>It stresses missed detections, false positives, ID switches, and robustness in realistic camera viewpoints.</li>
+<li><a href="https://dancetrack.github.io/"><strong>DanceTrack</strong></a> uses highly dynamic motion with many similar-looking people, making appearance-only matching harder.</li>
+<li>It is especially useful for testing motion modeling and long-term identity consistency under frequent interactions.</li>
+<li>Reporting both benchmarks gives a more balanced view: MOT17 for general MOT robustness, DanceTrack for association difficulty.</li>
+</ul>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/IvxeJRg4rYg" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
+</section>
+</section>
+<section id="classical-tracking-foundations" class="level1">
+<h1>Classical Tracking Foundations</h1>
+<section id="optical-flow" class="level2">
+<h2 class="anchored" data-anchor-id="optical-flow">Optical Flow</h2>
+<ul>
+<li>Estimates <strong>per-pixel motion</strong> between consecutive frames</li>
+<li>For each pixel, compute the displacement vector <span class="math inline">(dx, dy)</span> that maps it from frame <span class="math inline">t</span> to frame <span class="math inline">t+1</span></li>
+<li>Useful as a <strong>motion cue</strong> for tracking, but not a complete tracker by itself</li>
+</ul>
+</section>
+<section id="optical-flow-brightness-constancy" class="level2">
+<h2 class="anchored" data-anchor-id="optical-flow-brightness-constancy">Optical Flow: Brightness Constancy</h2>
+<p><strong>Goal of optical flow</strong>: given two consecutive video frames, compute a motion vector <span class="math inline">(dx, dy)</span> for each pixel: <em>where did this pixel move?</em></p>
+<p>The fundamental assumption that makes this possible is <strong>brightness constancy</strong>:</p>
+<p><span class="math display">I(x, y, t) = I(x + dx, y + dy, t + dt)</span></p>
+<ul>
+<li><span class="math inline">I(x, y, t)</span>: the pixel intensity (brightness) at position <span class="math inline">(x, y)</span> in frame <span class="math inline">t</span></li>
+<li><span class="math inline">(dx, dy)</span>: the displacement of that pixel between frame <span class="math inline">t</span> and frame <span class="math inline">t + dt</span></li>
+<li>The equation says: a pixel’s brightness <strong>does not change</strong> when it moves, only its position changes</li>
+</ul>
+<p>By taking a first-order Taylor expansion of the right side and simplifying, we get the <strong>optical flow constraint equation</strong>:</p>
+<p><span class="math display">I_x \cdot u + I_y \cdot v + I_t = 0</span></p>
+<ul>
+<li><span class="math inline">I_x, I_y</span>: spatial image gradients (how brightness changes across the image in <span class="math inline">x</span> and <span class="math inline">y</span>)</li>
+<li><span class="math inline">I_t</span>: temporal gradient (how brightness changes between frames at the same location)</li>
+<li><span class="math inline">(u, v)</span>: the optical flow vector we want to solve for (horizontal and vertical velocity of the pixel)</li>
+</ul>
+<p>The equation above says: “the brightness I lost because the object slid away must equal the brightness I gained from whatever slid in.” We can estimate <span class="math inline">I_x</span>, <span class="math inline">I_y</span>, and <span class="math inline">I_t</span> from image data, then solve for motion under additional assumptions.</p>
+<p>This is <strong>one equation with two unknowns</strong> <span class="math inline">(u, v)</span>, so it cannot be solved for a single pixel alone. Different methods handle this differently:</p>
+</section>
+<section id="optical-flow-methods" class="level2">
+<h2 class="anchored" data-anchor-id="optical-flow-methods">Optical Flow Methods</h2>
+<ul>
+<li><strong>Lucas-Kanade</strong> (sparse): assumes all pixels in a small neighborhood share the same flow <span class="math inline">(u, v)</span>. This gives enough equations to solve the system. Only computes flow at selected keypoints - fast.</li>
+<li><strong>Farneback</strong> (dense): fits a polynomial to the local neighborhood in each frame, then estimates flow from how the polynomial coefficients change. Computes flow for <strong>every pixel</strong> - slower but gives a complete motion field.</li>
+</ul>
+<p><strong>Limitations</strong>: brightness constancy is an approximation. It breaks down under lighting changes, reflections, shadows, transparent objects, and large displacements (where the Taylor approximation is inaccurate).</p>
+</section>
+<section id="optical-flow-demo" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="optical-flow-demo">Optical Flow Demo</h2>
+<div id="9815e810" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>car_seq <span class="op">=</span> Path.home() <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"OTB"</span> <span class="op">/</span> <span class="st">"Car1"</span> <span class="op">/</span> <span class="st">"img"</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>frame_paths <span class="op">=</span> <span class="bu">sorted</span>(car_seq.glob(<span class="st">"*.jpg"</span>))</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Pick two frames a few apart so the motion is visible</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>idx_a, idx_b <span class="op">=</span> <span class="dv">50</span>, <span class="dv">52</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>gray1 <span class="op">=</span> cv2.imread(<span class="bu">str</span>(frame_paths[idx_a]), cv2.IMREAD_GRAYSCALE)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>gray2 <span class="op">=</span> cv2.imread(<span class="bu">str</span>(frame_paths[idx_b]), cv2.IMREAD_GRAYSCALE)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>color1 <span class="op">=</span> cv2.cvtColor(cv2.imread(<span class="bu">str</span>(frame_paths[idx_a])), cv2.COLOR_BGR2RGB)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>flow <span class="op">=</span> cv2.calcOpticalFlowFarneback(</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    gray1, gray2, <span class="va">None</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    pyr_scale<span class="op">=</span><span class="fl">0.5</span>, levels<span class="op">=</span><span class="dv">3</span>, winsize<span class="op">=</span><span class="dv">15</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    iterations<span class="op">=</span><span class="dv">3</span>, poly_n<span class="op">=</span><span class="dv">5</span>, poly_sigma<span class="op">=</span><span class="fl">1.2</span>, flags<span class="op">=</span><span class="dv">0</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Flow magnitude + angle for the HSV visualization</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>mag, ang <span class="op">=</span> cv2.cartToPolar(flow[..., <span class="dv">0</span>], flow[..., <span class="dv">1</span>])</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>hsv <span class="op">=</span> np.zeros((<span class="op">*</span>gray1.shape, <span class="dv">3</span>), dtype<span class="op">=</span>np.uint8)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>hsv[..., <span class="dv">0</span>] <span class="op">=</span> ang <span class="op">*</span> <span class="dv">180</span> <span class="op">/</span> np.pi <span class="op">/</span> <span class="dv">2</span>   <span class="co"># hue = direction</span></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>hsv[..., <span class="dv">1</span>] <span class="op">=</span> <span class="dv">255</span>                       <span class="co"># full saturation</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>hsv[..., <span class="dv">2</span>] <span class="op">=</span> cv2.normalize(mag, <span class="va">None</span>, <span class="dv">0</span>, <span class="dv">255</span>, cv2.NORM_MINMAX)  <span class="co"># brightness = speed</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>flow_rgb <span class="op">=</span> cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">4</span>, figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="dv">5</span>))</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].imshow(color1)</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="ss">f'Frame </span><span class="sc">{</span>idx_a<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].imshow(cv2.cvtColor(cv2.imread(<span class="bu">str</span>(frame_paths[idx_b])), cv2.COLOR_BGR2RGB))</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="ss">f'Frame </span><span class="sc">{</span>idx_b<span class="sc">}</span><span class="ss">'</span>)</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co"># Quiver plot</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>step <span class="op">=</span> <span class="dv">12</span></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>h, w <span class="op">=</span> gray1.shape</span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>y_grid, x_grid <span class="op">=</span> np.mgrid[step<span class="op">//</span><span class="dv">2</span>:h:step, step<span class="op">//</span><span class="dv">2</span>:w:step]</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].imshow(color1, alpha<span class="op">=</span><span class="fl">0.6</span>)</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].quiver(</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    x_grid, y_grid,</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    flow[step<span class="op">//</span><span class="dv">2</span>::step, step<span class="op">//</span><span class="dv">2</span>::step, <span class="dv">0</span>],</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>    <span class="op">-</span>flow[step<span class="op">//</span><span class="dv">2</span>::step, step<span class="op">//</span><span class="dv">2</span>::step, <span class="dv">1</span>],</span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">'cyan'</span>, scale<span class="op">=</span><span class="dv">150</span>, width<span class="op">=</span><span class="fl">0.003</span></span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">2</span>].set_title(<span class="st">'Optical Flow (quiver)'</span>)</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="co"># HSV visualization</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">3</span>].imshow(flow_rgb)</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">3</span>].set_title(<span class="st">'Flow magnitude + direction (HSV)'</span>)</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax <span class="kw">in</span> axes:</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    ax.axis(<span class="st">'off'</span>)</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>plt.suptitle(<span class="ss">f'Farneback Dense Optical Flow — OTB Car1 (frames </span><span class="sc">{</span>idx_a<span class="sc">}</span><span class="ss">→</span><span class="sc">{</span>idx_b<span class="sc">}</span><span class="ss">)'</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week-9_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="tracking-with-sparse-optical-flow-lucas-kanade" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="tracking-with-sparse-optical-flow-lucas-kanade">Tracking with Sparse Optical Flow (Lucas-Kanade)</h2>
+<p>We know where the car is in frame 0 (from the ground truth bounding box). We can:</p>
+<ol type="1">
+<li>Detect <strong>good features</strong> (corners) inside that bounding box</li>
+<li>Track those keypoints frame-to-frame using <strong>Lucas-Kanade</strong> (<code>cv2.calcOpticalFlowPyrLK</code>)</li>
+<li>Draw their trajectories to visualize the car’s path</li>
+</ol>
+<p>This is a real classical tracker - no deep learning, just pixel motion.</p>
+<div id="7662ef11" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>seq_dir <span class="op">=</span> Path.home() <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"OTB"</span> <span class="op">/</span> <span class="st">"Car1"</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>frame_paths <span class="op">=</span> <span class="bu">sorted</span>((seq_dir <span class="op">/</span> <span class="st">"img"</span>).glob(<span class="st">"*.jpg"</span>))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Load ground truth (handles comma / tab / space delimiters)</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>lines <span class="op">=</span> (seq_dir <span class="op">/</span> <span class="st">"groundtruth_rect.txt"</span>).read_text().strip().split(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>gt <span class="op">=</span> np.array([[<span class="bu">float</span>(x) <span class="cf">for</span> x <span class="kw">in</span> re.split(<span class="vs">r'[,\t\s]+'</span>, line)] <span class="cf">for</span> line <span class="kw">in</span> lines])</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Read first frame and get the car's bounding box</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>first_gray <span class="op">=</span> cv2.imread(<span class="bu">str</span>(frame_paths[<span class="dv">0</span>]), cv2.IMREAD_GRAYSCALE)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>x0, y0, w0, h0 <span class="op">=</span> gt[<span class="dv">0</span>].astype(<span class="bu">int</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a mask so goodFeaturesToTrack only looks inside the bounding box</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>mask <span class="op">=</span> np.zeros_like(first_gray)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>mask[y0:y0<span class="op">+</span>h0, x0:x0<span class="op">+</span>w0] <span class="op">=</span> <span class="dv">255</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co"># Detect corners inside the car's bounding box</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>keypoints <span class="op">=</span> cv2.goodFeaturesToTrack(</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    first_gray, maxCorners<span class="op">=</span><span class="dv">50</span>, qualityLevel<span class="op">=</span><span class="fl">0.05</span>,</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    minDistance<span class="op">=</span><span class="dv">5</span>, mask<span class="op">=</span>mask</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Found </span><span class="sc">{</span><span class="bu">len</span>(keypoints)<span class="sc">}</span><span class="ss"> keypoints inside the car bbox"</span>)</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Lucas-Kanade parameters</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>lk_params <span class="op">=</span> <span class="bu">dict</span>(</span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    winSize<span class="op">=</span>(<span class="dv">15</span>, <span class="dv">15</span>),</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    maxLevel<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    criteria<span class="op">=</span>(cv2.TERM_CRITERIA_EPS <span class="op">|</span> cv2.TERM_CRITERIA_COUNT, <span class="dv">10</span>, <span class="fl">0.03</span>)</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Track across frames</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>n_frames <span class="op">=</span> <span class="bu">min</span>(<span class="bu">len</span>(frame_paths), <span class="dv">200</span>)</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>trajectories <span class="op">=</span> {i: [<span class="bu">tuple</span>(keypoints[i][<span class="dv">0</span>])] <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(keypoints))}</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>prev_gray <span class="op">=</span> first_gray</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>prev_pts <span class="op">=</span> keypoints.copy()</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> f_idx <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, n_frames):</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>    curr_gray <span class="op">=</span> cv2.imread(<span class="bu">str</span>(frame_paths[f_idx]), cv2.IMREAD_GRAYSCALE)</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    next_pts, status, _ <span class="op">=</span> cv2.calcOpticalFlowPyrLK(</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>        prev_gray, curr_gray, prev_pts, <span class="va">None</span>, <span class="op">**</span>lk_params</span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(status)):</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> status[i]:</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>            trajectories.setdefault(i, []).append(<span class="bu">tuple</span>(next_pts[i][<span class="dv">0</span>]))</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>    good_mask <span class="op">=</span> status.flatten() <span class="op">==</span> <span class="dv">1</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>    prev_pts <span class="op">=</span> next_pts[good_mask].reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>    prev_gray <span class="op">=</span> curr_gray</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a><span class="co"># Visualize: show a few frames with tracked points + trails</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>sample_frames <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">30</span>, <span class="dv">60</span>, <span class="dv">100</span>, <span class="dv">150</span>, <span class="dv">199</span>]</span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>sample_frames <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> sample_frames <span class="cf">if</span> f <span class="op">&lt;</span> n_frames]</span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">18</span>, <span class="dv">10</span>))</span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, f_idx <span class="kw">in</span> <span class="bu">zip</span>(axes.flat, sample_frames):</span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> cv2.cvtColor(cv2.imread(<span class="bu">str</span>(frame_paths[f_idx])), cv2.COLOR_BGR2RGB)</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Draw gt bbox</span></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>    bx, by, bw, bh <span class="op">=</span> gt[f_idx].astype(<span class="bu">int</span>)</span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>    cv2.rectangle(frame, (bx, by), (bx<span class="op">+</span>bw, by<span class="op">+</span>bh), (<span class="dv">255</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="dv">2</span>)</span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Draw current keypoint positions only (no trails)</span></span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> tid, trail <span class="kw">in</span> trajectories.items():</span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> f_idx <span class="op">&lt;</span> <span class="bu">len</span>(trail):</span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>            pt <span class="op">=</span> <span class="bu">tuple</span>(<span class="bu">map</span>(<span class="bu">int</span>, trail[f_idx]))</span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>            cv2.circle(frame, pt, <span class="dv">4</span>, (<span class="dv">0</span>, <span class="dv">255</span>, <span class="dv">255</span>), <span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>    ax.imshow(frame)</span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f"Frame </span><span class="sc">{</span>f_idx<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>    ax.axis(<span class="st">"off"</span>)</span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>plt.suptitle(<span class="st">"Lucas-Kanade Optical Flow Tracking — OTB Car1</span><span class="ch">\n</span><span class="st">(red = GT bbox, cyan = tracked keypoints)"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Tracked </span><span class="sc">{</span><span class="bu">len</span>(trajectories)<span class="sc">}</span><span class="ss"> keypoints across </span><span class="sc">{</span>n_frames<span class="sc">}</span><span class="ss"> frames"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Found 30 keypoints inside the car bbox
+Tracked 30 keypoints across 200 frames</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week-9_files/figure-html/cell-6-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="kalman-filter" class="level2">
+<h2 class="anchored" data-anchor-id="kalman-filter">Kalman Filter</h2>
+<p>The Kalman filter is a recursive algorithm that estimates the state of a moving object from noisy observations.</p>
+<p><strong>State vector</strong>: <span class="math inline">\mathbf{x} = [x, y, v_x, v_y]</span> - position and velocity</p>
+<ul>
+<li><span class="math inline">\hat{\mathbf{x}}</span>: predicted state estimate before seeing the new measurement</li>
+</ul>
+<p><strong>Two-step loop</strong>:</p>
+<ol type="1">
+<li><strong>Predict</strong>: propagate the state forward using a motion model (constant velocity)
+<ul>
+<li>“Where do I <em>expect</em> this object to be next frame?”</li>
+</ul></li>
+<li><strong>Update</strong>: correct the prediction when a new detection arrives
+<ul>
+<li>“How do I reconcile my prediction with what I actually detected?”</li>
+</ul></li>
+</ol>
+<p>Handles noise and brief occlusions gracefully (during occlusion, just keep predicting).</p>
+<p><strong>Limitations</strong>: assumes linear motion and Gaussian noise — real objects don’t always cooperate.</p>
+</section>
+<section id="kalman-filter-predict-correct-loop" class="level2">
+<h2 class="anchored" data-anchor-id="kalman-filter-predict-correct-loop">Kalman Filter: Predict-Correct Loop</h2>
+<ul>
+<li><span class="math inline">F</span>: state transition matrix (motion model)</li>
+<li><span class="math inline">B</span>: control matrix</li>
+<li><span class="math inline">u</span>: control input (often omitted/0 in basic MOT tracking)</li>
+<li><span class="math inline">z</span>: measurement (detected position)</li>
+<li><span class="math inline">H</span>: measurement matrix (maps state to measurement space)</li>
+<li><span class="math inline">K</span>: Kalman gain (how much to trust measurement vs prediction)</li>
+</ul>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    A["&lt;b&gt;Predict&lt;/b&gt;&lt;br/&gt;Use motion model to estimate next state&lt;br/&gt;&lt;i&gt;x̂ = F · x + B · u&lt;/i&gt;"] --&gt; B{"New detection&lt;br/&gt;available?"}</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    B -- Yes --&gt; C["&lt;b&gt;Update&lt;/b&gt;&lt;br/&gt;Correct state with measurement&lt;br/&gt;&lt;i&gt;x = x̂ + K · (z - H · x̂)&lt;/i&gt;"]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    B -- "No (occluded)" --&gt; D["&lt;b&gt;Coast&lt;/b&gt;&lt;br/&gt;Keep prediction as-is&lt;br/&gt;&lt;i&gt;x = x̂&lt;/i&gt;"]</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    C --&gt; E["Next frame"]</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    D --&gt; E</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    E --&gt; A</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    style A fill:#4a90d9,color:#fff,stroke:#2c5f8a</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    style B fill:#f5a623,color:#fff,stroke:#c47d12</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    style C fill:#7ed321,color:#fff,stroke:#5a9a18</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    style D fill:#d0021b,color:#fff,stroke:#9b0114</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    style E fill:#9b9b9b,color:#fff,stroke:#6b6b6b</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    A["&lt;b&gt;Predict&lt;/b&gt;&lt;br/&gt;Use motion model to estimate next state&lt;br/&gt;&lt;i&gt;x̂ = F · x + B · u&lt;/i&gt;"] --&gt; B{"New detection&lt;br/&gt;available?"}
+    B -- Yes --&gt; C["&lt;b&gt;Update&lt;/b&gt;&lt;br/&gt;Correct state with measurement&lt;br/&gt;&lt;i&gt;x = x̂ + K · (z - H · x̂)&lt;/i&gt;"]
+    B -- "No (occluded)" --&gt; D["&lt;b&gt;Coast&lt;/b&gt;&lt;br/&gt;Keep prediction as-is&lt;br/&gt;&lt;i&gt;x = x̂&lt;/i&gt;"]
+    C --&gt; E["Next frame"]
+    D --&gt; E
+    E --&gt; A
+
+    style A fill:#4a90d9,color:#fff,stroke:#2c5f8a
+    style B fill:#f5a623,color:#fff,stroke:#c47d12
+    style C fill:#7ed321,color:#fff,stroke:#5a9a18
+    style D fill:#d0021b,color:#fff,stroke:#9b0114
+    style E fill:#9b9b9b,color:#fff,stroke:#6b6b6b
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>The filter balances <strong>trust in the motion model</strong> vs <strong>trust in the measurement</strong>, weighted by their respective uncertainties (the <strong>Kalman gain</strong> <span class="math inline">K</span>).</p>
+<ul>
+<li><strong>Predict</strong>: the motion model guesses the next state (position, velocity): “where should the car be now?”</li>
+<li><strong>Update</strong>: if a detection arrives, blend the prediction with the measurement: “ok, I predicted here, but I detected there, so the truth is somewhere in between”</li>
+<li><strong>Coast</strong>: if no detection (occlusion), just trust the prediction: “I can’t see it, but it was probably still moving the same way”</li>
+</ul>
+</section>
+<section id="kalman-filter-tracking-demo-otb-car1" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="kalman-filter-tracking-demo-otb-car1">Kalman Filter Tracking Demo (OTB Car1)</h2>
+<p>We use <code>cv2.KalmanFilter</code> to track the car. The idea:</p>
+<ol type="1">
+<li><strong>Initialize</strong> the Kalman state with the ground-truth bbox center from frame 0</li>
+<li>Each frame, <strong>predict</strong> where the car should be</li>
+<li><strong>Simulate a detector</strong> by using the ground-truth bbox as the “measurement” (in a real system this would come from YOLO, Faster R-CNN, etc.)</li>
+<li><strong>Correct</strong> the Kalman state with the measurement</li>
+<li>Compare the <strong>prediction</strong> (before correction) vs the <strong>measurement</strong> vs the <strong>corrected estimate</strong></li>
+</ol>
+<div id="d469b66a" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>seq_dir <span class="op">=</span> Path.home() <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"OTB"</span> <span class="op">/</span> <span class="st">"Car1"</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>frame_paths <span class="op">=</span> <span class="bu">sorted</span>((seq_dir <span class="op">/</span> <span class="st">"img"</span>).glob(<span class="st">"*.jpg"</span>))</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>lines <span class="op">=</span> (seq_dir <span class="op">/</span> <span class="st">"groundtruth_rect.txt"</span>).read_text().strip().split(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>gt <span class="op">=</span> np.array([[<span class="bu">float</span>(x) <span class="cf">for</span> x <span class="kw">in</span> re.split(<span class="vs">r'[,\t\s]+'</span>, line)] <span class="cf">for</span> line <span class="kw">in</span> lines])</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Set up Kalman Filter (4 state vars: x, y, vx, vy; 2 measurements: x, y) ---</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>kf <span class="op">=</span> cv2.KalmanFilter(<span class="dv">4</span>, <span class="dv">2</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>kf.measurementMatrix <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>],</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>                                  [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>]], np.float32)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>kf.transitionMatrix <span class="op">=</span> np.array([[<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>],</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>                                 [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>],</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>                                 [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>],</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>                                 [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>]], np.float32)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>kf.processNoiseCov <span class="op">=</span> np.eye(<span class="dv">4</span>, dtype<span class="op">=</span>np.float32) <span class="op">*</span> <span class="fl">1e-2</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>kf.measurementNoiseCov <span class="op">=</span> np.eye(<span class="dv">2</span>, dtype<span class="op">=</span>np.float32) <span class="op">*</span> <span class="fl">1e-1</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize with the center of the first GT bbox</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>x0, y0, w0, h0 <span class="op">=</span> gt[<span class="dv">0</span>]</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>cx0, cy0 <span class="op">=</span> x0 <span class="op">+</span> w0 <span class="op">/</span> <span class="dv">2</span>, y0 <span class="op">+</span> h0 <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>kf.statePre <span class="op">=</span> np.array([[cx0], [cy0], [<span class="dv">0</span>], [<span class="dv">0</span>]], np.float32)</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>kf.statePost <span class="op">=</span> np.array([[cx0], [cy0], [<span class="dv">0</span>], [<span class="dv">0</span>]], np.float32)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>n_frames <span class="op">=</span> <span class="bu">min</span>(<span class="bu">len</span>(frame_paths), <span class="dv">300</span>)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> []</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>corrected <span class="op">=</span> []</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>gt_centers <span class="op">=</span> []</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_frames):</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    pred <span class="op">=</span> kf.predict()</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    predictions.append((<span class="bu">float</span>(pred[<span class="dv">0</span>, <span class="dv">0</span>]), <span class="bu">float</span>(pred[<span class="dv">1</span>, <span class="dv">0</span>])))</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Use GT bbox center as the "detection" (measurement)</span></span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    x, y, w, h <span class="op">=</span> gt[i]</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    cx, cy <span class="op">=</span> x <span class="op">+</span> w <span class="op">/</span> <span class="dv">2</span>, y <span class="op">+</span> h <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    gt_centers.append((cx, cy))</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    measurement <span class="op">=</span> np.array([[np.float32(cx)], [np.float32(cy)]])</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a>    corrected_state <span class="op">=</span> kf.correct(measurement)</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>    corrected.append((<span class="bu">float</span>(corrected_state[<span class="dv">0</span>, <span class="dv">0</span>]), <span class="bu">float</span>(corrected_state[<span class="dv">1</span>, <span class="dv">0</span>])))</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>predictions <span class="op">=</span> np.array(predictions)</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>corrected <span class="op">=</span> np.array(corrected)</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>gt_centers <span class="op">=</span> np.array(gt_centers)</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a><span class="co"># --- Visualize on sampled frames ---</span></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>sample_frames <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">150</span>, <span class="dv">200</span>, <span class="dv">250</span>]</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>sample_frames <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> sample_frames <span class="cf">if</span> f <span class="op">&lt;</span> n_frames]</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">3</span>, figsize<span class="op">=</span>(<span class="dv">18</span>, <span class="dv">10</span>))</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, f_idx <span class="kw">in</span> <span class="bu">zip</span>(axes.flat, sample_frames):</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> cv2.cvtColor(cv2.imread(<span class="bu">str</span>(frame_paths[f_idx])), cv2.COLOR_BGR2RGB)</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>    bx, by, bw, bh <span class="op">=</span> gt[f_idx].astype(<span class="bu">int</span>)</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>    cv2.rectangle(frame, (bx, by), (bx<span class="op">+</span>bw, by<span class="op">+</span>bh), (<span class="dv">255</span>, <span class="dv">0</span>, <span class="dv">0</span>), <span class="dv">2</span>)</span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>    px, py <span class="op">=</span> predictions[f_idx].astype(<span class="bu">int</span>)</span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>    cv2.drawMarker(frame, (px, py), (<span class="dv">255</span>, <span class="dv">255</span>, <span class="dv">0</span>), cv2.MARKER_CROSS, <span class="dv">20</span>, <span class="dv">2</span>)</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>    ex, ey <span class="op">=</span> corrected[f_idx].astype(<span class="bu">int</span>)</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>    cv2.circle(frame, (ex, ey), <span class="dv">8</span>, (<span class="dv">0</span>, <span class="dv">255</span>, <span class="dv">0</span>), <span class="dv">2</span>)</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>    ax.imshow(frame)</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>    ax.set_title(<span class="ss">f"Frame </span><span class="sc">{</span>f_idx<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>    ax.axis(<span class="st">"off"</span>)</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>plt.suptitle(<span class="st">"Kalman Filter Tracking — OTB Car1</span><span class="ch">\n</span><span class="st">(red = GT bbox, yellow cross = prediction, green circle = corrected estimate)"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week-9_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="aaf88874" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">1</span>, <span class="dv">2</span>, figsize<span class="op">=</span>(<span class="dv">16</span>, <span class="dv">5</span>))</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].plot(gt_centers[:, <span class="dv">0</span>], label<span class="op">=</span><span class="st">"GT (measurement)"</span>, color<span class="op">=</span><span class="st">"red"</span>, alpha<span class="op">=</span><span class="fl">0.7</span>)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].plot(predictions[:, <span class="dv">0</span>], label<span class="op">=</span><span class="st">"Kalman prediction"</span>, color<span class="op">=</span><span class="st">"goldenrod"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].plot(corrected[:, <span class="dv">0</span>], label<span class="op">=</span><span class="st">"Kalman corrected"</span>, color<span class="op">=</span><span class="st">"green"</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_xlabel(<span class="st">"Frame"</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_ylabel(<span class="st">"X position (pixels)"</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].set_title(<span class="st">"X trajectory over time"</span>)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">0</span>].legend()</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].plot(gt_centers[:, <span class="dv">1</span>], label<span class="op">=</span><span class="st">"GT (measurement)"</span>, color<span class="op">=</span><span class="st">"red"</span>, alpha<span class="op">=</span><span class="fl">0.7</span>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].plot(predictions[:, <span class="dv">1</span>], label<span class="op">=</span><span class="st">"Kalman prediction"</span>, color<span class="op">=</span><span class="st">"goldenrod"</span>, linestyle<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].plot(corrected[:, <span class="dv">1</span>], label<span class="op">=</span><span class="st">"Kalman corrected"</span>, color<span class="op">=</span><span class="st">"green"</span>)</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_xlabel(<span class="st">"Frame"</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_ylabel(<span class="st">"Y position (pixels)"</span>)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].set_title(<span class="st">"Y trajectory over time"</span>)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>axes[<span class="dv">1</span>].legend()</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>plt.suptitle(<span class="st">"Kalman Filter: Prediction vs Measurement vs Corrected Estimate"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week-9_files/figure-html/cell-8-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="mean-shift-camshift" class="level2">
+<h2 class="anchored" data-anchor-id="mean-shift-camshift">Mean-Shift / CAMShift</h2>
+<ul>
+<li>Track an object by its <strong>color histogram</strong> distribution</li>
+<li><strong>Mean-shift</strong>: iteratively finds the mode (densest region) of the color distribution in a search window</li>
+<li><strong>CAMShift</strong> (Continuously Adaptive Mean-Shift): adapts the window size to the target’s scale</li>
+</ul>
+<p><strong>Strengths</strong>: very fast, no learning required</p>
+<p><strong>Weaknesses</strong>: fragile under appearance changes, background clutter, and when multiple objects share similar colors</p>
+<!-- ## CamShift Tracking Demo (OTB Car1) {.scrollable}
+
+CamShift (Continuously Adaptive Mean-Shift) tracks an object by its **color histogram**:
+
+1. Compute the **hue histogram** of the car from the initial bounding box
+2. Each frame, **back-project** the histogram onto the frame — pixels similar in color to the car light up
+3. Run **CamShift** on the back-projection to find the new position and size of the window
+
+Since it uses color, it works without any motion model — but it breaks when the background has similar colors to the target. -->
+</section>
+<section id="what-does-the-car-look-like-to-a-histogram-tracker" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="what-does-the-car-look-like-to-a-histogram-tracker">What Does the Car “Look Like” to a Histogram Tracker?</h2>
+<p>Mean-shift and CamShift track objects by their <strong>color distribution</strong>. Below we crop the car from the <strong>CarScale</strong> sequence (a true color video) and plot its <strong>hue histogram</strong> at several frames. If the histogram stays stable, CamShift will track well. If lighting or scale changes cause the distribution to shift, tracking degrades.</p>
+<div id="167a04a0" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>seq_dir <span class="op">=</span> Path.home() <span class="op">/</span> <span class="st">"data"</span> <span class="op">/</span> <span class="st">"OTB"</span> <span class="op">/</span> <span class="st">"CarScale"</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>frame_paths <span class="op">=</span> <span class="bu">sorted</span>((seq_dir <span class="op">/</span> <span class="st">"img"</span>).glob(<span class="st">"*.jpg"</span>))</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>lines <span class="op">=</span> (seq_dir <span class="op">/</span> <span class="st">"groundtruth_rect.txt"</span>).read_text().strip().split(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>gt <span class="op">=</span> np.array([[<span class="bu">float</span>(x) <span class="cf">for</span> x <span class="kw">in</span> re.split(<span class="vs">r'[,\t\s]+'</span>, line)] <span class="cf">for</span> line <span class="kw">in</span> lines])</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>sample_frames <span class="op">=</span> [<span class="dv">0</span>, <span class="dv">50</span>, <span class="dv">100</span>, <span class="dv">150</span>, <span class="dv">200</span>, <span class="dv">250</span>]</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>sample_frames <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> sample_frames <span class="cf">if</span> f <span class="op">&lt;</span> <span class="bu">len</span>(frame_paths)]</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="bu">len</span>(sample_frames), figsize<span class="op">=</span>(<span class="dv">20</span>, <span class="dv">7</span>))</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> col, f_idx <span class="kw">in</span> <span class="bu">enumerate</span>(sample_frames):</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    frame <span class="op">=</span> cv2.imread(<span class="bu">str</span>(frame_paths[f_idx]))</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    hsv <span class="op">=</span> cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    x, y, w, h <span class="op">=</span> gt[f_idx].astype(<span class="bu">int</span>)</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>    roi_bgr <span class="op">=</span> frame[y:y<span class="op">+</span>h, x:x<span class="op">+</span>w]</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    roi_hsv <span class="op">=</span> hsv[y:y<span class="op">+</span>h, x:x<span class="op">+</span>w]</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>, col].imshow(cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2RGB))</span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>, col].set_title(<span class="ss">f"Frame </span><span class="sc">{</span>f_idx<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">0</span>, col].axis(<span class="st">"off"</span>)</span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    hist <span class="op">=</span> cv2.calcHist([roi_hsv], [<span class="dv">0</span>], <span class="va">None</span>, [<span class="dv">180</span>], [<span class="dv">0</span>, <span class="dv">180</span>])</span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>, col].bar(<span class="bu">range</span>(<span class="dv">180</span>), hist.flatten(), color<span class="op">=</span><span class="st">"steelblue"</span>, width<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>, col].set_xlim(<span class="dv">0</span>, <span class="dv">180</span>)</span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>, col].set_xlabel(<span class="st">"Hue"</span>)</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>    axes[<span class="dv">1</span>, col].set_ylabel(<span class="st">"Count"</span> <span class="cf">if</span> col <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="st">""</span>)</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>plt.suptitle(<span class="st">"CarScale: car crop + hue histogram across frames</span><span class="ch">\n</span><span class="st">(CamShift uses this color histogram to locate the car each frame)"</span>, fontsize<span class="op">=</span><span class="dv">13</span>)</span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="week-9_files/figure-html/cell-10-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="db9967c2" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # Show what CamShift "sees": the back-projection (histogram matching)</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># fig, axes = plt.subplots(1, 3, figsize=(18, 5))</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="co"># for ax, f_idx in zip(axes.flat, [0, 100, 200]):</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     if f_idx &gt;= n_frames:</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co">#         continue</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="co">#     frame = cv2.imread(str(frame_paths[f_idx]))</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co">#     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     back_proj = cv2.calcBackProject([hsv], [0], roi_hist, [0, 180], 1)</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.imshow(back_proj, cmap="hot")</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.set_title(f"Back-projection — Frame {f_idx}")</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.axis("off")</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.suptitle("CamShift Back-Projection: bright = pixels matching the car's hue histogram", fontsize=13)</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.tight_layout()</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.show()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+</section>
+<section id="sot" class="level1">
+<h1>SOT</h1>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<ul>
+<li><strong>Input</strong>: first-frame target box + video frames.</li>
+<li><strong>Output</strong>: one target trajectory over time.</li>
+<li>Best for scenarios like drone follow mode, player/camera lock, and AR target tracking.</li>
+<li>Key limitation for this lecture: SOT does <strong>not</strong> solve multi-object identity association (the core MOT problem).</li>
+</ul>
+</section>
+<section id="siamfc-template-matching-via-cross-correlation" class="level2">
+<h2 class="anchored" data-anchor-id="siamfc-template-matching-via-cross-correlation">SiamFC: Template Matching via Cross-Correlation</h2>
+<p><em>Bertinetto et al., 2016</em></p>
+<p><strong>Core idea</strong>: track a single object by matching a <strong>template</strong> to a <strong>search region</strong>.</p>
+<ol type="1">
+<li><strong>Frame 1</strong>: crop the target -&gt; extract features with a CNN -&gt; this is the <em>template</em></li>
+<li><strong>Frame <span class="math inline">t</span></strong>: extract a larger search region around the last known location -&gt; extract features</li>
+<li><strong>Cross-correlate</strong> template features with search features -&gt; produces a <strong>similarity heatmap</strong></li>
+<li>Peak of the heatmap = predicted target location</li>
+</ol>
+<p>The two CNN branches share weights (hence <em>Siamese</em>) - the network learns a general similarity function.</p>
+<p><strong>Strengths</strong>: fast, simple, no online training needed.</p>
+<p><strong>Limitations</strong>: single-object only; no online model update in the basic form -&gt; can drift on long sequences.</p>
+<p><strong>Modern extensions</strong>: SiamRPN (adds bounding box regression), SiamMask (adds segmentation).</p>
+<p><strong>Bridge to MOT</strong>: SOT answers <em>“where is this one object?”</em> while MOT must also answer <em>“which object identity is which across many objects?”</em></p>
+</section>
+</section>
+<section id="modern-mot-landscape" class="level1">
+<h1>Modern MOT Landscape</h1>
+<table class="table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 31%">
+<col style="width: 30%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Type</th>
+<th>Best At</th>
+<th>Limitation</th>
+<th>Typical Use</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Tracking-by-Detection</td>
+<td>Strong practical accuracy</td>
+<td>ID switches in occlusion</td>
+<td>Production</td>
+</tr>
+<tr class="even">
+<td>Joint (JDE)</td>
+<td>Efficiency</td>
+<td>Detection/Re-ID conflict</td>
+<td>Transitional</td>
+</tr>
+<tr class="odd">
+<td>Hybrid</td>
+<td>Better association quality</td>
+<td>Added modeling complexity</td>
+<td>Emerging</td>
+</tr>
+<tr class="even">
+<td>End-to-End (MOTR)</td>
+<td>Unified sequence modeling</td>
+<td>Harder training/compute</td>
+<td>Research</td>
+</tr>
+</tbody>
+</table>
+<section id="tracking-by-detection-dominant-baseline-family" class="level2">
+<h2 class="anchored" data-anchor-id="tracking-by-detection-dominant-baseline-family">Tracking-by-Detection (Dominant Baseline Family)</h2>
+<p>Detect every frame, then associate detections across time; strongest practical baseline in most real systems.</p>
+<table class="table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 81%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Core Idea</td>
+<td>Detect objects every frame, then associate across time</td>
+</tr>
+<tr class="even">
+<td>Pipeline</td>
+<td>Detector -&gt; Matching (IoU/ReID) -&gt; Track update</td>
+</tr>
+<tr class="odd">
+<td>Models</td>
+<td>ByteTrack, BoT-SORT, OC-SORT</td>
+</tr>
+<tr class="even">
+<td>Strengths</td>
+<td>Strong performance, modular, easy to tune</td>
+</tr>
+<tr class="odd">
+<td>Weaknesses</td>
+<td>Identity switches under occlusion / similar appearance</td>
+</tr>
+<tr class="even">
+<td>Why it works</td>
+<td>Modern detectors are extremely strong</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="joint-detection-embedding-jde-bridge" class="level2">
+<h2 class="anchored" data-anchor-id="joint-detection-embedding-jde-bridge">Joint Detection + Embedding (JDE Bridge)</h2>
+<p>One network predicts both boxes and identity embeddings, but detection and Re-ID objectives can compete.</p>
+<table class="table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 86%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Core Idea</td>
+<td>Single network outputs both detections and identity embeddings</td>
+</tr>
+<tr class="even">
+<td>Pipeline</td>
+<td>Shared backbone -&gt; (boxes + embeddings) -&gt; matching</td>
+</tr>
+<tr class="odd">
+<td>Models</td>
+<td>FairMOT, JDE, CenterTrack</td>
+</tr>
+<tr class="even">
+<td>Strengths</td>
+<td>Efficient, no separate ReID model</td>
+</tr>
+<tr class="odd">
+<td>Weaknesses</td>
+<td>Detection and ReID compete -&gt; weaker performance</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Historically important bridge to newer hybrid methods</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="hybrid-detector-learned-association" class="level2">
+<h2 class="anchored" data-anchor-id="hybrid-detector-learned-association">Hybrid (Detector + Learned Association)</h2>
+<p>Keep a strong detector, but learn smarter temporal association to reduce ID switches under occlusion.</p>
+<table class="table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 87%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Core Idea</td>
+<td>Keep detection pipeline, replace/improve matching with learned module</td>
+</tr>
+<tr class="even">
+<td>Pipeline</td>
+<td>Detector -&gt; Embeddings -&gt; Learned association (MLP/Transformer) -&gt; Matching</td>
+</tr>
+<tr class="odd">
+<td>Models</td>
+<td>TWiX, TADN, transformer-augmented ByteTrack variants</td>
+</tr>
+<tr class="even">
+<td>Strengths</td>
+<td>Better identity consistency, handles occlusion better</td>
+</tr>
+<tr class="odd">
+<td>Weaknesses</td>
+<td>More complex, harder to train</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Emerging, promising direction</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="end-to-end-transformer-motr-style" class="level2">
+<h2 class="anchored" data-anchor-id="end-to-end-transformer-motr-style">End-to-End Transformer (MOTR-style)</h2>
+<p>Persistent track queries let the model learn detection and association jointly as sequence modeling.</p>
+<table class="table">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 87%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>Details</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Core Idea</td>
+<td>Transformer directly outputs and maintains tracks (queries = objects)</td>
+</tr>
+<tr class="even">
+<td>Pipeline</td>
+<td>Image -&gt; Encoder -&gt; Decoder (track queries) -&gt; QIM -&gt; Tracks</td>
+</tr>
+<tr class="odd">
+<td>Models</td>
+<td>MOTR, TrackFormer, MeMOTR</td>
+</tr>
+<tr class="even">
+<td>Strengths</td>
+<td>Elegant, unified, learns association implicitly</td>
+</tr>
+<tr class="odd">
+<td>Weaknesses</td>
+<td>Hard to train, detection often weaker</td>
+</tr>
+<tr class="even">
+<td>Status</td>
+<td>Research-heavy, improving</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="tracking-by-detection-the-modern-paradigm" class="level1">
+<h1>Tracking-by-Detection: The Modern Paradigm</h1>
+<section id="core-idea" class="level2">
+<h2 class="anchored" data-anchor-id="core-idea">Core Idea</h2>
+<p>Instead of building a tracker from scratch, leverage the strength of modern detectors:</p>
+<pre><code>Frame_t  →  Detector  →  Bounding Boxes  →  Association  →  Tracks</code></pre>
+<ol type="1">
+<li>Run a detector (Faster R-CNN, YOLO, etc.) on <strong>every frame independently</strong></li>
+<li><strong>Associate</strong> detections across frames to form tracks</li>
+</ol>
+<p>This decouples <em>“what is there?”</em> from <em>“who is who?”</em></p>
+<p><strong>Why this dominates today</strong>:</p>
+<ul>
+<li>Detectors are already very good, no need to reinvent that wheel</li>
+<li>Modular: swap detectors or association methods independently</li>
+<li>Scales naturally to many objects</li>
+</ul>
+</section>
+<section id="the-association-problem" class="level2">
+<h2 class="anchored" data-anchor-id="the-association-problem">The Association Problem</h2>
+<p>Given <span class="math inline">N</span> detections in frame <span class="math inline">t</span> and <span class="math inline">M</span> existing tracks from frame <span class="math inline">t-1</span>, find the <strong>best assignment</strong>.</p>
+<p>This is a <strong>bipartite matching</strong> problem:</p>
+<ul>
+<li>Each detection should be assigned to at most one track</li>
+<li>Each track should be assigned to at most one detection</li>
+<li>Some detections may be <strong>new objects</strong> (start a new track)</li>
+<li>Some tracks may have <strong>no matching detection</strong> (object is occluded or left the frame)</li>
+</ul>
+<p><strong>Matching cues</strong>:</p>
+<ul>
+<li><strong>Motion</strong>: predicted position from Kalman filter vs detection position</li>
+<li><strong>Appearance</strong>: visual similarity (embeddings)</li>
+<li><strong>Geometry</strong>: bounding box size and aspect ratio</li>
+</ul>
+</section>
+<section id="hungarian-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="hungarian-algorithm">Hungarian Algorithm</h2>
+<p>The Hungarian algorithm solves the <strong>assignment problem</strong>: given <span class="math inline">M</span> workers and <span class="math inline">N</span> jobs, each with a cost, find the one-to-one assignment that minimizes total cost.</p>
+<p><strong>Steps:</strong></p>
+<ol type="1">
+<li>Build a <strong>cost matrix</strong> <span class="math inline">C</span> where <span class="math inline">C_{i,j}</span> = cost of assigning worker <span class="math inline">i</span> to job <span class="math inline">j</span></li>
+<li><strong>Row reduction</strong>: subtract each row’s minimum from that row</li>
+<li><strong>Column reduction</strong>: subtract each column’s minimum from that column</li>
+<li>Try to assign one zero per row/column. If not possible, adjust the matrix and repeat.</li>
+<li>Result: the <strong>globally optimal</strong> one-to-one assignment in <span class="math inline">O(n^3)</span> time</li>
+</ol>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.optimize <span class="im">import</span> linear_sum_assignment</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>row_ind, col_ind <span class="op">=</span> linear_sum_assignment(cost_matrix)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="hungarian-algorithm-for-tracking" class="level2">
+<h2 class="anchored" data-anchor-id="hungarian-algorithm-for-tracking">Hungarian Algorithm for Tracking</h2>
+<section id="where-do-the-two-sets-of-boxes-come-from" class="level3">
+<h3 class="anchored" data-anchor-id="where-do-the-two-sets-of-boxes-come-from">Where do the two sets of boxes come from?</h3>
+<p>No ground truth is involved at runtime. The IoU is computed between two sets of boxes that the system generates itself:</p>
+<ul>
+<li><strong>Rows (tracks)</strong>: each existing track has a <strong>Kalman filter</strong> that <em>predicts</em> a bounding box for the current frame - “where I expect this object to be now”</li>
+<li><strong>Columns (detections)</strong>: a <strong>detector</strong> (YOLO, Faster R-CNN, etc.) runs on the current frame and outputs bounding boxes - “what I actually see right now”</li>
+</ul>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Source</th>
+<th>Box</th>
+<th>Bbox <span class="math inline">(x, y, w, h)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Kalman predict</td>
+<td>Track 0</td>
+<td>(120, 80, 60, 45)</td>
+</tr>
+<tr class="even">
+<td>Kalman predict</td>
+<td>Track 1</td>
+<td>(300, 150, 50, 40)</td>
+</tr>
+<tr class="odd">
+<td>Kalman predict</td>
+<td>Track 2</td>
+<td>(50, 200, 40, 35)</td>
+</tr>
+<tr class="even">
+<td><strong>YOLO detector</strong></td>
+<td><strong>Det 0</strong></td>
+<td><strong>(125, 82, 58, 44)</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>YOLO detector</strong></td>
+<td><strong>Det 1</strong></td>
+<td><strong>(305, 148, 52, 42)</strong></td>
+</tr>
+<tr class="even">
+<td><strong>YOLO detector</strong></td>
+<td><strong>Det 2</strong></td>
+<td><strong>(48, 198, 42, 37)</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>YOLO detector</strong></td>
+<td><strong>Det 3</strong></td>
+<td><strong>(500, 100, 30, 30)</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    A["Kalman predictions&lt;br/&gt;(3 track boxes)"] --&gt; C["Compute IoU&lt;br/&gt;between all pairs"]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    B["YOLO detections&lt;br/&gt;(4 detection boxes)"] --&gt; C</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    C --&gt; D["Cost matrix&lt;br/&gt;C = 1 − IoU"]</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    D --&gt; E["Hungarian&lt;br/&gt;Algorithm"]</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    E --&gt; F["Track–detection&lt;br/&gt;assignments"]</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    style A fill:#4a90d9,color:#fff,stroke:#2c5f8a</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    style B fill:#f5a623,color:#fff,stroke:#c47d12</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    style C fill:#9b59b6,color:#fff,stroke:#6c3483</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    style D fill:#9b59b6,color:#fff,stroke:#6c3483</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    style E fill:#7ed321,color:#fff,stroke:#5a9a18</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    style F fill:#9b9b9b,color:#fff,stroke:#6b6b6b</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+    A["Kalman predictions&lt;br/&gt;(3 track boxes)"] --&gt; C["Compute IoU&lt;br/&gt;between all pairs"]
+    B["YOLO detections&lt;br/&gt;(4 detection boxes)"] --&gt; C
+    C --&gt; D["Cost matrix&lt;br/&gt;C = 1 − IoU"]
+    D --&gt; E["Hungarian&lt;br/&gt;Algorithm"]
+    E --&gt; F["Track–detection&lt;br/&gt;assignments"]
+
+    style A fill:#4a90d9,color:#fff,stroke:#2c5f8a
+    style B fill:#f5a623,color:#fff,stroke:#c47d12
+    style C fill:#9b59b6,color:#fff,stroke:#6c3483
+    style D fill:#9b59b6,color:#fff,stroke:#6c3483
+    style E fill:#7ed321,color:#fff,stroke:#5a9a18
+    style F fill:#9b9b9b,color:#fff,stroke:#6b6b6b
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="building-and-solving-the-cost-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="building-and-solving-the-cost-matrix">Building and solving the cost matrix</h3>
+<p>Compute IoU between every predicted track box and every detection box:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Det 0</th>
+<th>Det 1</th>
+<th>Det 2</th>
+<th>Det 3</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Track 0</strong></td>
+<td>0.82</td>
+<td>0.05</td>
+<td>0.10</td>
+<td>0.01</td>
+</tr>
+<tr class="even">
+<td><strong>Track 1</strong></td>
+<td>0.03</td>
+<td>0.71</td>
+<td>0.02</td>
+<td>0.08</td>
+</tr>
+<tr class="odd">
+<td><strong>Track 2</strong></td>
+<td>0.01</td>
+<td>0.04</td>
+<td>0.65</td>
+<td>0.12</td>
+</tr>
+</tbody>
+</table>
+<p>Convert to cost: <span class="math inline">C_{i,j} = 1 - \text{IoU}_{i,j}</span> (minimize cost = maximize overlap). Hungarian solves this:</p>
+<ul>
+<li>Track 0 → Det 0 (IoU 0.82) - the predicted box was close to the detection</li>
+<li>Track 1 → Det 1 (IoU 0.71)</li>
+<li>Track 2 → Det 2 (IoU 0.65)</li>
+<li>Det 3 has <strong>no matching track</strong> → start a new track (new object entered the scene)</li>
+</ul>
+<p>Ground truth is only used during <strong>evaluation</strong> (MOTA, IDF1), never during tracking itself.</p>
+<!-- ## Hungarian Algorithm Demo {.scrollable} -->
+<div id="6bcedb95" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Demo not needed with previous example</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="co"># import numpy as np</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># from scipy.optimize import linear_sum_assignment</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># import matplotlib.pyplot as plt</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="co"># import matplotlib.patches as patches</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="co"># iou_matrix = np.array([</span></span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     [0.82, 0.05, 0.10, 0.01],</span></span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     [0.03, 0.71, 0.02, 0.08],</span></span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     [0.01, 0.04, 0.65, 0.12],</span></span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a><span class="co"># ])</span></span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a><span class="co"># cost_matrix = 1 - iou_matrix</span></span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a><span class="co"># row_ind, col_ind = linear_sum_assignment(cost_matrix)</span></span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a><span class="co"># print("Optimal assignment (Hungarian algorithm):")</span></span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a><span class="co"># for r, c in zip(row_ind, col_ind):</span></span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a><span class="co">#     print(f"  Track {r} -&gt; Detection {c}  (IoU = {iou_matrix[r, c]:.2f})")</span></span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a><span class="co"># print(f"\nDetection 3 is unmatched -&gt; start a new track")</span></span>
+<span id="cb16-21"><a href="#cb16-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-22"><a href="#cb16-22" aria-hidden="true" tabindex="-1"></a><span class="co"># fig, ax = plt.subplots(figsize=(7, 4))</span></span>
+<span id="cb16-23"><a href="#cb16-23" aria-hidden="true" tabindex="-1"></a><span class="co"># im = ax.imshow(iou_matrix, cmap='Blues', vmin=0, vmax=1)</span></span>
+<span id="cb16-24"><a href="#cb16-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-25"><a href="#cb16-25" aria-hidden="true" tabindex="-1"></a><span class="co"># for i in range(iou_matrix.shape[0]):</span></span>
+<span id="cb16-26"><a href="#cb16-26" aria-hidden="true" tabindex="-1"></a><span class="co">#     for j in range(iou_matrix.shape[1]):</span></span>
+<span id="cb16-27"><a href="#cb16-27" aria-hidden="true" tabindex="-1"></a><span class="co">#         ax.text(j, i, f'{iou_matrix[i, j]:.2f}',</span></span>
+<span id="cb16-28"><a href="#cb16-28" aria-hidden="true" tabindex="-1"></a><span class="co">#                 ha='center', va='center', fontsize=11,</span></span>
+<span id="cb16-29"><a href="#cb16-29" aria-hidden="true" tabindex="-1"></a><span class="co">#                 color='white' if iou_matrix[i, j] &gt; 0.5 else 'black')</span></span>
+<span id="cb16-30"><a href="#cb16-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-31"><a href="#cb16-31" aria-hidden="true" tabindex="-1"></a><span class="co"># for r, c in zip(row_ind, col_ind):</span></span>
+<span id="cb16-32"><a href="#cb16-32" aria-hidden="true" tabindex="-1"></a><span class="co">#     rect = patches.Rectangle((c - 0.5, r - 0.5), 1, 1,</span></span>
+<span id="cb16-33"><a href="#cb16-33" aria-hidden="true" tabindex="-1"></a><span class="co">#                              fill=False, edgecolor='red', linewidth=3)</span></span>
+<span id="cb16-34"><a href="#cb16-34" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.add_patch(rect)</span></span>
+<span id="cb16-35"><a href="#cb16-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-36"><a href="#cb16-36" aria-hidden="true" tabindex="-1"></a><span class="co"># ax.set_xticks(range(4))</span></span>
+<span id="cb16-37"><a href="#cb16-37" aria-hidden="true" tabindex="-1"></a><span class="co"># ax.set_xticklabels([f'Det {i}' for i in range(4)])</span></span>
+<span id="cb16-38"><a href="#cb16-38" aria-hidden="true" tabindex="-1"></a><span class="co"># ax.set_yticks(range(3))</span></span>
+<span id="cb16-39"><a href="#cb16-39" aria-hidden="true" tabindex="-1"></a><span class="co"># ax.set_yticklabels([f'Track {i}' for i in range(3)])</span></span>
+<span id="cb16-40"><a href="#cb16-40" aria-hidden="true" tabindex="-1"></a><span class="co"># ax.set_xlabel('Detections (frame t)')</span></span>
+<span id="cb16-41"><a href="#cb16-41" aria-hidden="true" tabindex="-1"></a><span class="co"># ax.set_ylabel('Existing tracks (frame t-1)')</span></span>
+<span id="cb16-42"><a href="#cb16-42" aria-hidden="true" tabindex="-1"></a><span class="co"># ax.set_title('IoU Cost Matrix with Hungarian Assignment (red = matched)')</span></span>
+<span id="cb16-43"><a href="#cb16-43" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.colorbar(im, ax=ax, label='IoU')</span></span>
+<span id="cb16-44"><a href="#cb16-44" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.tight_layout()</span></span>
+<span id="cb16-45"><a href="#cb16-45" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.show()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+</section>
+</section>
+<section id="sort-simple-online-and-realtime-tracking" class="level1">
+<h1>SORT: Simple Online and Realtime Tracking</h1>
+<section id="sort-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="sort-pipeline">SORT Pipeline</h2>
+<p><a href="https://arxiv.org/pdf/1602.00763" target="_blank"><em>Bewley et al., 2016</em></a></p>
+<p>SORT is not a detector, it’s the <strong>glue</strong> that turns per-frame detections into consistent tracks over time. It takes any off-the-shelf detector (YOLO, Faster R-CNN, etc.) as input and adds two things on top:</p>
+<ul>
+<li>A <strong>Kalman filter</strong> per track: to predict where each object will be in the next frame</li>
+<li>The <strong>Hungarian algorithm</strong>: to match those predictions to new detections</li>
+</ul>
+<p>The Hungarian algorithm alone only solves one frame’s assignment. SORT wraps it in a <strong>loop with memory</strong>: it maintains track states across frames, predicts forward, and manages track creation/deletion.</p>
+<section id="the-loop-every-frame" class="level3">
+<h3 class="anchored" data-anchor-id="the-loop-every-frame">The loop (every frame)</h3>
+<ol type="1">
+<li><strong>Detect</strong>: run an external detector on frame <span class="math inline">t</span> → get bounding boxes</li>
+<li><strong>Predict</strong>: each existing track’s Kalman filter predicts its bbox for frame <span class="math inline">t</span></li>
+<li><strong>Associate</strong>: compute IoU between predicted boxes and detected boxes → Hungarian algorithm finds the optimal assignment</li>
+<li><strong>Update</strong>:
+<ul>
+<li>Matched tracks → Kalman <strong>correct</strong> (blend prediction with detection)</li>
+<li>Unmatched detections → <strong>new track</strong> (object just appeared)</li>
+<li>Unmatched tracks → <strong>age out</strong> after <span class="math inline">T_{\text{lost}}</span> frames (object left or occluded too long)</li>
+</ul></li>
+</ol>
+<p>No appearance model, SORT only uses <strong>position and motion</strong>. That’s what makes it fast (~260 FPS for the tracking part alone), but also why it fails when similar objects cross paths.</p>
+</section>
+</section>
+<section id="sort-strengths-and-weaknesses" class="level2">
+<h2 class="anchored" data-anchor-id="sort-strengths-and-weaknesses">SORT: Strengths and Weaknesses</h2>
+<p><strong>Strengths</strong>:</p>
+<ul>
+<li>Very fast (~260 FPS for association alone)</li>
+<li>Simple to implement and understand</li>
+<li>Works well when objects move predictably and don’t overlap much</li>
+</ul>
+<p><strong>Weaknesses</strong>:</p>
+<ul>
+<li><strong>No appearance model</strong>, the tracker cannot distinguish between similar-looking objects</li>
+<li>Lots of <strong>ID switches</strong> when objects occlude or cross paths</li>
+<li>If two people walk past each other, their IoU-based association gets confused</li>
+</ul>
+<p>This motivates DeepSORT: we need a way to tell objects <em>apart</em> beyond just position.</p>
+</section>
+</section>
+<section id="deepsort" class="level1">
+<h1>DeepSORT</h1>
+<section id="the-re-id-embedding" class="level2">
+<h2 class="anchored" data-anchor-id="the-re-id-embedding">The Re-ID Embedding</h2>
+<p><em>Wojke, Bewley, &amp; Paulus, 2017</em></p>
+<p>The key addition: a <strong>re-identification (Re-ID) network</strong></p>
+<ul>
+<li>A small CNN that takes a crop of a detected object and produces a <strong>feature embedding</strong> (a vector)</li>
+<li>Objects that look similar have <strong>nearby embeddings</strong> in this space</li>
+<li>Trained on re-identification datasets (e.g., Market-1501, CUHK03)</li>
+</ul>
+<p>Now we can compare objects not just by <em>where they are</em> but by <em>what they look like</em>.</p>
+</section>
+<section id="deepsort-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="deepsort-pipeline">DeepSORT Pipeline</h2>
+<ol type="1">
+<li><strong>Detect</strong> → bounding boxes</li>
+<li><strong>Extract appearance</strong> → run each detection crop through the Re-ID CNN → feature embedding</li>
+<li><strong>Predict</strong> → Kalman predict for each existing track</li>
+<li><strong>Associate</strong> → cascaded matching using <strong>both</strong> motion and appearance costs</li>
+<li><strong>Update</strong> → Kalman update for matched tracks</li>
+</ol>
+<pre><code>Detect → Re-ID CNN → Kalman Predict → Cascaded Matching → Update</code></pre>
+</section>
+<section id="deepsort-motion-appearance-association" class="level2">
+<h2 class="anchored" data-anchor-id="deepsort-motion-appearance-association">DeepSORT: Motion + Appearance Association</h2>
+<p>The association cost combines two signals:</p>
+<p><span class="math display">C = \lambda_1 \cdot d_{\text{motion}} + \lambda_2 \cdot d_{\text{appearance}}</span></p>
+<ul>
+<li><strong>Motion gate</strong> (<span class="math inline">d_{\text{motion}}</span>): Mahalanobis distance from the Kalman filter
+<ul>
+<li>“Is this detection where I predicted the track would be?”</li>
+</ul></li>
+<li><strong>Appearance distance</strong> (<span class="math inline">d_{\text{appearance}}</span>): Cosine distance between Re-ID embeddings
+<ul>
+<li>“Does this detection <em>look like</em> the object I’m tracking?”</li>
+</ul></li>
+</ul>
+<p><strong>Cascade matching</strong>: prioritize recently seen tracks over older ones — recently seen tracks have more reliable appearance information.</p>
+</section>
+<section id="appearance-types" class="level2">
+<h2 class="anchored" data-anchor-id="appearance-types">Appearance Types</h2>
+<p>In tracking, an <strong>appearance model</strong> is any visual representation used to decide whether a detection matches an existing track.</p>
+<ul>
+<li><strong>Color / texture cues</strong> (histograms, HOG-like descriptors): fast but brittle under lighting/background changes.</li>
+<li><strong>Deep Re-ID embeddings</strong> (CNN/Transformer feature vectors): more robust identity matching across occlusion and view changes.</li>
+<li><strong>Template similarity</strong> (Siamese-style matching): strong for SOT, less direct for crowded MOT identity management.</li>
+</ul>
+<table class="table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Appearance type</th>
+<th>Typical use</th>
+<th>Strength</th>
+<th>Limitation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Hand-crafted features</td>
+<td>Classical trackers</td>
+<td>Cheap/fast</td>
+<td>Sensitive to illumination/background shift</td>
+</tr>
+<tr class="even">
+<td>Deep Re-ID embedding</td>
+<td>DeepSORT, hybrid MOT</td>
+<td>Better ID consistency</td>
+<td>Extra model/runtime cost</td>
+</tr>
+<tr class="odd">
+<td>Query/state features</td>
+<td>MOTR-style tracking</td>
+<td>Jointly learned with tracking</td>
+<td>Harder training, less interpretable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rule of thumb:</strong> motion predicts <em>where</em> an object is; appearance helps decide <em>which identity</em> it is.</p>
+</section>
+<section id="bytetrack-strong-tracking-by-detection-upgrade" class="level2">
+<h2 class="anchored" data-anchor-id="bytetrack-strong-tracking-by-detection-upgrade">ByteTrack (Strong Tracking-by-Detection Upgrade)</h2>
+<p><a href="https://arxiv.org/pdf/2110.06864" target="_blank"><em>Zhang et al., 2022</em></a></p>
+<p><strong>Key insight</strong>: do not discard low-confidence detections too early; many correspond to <strong>occluded but real objects</strong>.</p>
+<p><strong>Two-stage association</strong>:</p>
+<ol type="1">
+<li>Match existing tracks to <strong>high-confidence</strong> detections</li>
+<li>Match remaining unmatched tracks to <strong>low-confidence</strong> detections</li>
+</ol>
+<p>This strategy delivered very strong benchmark performance at publication with standard detectors and no explicit appearance model.</p>
+<p><strong>Takeaway</strong>: association strategy can matter as much as detector architecture.</p>
+</section>
+<section id="sort-vs-deepsort-vs-bytetrack" class="level2">
+<h2 class="anchored" data-anchor-id="sort-vs-deepsort-vs-bytetrack">SORT vs DeepSORT vs ByteTrack</h2>
+<table class="table">
+<colgroup>
+<col style="width: 10%">
+<col style="width: 20%">
+<col style="width: 33%">
+<col style="width: 36%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>SORT</th>
+<th>DeepSORT</th>
+<th>ByteTrack</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Motion model</strong></td>
+<td>Kalman filter</td>
+<td>Kalman filter</td>
+<td>Kalman filter</td>
+</tr>
+<tr class="even">
+<td><strong>Appearance model</strong></td>
+<td>None</td>
+<td>Re-ID CNN</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td><strong>Association</strong></td>
+<td>IoU + Hungarian</td>
+<td>Motion + appearance + cascade</td>
+<td>Two-stage IoU + Hungarian (high, then low score detections)</td>
+</tr>
+<tr class="even">
+<td><strong>ID switches</strong></td>
+<td>Many (in crowded scenes)</td>
+<td>Far fewer</td>
+<td>Far fewer</td>
+</tr>
+<tr class="odd">
+<td><strong>Speed</strong></td>
+<td>Very fast</td>
+<td>Slower (Re-ID adds overhead)</td>
+<td>Very fast</td>
+</tr>
+<tr class="even">
+<td><strong>Best for</strong></td>
+<td>Simple scenes</td>
+<td>Crowded scenes, frequent occlusion</td>
+<td>Strong real-time MOT with robust occlusion handling</td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="joint-detection-and-tracking" class="level1">
+<h1>Joint Detection and Tracking</h1>
+<section id="joint-detection-and-tracking-how-jde-motivates-hybrid" class="level2">
+<h2 class="anchored" data-anchor-id="joint-detection-and-tracking-how-jde-motivates-hybrid">Joint Detection and Tracking (How JDE Motivates Hybrid)</h2>
+<p>Instead of running detection and tracking as separate steps, predict detections <strong>and</strong> track embeddings in <strong>one forward pass</strong>.</p>
+<ul>
+<li><strong>FairMOT</strong>: adds a Re-ID branch to CenterNet (anchor-free detector)</li>
+<li><strong>CenterTrack</strong>: detects objects in the current frame conditioned on the previous frame</li>
+<li><strong>JDE</strong> (Joint Detection and Embedding): shared backbone for detection + Re-ID</li>
+</ul>
+<p><strong>Advantage</strong>: faster (shared computation), tighter integration</p>
+<p><strong>Disadvantage</strong>: harder to train; detection and Re-ID objectives can conflict</p>
+</section>
+<section id="hybrid-tracking" class="level2">
+<h2 class="anchored" data-anchor-id="hybrid-tracking">Hybrid Tracking</h2>
+<p>Hybrid methods keep a strong detector pipeline, then use a learned association module to improve identity consistency.</p>
+<ul>
+<li><strong>Core idea</strong>: detection remains modular, association becomes more learned/temporal.</li>
+<li><strong>Why it matters</strong>: reduces ID switches under occlusion and crowded interactions.</li>
+<li><strong>Tradeoff</strong>: better identity quality than plain IoU matching, but more training/engineering complexity.</li>
+</ul>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Component</th>
+<th>Typical choice</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Detector</td>
+<td>YOLO/CenterNet/other strong detector</td>
+</tr>
+<tr class="even">
+<td>Track state</td>
+<td>motion + short-term history</td>
+</tr>
+<tr class="odd">
+<td>Association module</td>
+<td>MLP/Transformer/GNN over detection-track pairs</td>
+</tr>
+<tr class="even">
+<td>Matching output</td>
+<td>assignment scores + updated identities</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Position in the story</strong>: practical bridge between DeepSORT-like systems and full end-to-end MOTR.</p>
+</section>
+<section id="hybrid-tracking-typical-pipeline" class="level2">
+<h2 class="anchored" data-anchor-id="hybrid-tracking-typical-pipeline">Hybrid Tracking: Typical Pipeline</h2>
+<ol type="1">
+<li><strong>Detect</strong> objects in frame <span class="math inline">t</span>.</li>
+<li><strong>Build candidate pairs</strong> between active tracks and new detections.</li>
+<li><strong>Score pairs</strong> with a learned association module (appearance + motion + temporal cues).</li>
+<li><strong>Assign</strong> matches (Hungarian/greedy) and update track IDs/states.</li>
+</ol>
+<p><strong>Most important knobs in practice:</strong></p>
+<ul>
+<li>Association score threshold (precision vs recall of matches)</li>
+<li>Track age/termination policy during occlusion</li>
+<li>How much weight to give motion vs appearance cues</li>
+</ul>
+</section>
+<section id="minimum-viable-association-module" class="level2">
+<h2 class="anchored" data-anchor-id="minimum-viable-association-module">Minimum Viable Association Module</h2>
+<p><strong>Goal:</strong> given active tracks and current detections, predict a match score matrix.</p>
+<section id="inputs-example" class="level3">
+<h3 class="anchored" data-anchor-id="inputs-example">Inputs (example)</h3>
+<ul>
+<li>Track features <span class="math inline">T \in \mathbb{R}^{N_t \times d}</span> (last box, velocity, age, appearance embedding)</li>
+<li>Detection features <span class="math inline">D \in \mathbb{R}^{N_d \times d}</span> (current box, confidence, appearance embedding)</li>
+<li>Optional positional/motion encoding (e.g., box-delta prior)</li>
+</ul>
+</section>
+<section id="transformer-style-association-what-attends-to-what" class="level3">
+<h3 class="anchored" data-anchor-id="transformer-style-association-what-attends-to-what">Transformer-style association (what attends to what)</h3>
+<ol type="1">
+<li>Build detection tokens from <span class="math inline">D</span>.</li>
+<li>Use track tokens from <span class="math inline">T</span> as <strong>queries</strong>.</li>
+<li>Track queries do <strong>cross-attention</strong> over detection tokens: <span class="math inline">\mathrm{Attn}(Q=T, K=D, V=D)</span></li>
+<li>Output updated track representations <span class="math inline">T'</span>.</li>
+<li>Compute pairwise scores <span class="math inline">S \in \mathbb{R}^{N_t \times N_d}</span> with an MLP or dot-product head.</li>
+</ol>
+</section>
+<section id="outputs" class="level3">
+<h3 class="anchored" data-anchor-id="outputs">Outputs</h3>
+<ul>
+<li>Match score matrix <span class="math inline">S</span> (higher = more likely same identity)</li>
+<li>Optional “no-match” score per track</li>
+<li>Final assignment after Hungarian/greedy matching</li>
+</ul>
+<p><strong>Toy shapes:</strong> if <span class="math inline">N_t=12</span> and <span class="math inline">N_d=15</span>, then <span class="math inline">S</span> is a <span class="math inline">12 \times 15</span> matrix.</p>
+<div class="columns">
+<div class="column">
+<p><strong>Attention block (what attends to what):</strong></p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    T["Track Features T&lt;br/&gt;Nt x d"] --&gt; QT["Track Tokens (Q)"]</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    D["Detection Features D&lt;br/&gt;Nd x d"] --&gt; KVD["Detection Tokens (K,V)"]</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>    QT --&gt; CA["Cross-Attention&lt;br/&gt;Attn(Q=T, K=D, V=D)"]</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>    KVD --&gt; CA</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>    CA --&gt; Tup["Updated Track Reps T-prime"]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    T["Track Features T&lt;br/&gt;Nt x d"] --&gt; QT["Track Tokens (Q)"]
+    D["Detection Features D&lt;br/&gt;Nd x d"] --&gt; KVD["Detection Tokens (K,V)"]
+
+    QT --&gt; CA["Cross-Attention&lt;br/&gt;Attn(Q=T, K=D, V=D)"]
+    KVD --&gt; CA
+
+    CA --&gt; Tup["Updated Track Reps T-prime"]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</div><div class="column">
+<p><strong>Overall association pipeline:</strong></p>
+<div class="cell" data-layout-align="default">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode default code-with-copy"><code class="sourceCode default"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>flowchart TD</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    Tup["Updated Track Reps T-prime"] --&gt; Head["Pairwise Scoring Head&lt;br/&gt;MLP or dot-product"]</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    D["Detection Features D&lt;br/&gt;Nd x d"] --&gt; Head</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    Head --&gt; S["Score Matrix S&lt;br/&gt;Nt x Nd"]</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    S --&gt; M["Hungarian or Greedy Matching"]</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    M --&gt; A["Final Assignments"]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    Tup["Updated Track Reps T-prime"] --&gt; Head["Pairwise Scoring Head&lt;br/&gt;MLP or dot-product"]
+    D["Detection Features D&lt;br/&gt;Nd x d"] --&gt; Head
+
+    Head --&gt; S["Score Matrix S&lt;br/&gt;Nt x Nd"]
+    S --&gt; M["Hungarian or Greedy Matching"]
+    M --&gt; A["Final Assignments"]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="transformer-based-tracking-motr" class="level1">
+<h1>Transformer-based Tracking (MOTR)</h1>
+<ul>
+<li>Next step after hybrid</li>
+<li><strong>TrackFormer</strong>, <strong>MOTR</strong>: use transformer decoders where each <em>query</em> represents a track</li>
+<li>Object queries <strong>persist across frames</strong> so tracking becomes sequence modeling</li>
+<li>Attention naturally models <strong>interactions between objects</strong> (useful in occlusion-heavy scenes)</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2105.03247" target="_blank"><em>Zheng et al., 2021</em></a></p>
+<p>MOTR (End-to-End Multiple Object Tracking with Transformer) is a transformer-based tracker that jointly performs detection and tracking in a single forward pass.</p>
+<p><strong>Promising</strong> but typically more computationally expensive than lightweight production MOT pipelines.</p>
+<section id="motr-overview" class="level2">
+<h2 class="anchored" data-anchor-id="motr-overview">MOTR Overview</h2>
+<ul>
+<li><strong>MOTR</strong> frames multi-object tracking as an end-to-end transformer task.</li>
+<li>A set of <strong>track queries</strong> is carried across frames so identities persist over time.</li>
+<li>Detection and association are learned jointly, reducing hand-crafted tracking logic.</li>
+<li>It handles interactions/occlusion well, but is usually more computationally expensive than lighter MOT pipelines.</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2105.03247#page=2" target="_blank"><img src="./img/motr.png" class="img-fluid"></a></p>
+</section>
+<section id="detect-and-track-decoder-queries" class="level2">
+<h2 class="anchored" data-anchor-id="detect-and-track-decoder-queries">Detect and Track Decoder Queries</h2>
+<ul>
+<li><strong>Detection queries</strong> discover new objects entering the scene.</li>
+<li><strong>Track queries</strong> carry identity state from previous frames.</li>
+<li>The decoder jointly updates both query types using current-frame features.</li>
+<li>This split helps MOTR both initialize new tracks and maintain existing IDs.</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2105.03247#page=5" target="_blank"><img src="./img/motr-object-track-queries.png" class="img-fluid"></a></p>
+</section>
+<section id="full-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="full-workflow">Full Workflow</h2>
+<ul>
+<li>Frame <span class="math inline">t</span> is encoded into visual features by the backbone + transformer encoder.</li>
+<li>Decoder consumes propagated track queries plus detection queries.</li>
+<li>Prediction heads output boxes/classes and updated track states.</li>
+<li>Query states are passed forward to frame <span class="math inline">t+1</span>, enabling online end-to-end MOT.</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2105.03247#page=6" target="_blank"><img src="./img/motr-workflow.png" class="img-fluid"></a></p>
+</section>
+<section id="qim-query-interaction-module" class="level2">
+<h2 class="anchored" data-anchor-id="qim-query-interaction-module">QIM (Query Interaction Module)</h2>
+<ul>
+<li>QIM refines and manages query states between frames.</li>
+<li>It helps preserve strong track queries and suppress stale/noisy ones.</li>
+<li>Detected objects are associated to existing tracks through query matching (one-to-one style assignment) to maintain IDs.</li>
+<li>Query interaction improves identity consistency during occlusion and re-appearance.</li>
+<li>Think of QIM as temporal memory management for MOTR queries.</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2105.03247#page=7" target="_blank"><img src="./img/motr-qim.png" class="img-fluid"></a></p>
+</section>
+</section>
+<section id="mot-evaluation-metrics" class="level1">
+<h1>MOT Evaluation Metrics</h1>
+<section id="mota-motp-idf1-and-id-switches" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="mota-motp-idf1-and-id-switches">MOTA, MOTP, IDF1, and ID Switches</h2>
+<section id="mota-multiple-object-tracking-accuracy" class="level3">
+<h3 class="anchored" data-anchor-id="mota-multiple-object-tracking-accuracy">MOTA (Multiple Object Tracking Accuracy)</h3>
+<p><span class="math display">\text{MOTA} = 1 - \frac{\text{FN} + \text{FP} + \text{IDSW}}{\text{GT}}</span></p>
+<ul>
+<li>Penalizes missed detections (FN), false alarms (FP), and identity switches (IDSW)</li>
+<li>Can be <strong>negative</strong> if errors exceed the ground truth count</li>
+<li>Dominated by detection quality (FN and FP are usually the largest terms)</li>
+</ul>
+</section>
+<section id="motp-multiple-object-tracking-precision" class="level3">
+<h3 class="anchored" data-anchor-id="motp-multiple-object-tracking-precision">MOTP (Multiple Object Tracking Precision)</h3>
+<ul>
+<li>Average IoU between matched tracks and ground truth</li>
+<li>Measures <strong>localization</strong> quality, not association quality</li>
+</ul>
+</section>
+<section id="idf1" class="level3">
+<h3 class="anchored" data-anchor-id="idf1">IDF1</h3>
+<ul>
+<li>Harmonic mean of identification precision and recall</li>
+<li>Better at capturing <strong>identity consistency</strong> than MOTA</li>
+<li>“Of all the detections assigned to a track, what fraction truly belong to one identity?”</li>
+</ul>
+</section>
+<section id="id-switches-idsw" class="level3">
+<h3 class="anchored" data-anchor-id="id-switches-idsw">ID Switches (IDSW)</h3>
+<ul>
+<li>Number of times a track’s assigned identity changes mid-sequence</li>
+<li>Directly measures <strong>association failure</strong></li>
+</ul>
+</section>
+<section id="comparison" class="level3">
+<h3 class="anchored" data-anchor-id="comparison">Comparison</h3>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Measures</th>
+<th>Sensitive to</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>MOTA</td>
+<td>Overall accuracy</td>
+<td>Detection quality + ID switches</td>
+</tr>
+<tr class="even">
+<td>MOTP</td>
+<td>Localization</td>
+<td>Bounding box precision</td>
+</tr>
+<tr class="odd">
+<td>IDF1</td>
+<td>Identity consistency</td>
+<td>Association quality</td>
+</tr>
+<tr class="even">
+<td>IDSW</td>
+<td>Re-ID failures</td>
+<td>Occlusion + crowding</td>
+</tr>
+</tbody>
+</table>
+<!-- # Failure Modes -->
+<!-- ## Common Tracking Failures
+
+- **Occlusion**: an object temporarily disappears behind another object or behind the frame edge. The tracker loses the target or assigns the wrong ID when it reappears.
+
+- **Re-identification failure**: after an occlusion event, the tracker assigns a **new ID** to the same object instead of reconnecting to the original track.
+
+- **Drift** (especially in SOT): the tracker gradually slides off the target over time as small errors accumulate frame-to-frame.
+
+- **ID switches in crowds**: when similar-looking objects are in close proximity, the tracker swaps their identities — Person A becomes Person B and vice versa.
+
+Understanding these failures is critical for choosing the right tracker and interpreting evaluation metrics. -->
+<!-- # Practical Considerations -->
+<!-- ## Choosing a Tracker
+
+| Scenario | Recommended |
+|----------|------------|
+| Few objects, predictable motion | SORT |
+| Crowded scenes, frequent occlusion | DeepSORT or ByteTrack |
+| Real-time on edge device | SORT or ByteTrack (no Re-ID overhead) |
+| Research / best accuracy | Transformer-based (TrackFormer, MOTR) |
+| Single-object tracking | Siamese tracker (SiamFC / SiamRPN) |
+
+**Common pitfalls**:
+
+- Tracking quality is **bottlenecked by detection quality** — improve the detector first
+- **Frame rate matters**: at low FPS, objects move more between frames → association is harder
+- **Camera motion** can be handled with ego-motion compensation, but adds complexity
+- **Re-ID models don't generalize** across domains — a pedestrian Re-ID model won't work for vehicles -->
+<!-- # Demo: Tracking an Object Across Frames -->
+<div id="5a994ac3" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># import cv2</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="co"># import numpy as np</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a><span class="co"># import matplotlib.pyplot as plt</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="co"># n_frames = 40</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a><span class="co"># H, W = 250, 500</span></span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a><span class="co"># frames = []</span></span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="co"># for i in range(n_frames):</span></span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     frame = np.full((H, W, 3), 40, dtype=np.uint8)</span></span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     x = 20 + i * 11</span></span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a><span class="co">#     y = 100 + int(20 * np.sin(i * 0.25))</span></span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     cv2.rectangle(frame, (x, y), (x + 70, y + 45), (0, 140, 255), -1)</span></span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a><span class="co">#     cv2.rectangle(frame, (x + 5, y + 10), (x + 25, y + 30), (180, 220, 255), -1)</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a><span class="co">#     cv2.rectangle(frame, (x + 45, y + 10), (x + 65, y + 30), (180, 220, 255), -1)</span></span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a><span class="co">#     frames.append(frame)</span></span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a><span class="co"># tracker = cv2.TrackerKCF.create()</span></span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="co"># init_bbox = (20, 100, 70, 45)</span></span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a><span class="co"># tracker.init(frames[0], init_bbox)</span></span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="co"># tracked_frames = []</span></span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a><span class="co"># trajectory = []</span></span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a><span class="co"># for i, frame in enumerate(frames):</span></span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a><span class="co">#     success, bbox = tracker.update(frame)</span></span>
+<span id="cb20-25"><a href="#cb20-25" aria-hidden="true" tabindex="-1"></a><span class="co">#     display = frame.copy()</span></span>
+<span id="cb20-26"><a href="#cb20-26" aria-hidden="true" tabindex="-1"></a><span class="co">#     if success:</span></span>
+<span id="cb20-27"><a href="#cb20-27" aria-hidden="true" tabindex="-1"></a><span class="co">#         x, y, w, h = [int(v) for v in bbox]</span></span>
+<span id="cb20-28"><a href="#cb20-28" aria-hidden="true" tabindex="-1"></a><span class="co">#         cv2.rectangle(display, (x, y), (x + w, y + h), (0, 255, 0), 2)</span></span>
+<span id="cb20-29"><a href="#cb20-29" aria-hidden="true" tabindex="-1"></a><span class="co">#         cv2.putText(display, 'Car ID: 1', (x, y - 8),</span></span>
+<span id="cb20-30"><a href="#cb20-30" aria-hidden="true" tabindex="-1"></a><span class="co">#                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)</span></span>
+<span id="cb20-31"><a href="#cb20-31" aria-hidden="true" tabindex="-1"></a><span class="co">#         trajectory.append((x + w // 2, y + h // 2))</span></span>
+<span id="cb20-32"><a href="#cb20-32" aria-hidden="true" tabindex="-1"></a><span class="co">#     tracked_frames.append(display)</span></span>
+<span id="cb20-33"><a href="#cb20-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-34"><a href="#cb20-34" aria-hidden="true" tabindex="-1"></a><span class="co"># fig, axes = plt.subplots(2, 5, figsize=(18, 7))</span></span>
+<span id="cb20-35"><a href="#cb20-35" aria-hidden="true" tabindex="-1"></a><span class="co"># sample_idx = np.linspace(0, n_frames - 1, 10, dtype=int)</span></span>
+<span id="cb20-36"><a href="#cb20-36" aria-hidden="true" tabindex="-1"></a><span class="co"># for ax, idx in zip(axes.flat, sample_idx):</span></span>
+<span id="cb20-37"><a href="#cb20-37" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.imshow(cv2.cvtColor(tracked_frames[idx], cv2.COLOR_BGR2RGB))</span></span>
+<span id="cb20-38"><a href="#cb20-38" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.set_title(f'Frame {idx}')</span></span>
+<span id="cb20-39"><a href="#cb20-39" aria-hidden="true" tabindex="-1"></a><span class="co">#     ax.axis('off')</span></span>
+<span id="cb20-40"><a href="#cb20-40" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.suptitle('KCF Tracker: Following a Moving Car', fontsize=14)</span></span>
+<span id="cb20-41"><a href="#cb20-41" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.tight_layout()</span></span>
+<span id="cb20-42"><a href="#cb20-42" aria-hidden="true" tabindex="-1"></a><span class="co"># plt.show()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<!-- ## Trajectory Visualization {.scrollable} -->
+<div id="cell-72" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># if trajectory:</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="co">#     traj = np.array(trajectory)</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     canvas = np.full((H, W, 3), 40, dtype=np.uint8)</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     for j in range(1, len(traj)):</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="co">#         color_val = int(255 * j / len(traj))</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="co">#         cv2.line(canvas,</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="co">#                  tuple(traj[j - 1]), tuple(traj[j]),</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="co">#                  (0, color_val, 255 - color_val), 2)</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="co">#     cv2.circle(canvas, tuple(traj[0]), 6, (0, 255, 0), -1)</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="co">#     cv2.circle(canvas, tuple(traj[-1]), 6, (0, 0, 255), -1)</span></span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="co">#     plt.figure(figsize=(10, 4))</span></span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="co">#     plt.imshow(cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB))</span></span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a><span class="co">#     plt.title('Tracked Trajectory (green = start, red = end)')</span></span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a><span class="co">#     plt.axis('off')</span></span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a><span class="co">#     plt.tight_layout()</span></span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a><span class="co">#     plt.show()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<!-- # Study Guide
+
+## Tracking Fundamentals {.scrollable}
+
+**Topics to review:**
+
+- Difference between detection and tracking
+- Single-object tracking (SOT) vs multi-object tracking (MOT)
+- Key challenges: occlusion, appearance change, camera motion, scale change, crowding
+
+**Example questions:**
+
+- What information does a tracker provide that a detector alone does not?
+- Why is MOT harder than SOT?
+- Name three challenges that make object tracking difficult.
+
+## Classical Tracking {.scrollable}
+
+**Topics to review:**
+
+- Optical flow: brightness constancy assumption, Lucas-Kanade vs Farneback
+- Kalman filter: state vector, predict step, update step, assumptions (linear motion, Gaussian noise)
+- Mean-shift / CAMShift: color histogram tracking, limitations
+
+**Example questions:**
+
+- What assumption underlies optical flow? When does it break down?
+- Describe the two steps of the Kalman filter and what each one does.
+- What happens to a Kalman filter's predictions during an occlusion (no detection available)?
+
+## Tracking-by-Detection {.scrollable}
+
+**Topics to review:**
+
+- The tracking-by-detection paradigm: detect per frame, then associate
+- The association problem as bipartite matching
+- Hungarian algorithm: what it solves, what the cost matrix represents
+
+**Example questions:**
+
+- Why is tracking-by-detection the dominant modern approach?
+- What does the cost matrix in the Hungarian algorithm represent in the context of tracking?
+- What happens to unmatched detections? What about unmatched tracks?
+
+## SORT and DeepSORT {.scrollable}
+
+**Topics to review:**
+
+- SORT pipeline: detect → Kalman predict → IoU matching (Hungarian) → update
+- SORT limitations: no appearance model → ID switches
+- DeepSORT addition: Re-ID CNN for appearance embeddings
+- DeepSORT cost function: motion (Mahalanobis distance) + appearance (cosine distance)
+- Cascade matching: prioritize recently seen tracks
+
+**Example questions:**
+
+- What two components make up SORT? Why is it fast?
+- Why does SORT produce many ID switches in crowded scenes?
+- What does the Re-ID network in DeepSORT do?
+- Explain the difference between the motion and appearance terms in DeepSORT's cost function.
+
+## Siamese Trackers {.scrollable}
+
+**Topics to review:**
+
+- SiamFC: template from frame 1, search region in frame $t$, cross-correlation
+- Why it's called "Siamese" (twin branches with shared weights)
+- Strengths (fast, simple) and limitations (drift, no online update)
+
+**Example questions:**
+
+- How does SiamFC locate the target in a new frame?
+- Why might a Siamese tracker drift over a long video?
+
+## Modern Methods {.scrollable}
+
+**Topics to review:**
+
+- ByteTrack: using low-confidence detections for occluded objects
+- Joint detection and tracking: FairMOT, CenterTrack
+- Transformer-based tracking: queries as persistent tracks
+
+**Example questions:**
+
+- What is ByteTrack's key insight about low-confidence detections?
+- What is the advantage of joint detection and tracking over tracking-by-detection?
+- How do transformer-based trackers represent tracks?
+
+## Evaluation Metrics {.scrollable}
+
+**Topics to review:**
+
+- MOTA: formula, what it penalizes, can be negative
+- MOTP: localization quality
+- IDF1: identity consistency
+- ID switches: direct measure of association failure
+
+**Example questions:**
+
+- Write the MOTA formula and explain each term.
+- Why can MOTA be negative?
+- Which metric best captures identity consistency: MOTA or IDF1? Why?
+- A tracker has high MOTA but many ID switches. What does this tell you? -->
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
