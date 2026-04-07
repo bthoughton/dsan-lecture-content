@@ -32,7 +32,8 @@ HEADER
   echo "| Week | Topic | Link |" >> "$qmd_file"
   echo "|:----:|-------|:----:|" >> "$qmd_file"
 
-  for week_dir in "$SCRIPT_DIR"/computer-vision/week-*/; do
+  mapfile -t week_dirs < <(printf '%s\n' "$SCRIPT_DIR"/computer-vision/week-*/ | sort -V)
+  for week_dir in "${week_dirs[@]}"; do
     [ -d "$week_dir" ] || continue
     week_name=$(basename "$week_dir")
     week_num=$(echo "$week_name" | grep -oP '\d+')

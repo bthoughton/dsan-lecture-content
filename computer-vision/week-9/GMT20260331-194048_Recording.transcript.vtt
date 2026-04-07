@@ -1,0 +1,2378 @@
+WEBVTT
+
+1
+00:00:16.610 --> 00:00:27.100
+Benjamin Houghton: Alright, object tracking is very much married to object detection. It is, like it says right here, like, in bullet points.
+
+2
+00:00:27.500 --> 00:00:41.229
+Benjamin Houghton: like, object detection is what… what it… or answers where… what is… or, sorry, what is where in a single frame, and then object tracking answers which detection frame T is the same object in T plus 1, right? So.
+
+3
+00:00:41.350 --> 00:00:44.159
+Benjamin Houghton: tracking those two objects.
+
+4
+00:00:44.180 --> 00:01:02.290
+Benjamin Houghton: And it very much is a, what it says here, a challenge in maintaining consistent identities across time. Detection is spatial, but tracking is the spatial-temporal identity, right? And it very much is kind of the way that this is done right now, right? So, the modern, state-of-the-art trackers.
+
+5
+00:01:02.300 --> 00:01:14.569
+Benjamin Houghton: that's how they do it, right? They do a detection, and then they have to figure out which detection in this screen matches this detection in this screen. That's how they do it, they pair them. There's different ways of doing it, but those types of styles
+
+6
+00:01:14.660 --> 00:01:32.600
+Benjamin Houghton: does ultimately yield, kind of, state-of-the-art results. You can do, like, an end-to-end, you can do hybrid approaches, there's all different… there's, like, four main types that I would say, and we're going to talk about all four of them today. We'll talk about two in quite some detail, like, especially the ones that I think are the most important, right?
+
+7
+00:01:33.100 --> 00:01:44.619
+Benjamin Houghton: Okay, so tracking versus detection, as you all know, detection is drawing a bounding box in a single frame, right? It's taking an image, we talked about it for 2 weeks, right? We talked YOLO,
+
+8
+00:01:44.620 --> 00:01:53.210
+Benjamin Houghton: Faster RCNN, all those. Those are object trackers. They detect, or object detection, I'm sorry, not trackers, they are…
+
+9
+00:01:53.230 --> 00:02:11.249
+Benjamin Houghton: object detection models. They find objects, and they draw boxes around them in a single frame. And so everything we learned for object tracking, or object detection, I'm gonna say that, like, backwards, like, 12 times today, I promise, object tracking and detection. But everything we learned in object detection
+
+10
+00:02:11.250 --> 00:02:20.500
+Benjamin Houghton: is going to apply today, because that kind of is the backbone, per se, of object tracking, right? You have to have a good sector in order to do… have a good tracker.
+
+11
+00:02:20.880 --> 00:02:29.769
+Benjamin Houghton: Okay, and so then we'll figure out, okay, well, if we have these two objects in different frames, how do we kind of determine which one is which?
+
+12
+00:02:29.930 --> 00:02:46.749
+Benjamin Houghton: Right? Which… which identity is which? So if you consider two frames, frame 1, a person A is on the left, person B is on the right, and then in frame 2, the people have swapped. You know, a detector is going to find both of those people, but it's not going to be able to know which one is which, right? It's…
+
+13
+00:02:46.870 --> 00:02:52.500
+Benjamin Houghton: It's not like… remember before, too, when we did object tracking,
+
+14
+00:02:53.670 --> 00:03:12.139
+Benjamin Houghton: you know, we could detect multiple instances of the same object, but we didn't distinguish between them, per se, right? Like, object 1, object 2. Well, we did, but we didn't necessarily know, like, we didn't assign an ID to them, okay? So it's not like that's encoded in the model somehow. The model has, like, no
+
+15
+00:03:12.140 --> 00:03:20.669
+Benjamin Houghton: the detectors have no memory or information from previous frames, right? So that's one of the things we aim to solve, right?
+
+16
+00:03:21.070 --> 00:03:36.879
+Benjamin Houghton: Object tracking, you know, I know I talked about there's, like, 4 main types. I was really referring to multi-object tracking, I was really referring to, like, state-of-the-art, the stuff we should really care about, but the space of object tracking is kind of, like, these two broad categories.
+
+17
+00:03:36.980 --> 00:03:41.920
+Benjamin Houghton: We're really gonna focus on multi-object tracking, we're not really gonna worry about single object, because…
+
+18
+00:03:41.920 --> 00:03:57.090
+Benjamin Houghton: if you… I mean, multi-object can do either one. And single object tracking is, you know, it is what it is. I mean, there's definitely probably… there's definitely going to be corner cases or use cases where you only care about a single object, but…
+
+19
+00:03:57.790 --> 00:04:17.039
+Benjamin Houghton: for the most part, we're going to talk about multi-object tracking. Single object tracking is… is important. I don't want to undersell it, because object tracking very much is a balance of speed and performance, because this is all real-time, too, right? So, like, it may… like, you don't have… you can't just go, oh, let me go run my machine for 30 seconds.
+
+20
+00:04:17.140 --> 00:04:27.799
+Benjamin Houghton: Right? And then come back and give you an answer, right? It doesn't work in the real world when we're capturing 60, 120 frames per second, right? Like, modern cameras, even if they're 4K, I mean.
+
+21
+00:04:28.030 --> 00:04:47.590
+Benjamin Houghton: they're capturing, like, high rate… frame rates. I'm not a camera expert, but, you know, I mean, your cell phone is probably, what, at least 60, 100, I don't know, does anybody know what your frame rate is on your phone? But it's pretty high, right? So you only have 1 60th of a second to process your answer, right? If you're doing… if you're doing it every single frame.
+
+22
+00:04:47.590 --> 00:04:57.999
+Benjamin Houghton: Now, you could do it every other frame, or every third, or every fourth, or every fifth frame, but obviously, like, it's gonna be harder to do it the more, like, the longer you wait. Like, there's more… if you have a…
+
+23
+00:04:58.120 --> 00:05:02.329
+Benjamin Houghton: If you're tracking an object across the screen, and you do it, say, every…
+
+24
+00:05:02.370 --> 00:05:05.829
+Benjamin Houghton: You only process one frame every second.
+
+25
+00:05:05.830 --> 00:05:28.829
+Benjamin Houghton: and you have a fast-moving object, it's going to be harder for your models and your algorithms to make the connection that this object over here that is now way moved over here in just a second is the same object. So it very much is a balance of speed and performance. So there's definitely going to be times where a simpler single-object tracking model or workflow is going to be beneficial to you, but you just have to know what
+
+26
+00:05:28.900 --> 00:05:41.230
+Benjamin Houghton: obviously what situation that you're in, alright? So that doesn't… so if you find yourself in a scenario where you need high performance, you should be asking yourself, do I need to track one or multiple objects?
+
+27
+00:05:41.270 --> 00:05:52.589
+Benjamin Houghton: Okay. So, some of the reasons, some of the challenges, right? Occlusion. We talked about this at the beginning of the semester, remember? Objects disappear behind others, or they leave entirely from a frame.
+
+28
+00:05:53.080 --> 00:06:10.209
+Benjamin Houghton: Appearance changes. This could be any number of things, like light shifting, pose change, like, you can imagine, like, there's a million reasons why something would… the appearance would change. A car is now turned around, or a person turns around, whatever, right? They put their arms up, they put their arms down.
+
+29
+00:06:10.250 --> 00:06:35.079
+Benjamin Houghton: you know, who knows, like, they change their shirt, take their jacket off, you know? Who knows? Like, there's a million things you could probably think of. Lighting changes, like, the lights go on and off, all sorts of stuff. Camera motion, so that's kind of, like, all… camera motion is also, like, your, it's very… it's pretty much the same thing as, like, your point of, your… not your point of… point of reference, or your perspective, like, where you're viewing the object from.
+
+30
+00:06:35.610 --> 00:06:37.710
+Benjamin Houghton: Scale changes as objects move…
+
+31
+00:06:37.710 --> 00:06:44.939
+Benjamin Houghton: further… oh, like, closer and further away from something, right? You'll see that, like, one of the, like.
+
+32
+00:06:44.940 --> 00:06:52.039
+Benjamin Houghton: One of the ways, like, pretty much, like, the state of the art for For object tracking involves
+
+33
+00:06:52.040 --> 00:07:15.990
+Benjamin Houghton: some way of, like, seeing, like, looking at this, like, you have some model that's job is to, like, look at two, like, pair objects together. Like, it sees it in one frame, and then it sees it in another frame, right? So, you know, not to give everything away, but, you know, if you… you… a CNN is gonna be much more powerful there, because if something changes in scale, you know, it can still recognize it's a car. Or if you're using a more basic algorithm that just does, like.
+
+34
+00:07:16.520 --> 00:07:24.879
+Benjamin Houghton: very basic, features, like we talked about earlier in the semester. It might not be as powerful, like, if the size of the object is changed.
+
+35
+00:07:24.880 --> 00:07:43.970
+Benjamin Houghton: And then crowded scenes, obviously, if you have many similar objects in close proximity, like, that's gonna be really tough to distinguish person from person. And, you should see some of these, like, the Mott 17, which we'll talk about here in a second, is kind of like the de facto, like, that's what all models are compared against.
+
+36
+00:07:43.970 --> 00:07:47.539
+Benjamin Houghton: the data set. It's called the MOT17.
+
+37
+00:07:47.560 --> 00:08:05.209
+Benjamin Houghton: And it is a object tracking, basically, benchmark, and so, like, every single paper that's written always is going to put the results of what they got in MOT 17, right? That's the… and there's, like, a very specific set of criteria that we'll talk about at the end of the lecture, okay? Lecture roadmap, I…
+
+38
+00:08:05.210 --> 00:08:13.749
+Benjamin Houghton: I think I made this slide before I fully had fleshed out… before I made a few changes, but let me… so we can probably ignore this, but this is probably mostly correct.
+
+39
+00:08:13.750 --> 00:08:29.720
+Benjamin Houghton: So, foundations, correct, we'll talk about that, like, the basics, non… really non-deep learning stuff, but stuff that's going to be important, like, that… that even the deep learning workflows are going to use, stuff like common filtering and Hungarian matching, we'll have to know about.
+
+40
+00:08:30.050 --> 00:08:41.350
+Benjamin Houghton: Okay, and then tracking by detection baselines, right, sort and deep sort, association… I'm just reading through this, association improvements, bridge to modern systems.
+
+41
+00:08:41.350 --> 00:08:52.370
+Benjamin Houghton: Yeah, you know, don't worry too much about this. This has changed a little bit. This was kind of like the original structure, and then I kind of revamped it a little bit, so don't worry about that slide. It's not really that important.
+
+42
+00:08:52.370 --> 00:09:03.879
+Benjamin Houghton: All right, so, I know you're all, like, really eager to jump into this and know, kind of, about how this is done, but I think it's important to kind of talk about some of these data sets, right?
+
+43
+00:09:04.260 --> 00:09:05.540
+Benjamin Houghton: So…
+
+44
+00:09:05.630 --> 00:09:26.260
+Benjamin Houghton: You have single object tracking and multi-object tracking, right? And so, remember that in single object tracking, you're gonna have a single bounding box, but in a data set, but in multi-object, obviously, you have many detections. The core problem is localization in single object, whereas it's identity association in multi-object, because
+
+45
+00:09:26.530 --> 00:09:30.269
+Benjamin Houghton: In single… in single object tracking, you just need to kind of find…
+
+46
+00:09:30.270 --> 00:09:46.980
+Benjamin Houghton: find it where it is in the image, whereas, identity… multi-object tracking is literally like, okay, you have multiple identities, multiple people walking in a video, then you have to associate each one of them with an identity. So here are some of the benchmarks. I don't really know much about
+
+47
+00:09:46.980 --> 00:10:11.460
+Benjamin Houghton: Actually, I know a little bit about the OTB, I actually downloaded it and put it into this lecture just for some… for fun, but for the most part, like, I know more about this MOT challenge. This is the data set I was telling you about, and for the most part, everyone cares about MOT17. So there's a… you can go to their website, you can look it up, and we'll look at it here in a little bit, but, that's kind of, like, the… the benchmark data set for single and multi-object tracking.
+
+48
+00:10:11.690 --> 00:10:25.880
+Benjamin Houghton: I would say, too, that also for single object tracking, although it says benchmark here, that's not entirely an accurate statement. It's more like there's… there's not like a, like, it's not like as, these aren't as important
+
+49
+00:10:25.880 --> 00:10:36.340
+Benjamin Houghton: as MOT17, right? Like, MOT17 is, like, the gold standard, whereas these other ones, it's kind of like a collection. There's not, like, one that's, like, the most important, per se, right? So that's what I mean by that.
+
+50
+00:10:36.340 --> 00:10:51.080
+Benjamin Houghton: All right, so metrics, intersection of reunion, precision, and then we'll talk about MOTA and ID switches. So there's, like, a very specific set of metrics that we use for multi-object tracking. Again, that's towards the end of the lecture. All right,
+
+51
+00:10:51.820 --> 00:10:53.179
+Benjamin Houghton: Okay, and then…
+
+52
+00:10:53.900 --> 00:11:01.300
+Benjamin Houghton: Here, I did, like I said, I did download this object tracking benchmark for this… for this lecture, and put in some examples.
+
+53
+00:11:01.300 --> 00:11:17.859
+Benjamin Houghton: And, here are some of the sequences. You can… there's a bunch of them, and you can look at this code here. You can use this code if you want. It's just some bash code to download it into your home data directory. There's… I keep all my data, like, in this… this little home data directory.
+
+54
+00:11:17.860 --> 00:11:34.750
+Benjamin Houghton: So I can use it later for whatever. It just downloads it, and you can tell it what sequences you want, because there's a bunch of sequences, right? And these are all videos, so you might not want all of them. So, like, for instance, this car 1 has 1,020 frames, which is, you know, 1,000 images.
+
+55
+00:11:34.750 --> 00:11:52.529
+Benjamin Houghton: Right? And then so on and so forth. So here's, like, what the data set looks like, right? Here's what car 1 looks like. It's just a… it's a single object tracking, right? So it's just the one here. But you can see it… there's a bounding box that… there's various frames here from the
+
+56
+00:11:52.580 --> 00:12:00.579
+Benjamin Houghton: 10 random frames from 0 to 1,019, which actually would be the last frame, would be 1020, I guess.
+
+57
+00:12:00.870 --> 00:12:01.760
+Benjamin Houghton: Okay.
+
+58
+00:12:03.170 --> 00:12:04.949
+Benjamin Houghton: Plug my computer in real fast.
+
+59
+00:12:06.550 --> 00:12:19.189
+Benjamin Houghton: Alright, so that's… we'll use that today. Again, like I said, that data set's not as important as MOT17. In the… in your lab, I did have you guys use, like, MOT17,
+
+60
+00:12:19.390 --> 00:12:25.999
+Benjamin Houghton: And we might talk a little bit about the lab if we have time. We do have a spotlight presentation today, though.
+
+61
+00:12:27.880 --> 00:12:43.100
+Benjamin Houghton: All right, so let's talk a little bit about the… the other one, though, the multi-object one. So Mod 17, like I said, is the important one. So, it's a classic crowded pedestrian tracking benchmark, so it's like a streets and city surveillance-style scenes.
+
+62
+00:12:43.100 --> 00:12:52.349
+Benjamin Houghton: It stresses missed detections, false positive, ID switchness, and robustness and realistic camera viewpoints. And once you see, like, these images, you're like, holy cow, like, this…
+
+63
+00:12:52.350 --> 00:12:57.749
+Benjamin Houghton: Because it's just, like, a sea of people in some scenes, and it's, like, people coming in and out, and…
+
+64
+00:12:57.750 --> 00:13:14.389
+Benjamin Houghton: So it's… it's tough, right? Like, it's a really good benchmark and a really challenging one. And then there's this dance track. It's just a highly dynamic motion, very similar-looking people, as you can tell. So, like, let's play this little video. This is on their… so you can go to their link, and there's a… there's just a,
+
+65
+00:13:14.550 --> 00:13:19.040
+Benjamin Houghton: There's a, a link, or they have this on their website,
+
+66
+00:13:19.050 --> 00:13:36.470
+Benjamin Houghton: which I linked to here, and you can… that's where I got this video from, and it just shows it, which is pretty cool to see it. Like, you can see, like, all the objects, the ballerina in this case, like, they're all, like, very similar looking, so you can imagine, like, this is… you have to have a really good model to… to do… to pull this off and not, like…
+
+67
+00:13:36.520 --> 00:13:44.569
+Benjamin Houghton: lose track of who is who. Like, even a person would have a hard time doing that, right? So, alright.
+
+68
+00:13:46.140 --> 00:13:52.659
+Benjamin Houghton: So, classical tracking foundations. I'm just gonna preface this by saying that
+
+69
+00:13:52.660 --> 00:14:15.550
+Benjamin Houghton: you don't… there's gonna be, like, a lot of, like, words and math here, but don't focus on this stuff. Like, I'm not gonna quiz you hard on this, right? This is, like, less… this is far less important. This is just really kind of setting the… like, this is, like, the historical stuff. Some of this stuff does matter, right? I will tell you what… what is really important and what is not. Like, for instance, optical flow is not important, right? It's just…
+
+70
+00:14:15.550 --> 00:14:22.889
+Benjamin Houghton: It's what we did before deep learning, so it's important to, like, be aware of, and remember, like, this very much is a balance of speed.
+
+71
+00:14:23.020 --> 00:14:28.399
+Benjamin Houghton: And… and performance. And, you know, when you're not using a deep learning model.
+
+72
+00:14:28.440 --> 00:14:44.570
+Benjamin Houghton: there's gonna be a lot of speed, right? So I don't know if, you know, there's, you know… and these are also maybe service baselines, right, for you as well, okay? So, optical flow estimates per pixel motion between consecutive frames, all right? And it uses,
+
+73
+00:14:46.140 --> 00:15:00.230
+Benjamin Houghton: basically, it's gonna… it's gonna compute this displacement vector, change in X, change in Y, and then it maps basically from frame to frame, right? So, basically, we can map… we can basically go frame to frame and kind of,
+
+74
+00:15:00.430 --> 00:15:07.069
+Benjamin Houghton: calculate or estimate where every pixel is going, alright? That's the idea of optical flow.
+
+75
+00:15:07.240 --> 00:15:27.010
+Benjamin Houghton: All right, so there's various methods. There's this brightness constancy, so let's just kind of understand, like, high level what this is doing. We don't need to worry about these equations, this won't be on the quiz, okay? So don't worry too much about it. I'll give you guys a study guide anyways. But, the fundamental assumption is that
+
+76
+00:15:27.020 --> 00:15:28.469
+Benjamin Houghton: This makes it this…
+
+77
+00:15:28.670 --> 00:15:44.380
+Benjamin Houghton: is this brightness constancy thing. Okay, so what does that mean? It means, like, imagine you have a black image and just have, like, a really bright dot in it. And so, like, that constancy has to be maintained. Like, it's almost like a state of equilibrium for thermodynamics.
+
+78
+00:15:44.390 --> 00:15:59.109
+Benjamin Houghton: Right? Like, or energy can't be created or destroyed, it can only be transferred. Like, I think that's, like, the… what's that? The fundamental law of thermodynamics, right? I know… ask me why I know that, but anyways, it's because I'm an… I have an undergraduate in engineering, but
+
+79
+00:15:59.470 --> 00:16:04.690
+Benjamin Houghton: Anyways… That's neither here nor there. The idea is that
+
+80
+00:16:04.770 --> 00:16:11.689
+Benjamin Houghton: the brightness can't be, like, created or destroyed, and it can only be moved from place to place. And so, you can kind of track
+
+81
+00:16:11.740 --> 00:16:29.069
+Benjamin Houghton: where it goes, and it uses this Taylor expansion, which honestly, I'm not… we don't really need to understand exactly how it works. It's here. If you want to read more about it, you can, but it's… it's not… it's this kind of a footnet. No, I don't think this is overly important, okay? So…
+
+82
+00:16:29.820 --> 00:16:32.389
+Benjamin Houghton: Anyways, you can solve this,
+
+83
+00:16:32.810 --> 00:16:44.190
+Benjamin Houghton: once you kind of have these assumptions of, you know, the brightness can only move around, you have these various methods. So you have this Lucas, I'm not sure how you say this last part, canade.
+
+84
+00:16:44.190 --> 00:16:59.290
+Benjamin Houghton: Which assumes all pixels in a neighborhood share the same flow. That UV, which is that… that vector where that tells you which way they're going. This gives enough equations to solve the system, okay? And then there's this other one, which is the far and back.
+
+85
+00:16:59.290 --> 00:17:18.589
+Benjamin Houghton: it fits a polynomial to the local neighborhood, and it does this for every single… and then it computes the flow for every pixel. It's slower, but it gives you, like, a more complete motion feel. And so, you can… it's pretty easy to implement this stuff, like, probably the most important thing to know about these methods is that they're really easy to implement with CB… with,
+
+86
+00:17:18.589 --> 00:17:30.730
+Benjamin Houghton: with CV, right? So, OpenCV, if you guys don't remember, remember I talked about OpenCV as, like, like the de facto computer vision Python module for call
+
+87
+00:17:30.730 --> 00:17:39.809
+Benjamin Houghton: things classical computer vision. I use it a lot, even today. Like, I use it a… well, not so much now. I haven't used it a lot… actually, that's not true.
+
+88
+00:17:39.810 --> 00:17:54.540
+Benjamin Houghton: My current role at Leidos, I used it a lot. I used it even more before that, because I was working primarily on computer vision-focused tasks. And then now I'm transitioning to a new role at Dell Tech, next week, but…
+
+89
+00:17:54.580 --> 00:18:12.429
+Benjamin Houghton: I don't know exactly if I'll be using OpenCD, but if I do, like, a lot of computer vision stuff, I'm sure I will, right? It's like… so anyways, just trying to refresh your memory that it is an important, it's a very important module, and here, once again, it can do object tracking, right? So we can implement these methods.
+
+90
+00:18:12.430 --> 00:18:15.069
+Benjamin Houghton: And we can get flow fields from…
+
+91
+00:18:15.070 --> 00:18:23.190
+Benjamin Houghton: from OpenCV, so you can look at this code if you want, but then you can plot out… it's kind of hard to see,
+
+92
+00:18:23.980 --> 00:18:37.739
+Benjamin Houghton: if I zoom in, I'll zoom in a little bit, and you can kind of see, like, this kind of… the idea here is that this optical flow, this quiver, it kind of, like, is telling you… it's kind of estimating, like, where everything's going, right? And it shows that
+
+93
+00:18:37.740 --> 00:18:57.169
+Benjamin Houghton: Actually, you wouldn't know this without kind of watching, but these cars are driving, so in this video, there's a camera following these cars, and so this crosswalk, this white bar, is moving forward, so, like, you see, like, those arrows pointing down because they're moving this direct, like, those pixels moving this direction. So.
+
+94
+00:18:57.270 --> 00:19:03.489
+Benjamin Houghton: You know, it might have been a better example, now that I'm thinking about it, to just, like… I wanted to use, like, real object tracking.
+
+95
+00:19:03.940 --> 00:19:05.070
+Benjamin Houghton: data, but…
+
+96
+00:19:05.360 --> 00:19:22.150
+Benjamin Houghton: It might have been a better example, just, like, take a white circle and then, like, move it and calculate the optical flow, like it's a toy example. But that's the idea, right? It just keeps track of where everything's going, okay? And it does it by this assumption that the brightness, aka the pixel intensity, is constant, right?
+
+97
+00:19:22.590 --> 00:19:24.140
+Benjamin Houghton: Okay,
+
+98
+00:19:25.940 --> 00:19:38.040
+Benjamin Houghton: So, tracking with a sparse optical flow, so… so you can actually do tracking with this, so this is pretty fun. And so, what I did here is it calculates these key points, right? And,
+
+99
+00:19:40.610 --> 00:19:44.590
+Benjamin Houghton: again, like, you can do this really easily just with OpenCV, right?
+
+100
+00:19:44.680 --> 00:20:00.749
+Benjamin Houghton: there's not much to this, there's not a ton of code, you're not training or using any deep learning models, and the red box, again, is the ground truth from the data set, and then the blue is, like, are these key points that are supposed to be inside the bounding box. And you can see that, like.
+
+101
+00:20:01.510 --> 00:20:07.930
+Benjamin Houghton: the majority of the boxes stay in the ground truth. So it does a pretty decent job, considering, like, this is a very…
+
+102
+00:20:08.100 --> 00:20:22.129
+Benjamin Houghton: like, I mean, just a very… I mean, tailor expansion is relatively simple compared to, like, a deep learning model, right? So it's… it works pretty well, it's really fast, and you can see, like, it keeps track of, for the most part, most of the keynotes
+
+103
+00:20:22.130 --> 00:20:38.359
+Benjamin Houghton: are where they're supposed to be. So it gives you a pretty good understanding, a pretty good idea of where the object's going, albeit it's certainly not perfect, right? And we'll talk more about better… better models, all right? So again, this isn't super critical. This next part.
+
+104
+00:20:38.640 --> 00:20:51.769
+Benjamin Houghton: the common filter is… is pretty critical, okay? Not that you understand the math, necessarily understand, like, the algorithm and the math, but, like, this gets used a lot, even in, like, some… I mean, even in some of, like, the…
+
+105
+00:20:51.990 --> 00:20:56.650
+Benjamin Houghton: like, the most… I'm trying to think,
+
+106
+00:20:58.090 --> 00:21:11.130
+Benjamin Houghton: what… I mean, it's not gonna be necessarily in the state-of-the-art models, but, like, we're gonna talk about sort, deep sort, fight, fight track, all these, like, in those families, that family of models used
+
+107
+00:21:11.130 --> 00:21:29.600
+Benjamin Houghton: like, the original paper that kind of started it all uses calm and filter, and so, like, this is really important because it still gets used, like, even in modern implementations and modern models. They might not be the most powerful, but for your situation, they might be the best, because remember, it's speed versus performance. If you don't have… you only have so much
+
+108
+00:21:29.640 --> 00:21:31.999
+Benjamin Houghton: compute power. Alright, so…
+
+109
+00:21:32.300 --> 00:21:45.929
+Benjamin Houghton: what does the common filter do? It's a recursive algorithm that estimates the state of a moving object from noisy observations, right? So you have, some position and some velocity vector, all right?
+
+110
+00:21:45.930 --> 00:21:59.470
+Benjamin Houghton: And so, you predict… you propagate forward the state of the… some… using some motion model, right? It could be, like, constant velocity, right? So, basically, what does that mean? If you have an object that's moving frame to frame to frame.
+
+111
+00:21:59.520 --> 00:22:10.889
+Benjamin Houghton: Right? You can estimate its velocity. If it moved 5 pixels to the right in this frame, then you expect to then, guess what? Move 5 pixels to the right in the next frame, and that's what its motion is.
+
+112
+00:22:10.890 --> 00:22:20.579
+Benjamin Houghton: Okay? And so then you update, you correct the prediction when a new detection arrives, right? So, you know, in the next loop, though.
+
+113
+00:22:20.580 --> 00:22:39.880
+Benjamin Houghton: you know, let's say it didn't move 5 pixels, it actually moved 7 pixels, then you would update, you could update based upon that, right? So that's kind of how it works. You don't really need to understand any more than that. That's probably enough, but here's a little flow chart, same thing I kind of just said, right? But…
+
+114
+00:22:40.280 --> 00:22:45.559
+Benjamin Houghton: We're going to use our motion model, aka, like, our… maybe it's a constant velocity model.
+
+115
+00:22:45.860 --> 00:22:48.589
+Benjamin Houghton: to predict the next state.
+
+116
+00:22:49.230 --> 00:23:01.390
+Benjamin Houghton: If there's a new detection available, great, yes, then we're going to update the correct state with the measurement. Otherwise, we'll just keep the prediction as is, okay? And then we'll go to the next frame. All right, so,
+
+117
+00:23:02.960 --> 00:23:19.269
+Benjamin Houghton: The common filter basically is… is just a way for us to predict where… like, all you need to know is know that all it is is a… a method to predict, like, where something is and, like, where we think it's going to be in the next… based upon the previous frames.
+
+118
+00:23:19.480 --> 00:23:30.069
+Benjamin Houghton: So, you'll remember, and like, why does this matter? I'll kind of give you, like, a very basic, intuitive understanding of this. Remember before I said we do this, we do object tracking in two steps.
+
+119
+00:23:30.070 --> 00:23:39.770
+Benjamin Houghton: We find out where something is, and then we find out where everything is in one frame, then we have a new frame, and we find out where all those things are. And our goal is to match them.
+
+120
+00:23:39.800 --> 00:23:58.120
+Benjamin Houghton: Right? And so, if we… we have this common filter, right, and that can just say, well, we… I think this object's going here, I think this object's going here, so on and so forth, and we just match our detections from… in our new frame to the closest to what the common filter said, right? So.
+
+121
+00:23:58.250 --> 00:23:59.409
+Benjamin Houghton: We have a frame.
+
+122
+00:23:59.770 --> 00:24:01.200
+Benjamin Houghton: I'll draw it out, even.
+
+123
+00:24:01.340 --> 00:24:10.840
+Benjamin Houghton: So it's really… it's really a simple concept, and that's really the foundation of modern object tracking, and that is… it's really that. It's really that simple.
+
+124
+00:24:11.480 --> 00:24:18.179
+Benjamin Houghton: pretty… Let's see, let's do, Notepad…
+
+125
+00:24:23.800 --> 00:24:26.529
+Benjamin Houghton: And so… here's our…
+
+126
+00:24:50.620 --> 00:24:53.050
+Benjamin Houghton: That's why my pencil's working today, though.
+
+127
+00:25:19.640 --> 00:25:20.770
+Benjamin Houghton: Alright, there we go.
+
+128
+00:25:21.670 --> 00:25:23.180
+Benjamin Houghton: Alright,
+
+129
+00:25:33.000 --> 00:25:39.060
+Benjamin Houghton: So T equals… let's say… T equals 0, right? We have some initial frame.
+
+130
+00:25:40.010 --> 00:25:42.919
+Benjamin Houghton: Okay, and let's say we're tracking a car.
+
+131
+00:25:43.950 --> 00:25:46.690
+Benjamin Houghton: Whatever. Actually, it's gonna be more like a truck.
+
+132
+00:25:46.980 --> 00:25:49.289
+Benjamin Houghton: Okay? And it's here.
+
+133
+00:25:49.610 --> 00:25:57.649
+Benjamin Houghton: Right? And let's say there's another truck further back, and, you know, for, you know, over here, whatever, okay? And they're both moving this direction.
+
+134
+00:25:58.140 --> 00:26:01.259
+Benjamin Houghton: Okay, so now we have T equals 1.
+
+135
+00:26:02.140 --> 00:26:03.380
+Benjamin Houghton: Right? And…
+
+136
+00:26:03.510 --> 00:26:16.869
+Benjamin Houghton: we have our Kalman filter, right? It sees how fast these… both these objects are going, and it thinks that object 1 should be over here. So we'll say this is… we'll say this is Object 1, this is Object 2.
+
+137
+00:26:17.020 --> 00:26:23.799
+Benjamin Houghton: Okay? And it thinks that object 1, 2 should have moved to this frame. Object 1 should have moved to this frame.
+
+138
+00:26:24.020 --> 00:26:32.289
+Benjamin Houghton: Right? And it thinks that… Object 2 should be here, approximately, in the next brain.
+
+139
+00:26:32.590 --> 00:26:35.989
+Benjamin Houghton: Right? So, let's say that, really, though.
+
+140
+00:26:38.000 --> 00:26:43.209
+Benjamin Houghton: Object 2 is here, and Object 1 is actually… let me move this one…
+
+141
+00:26:47.560 --> 00:27:05.099
+Benjamin Houghton: I know it's like an elementary drawing, but it's really this simple. Object 1 is here, right? And you see, like, they're not perfectly lined up, and our detector… let's say our detector did detect them, right? We have a good detector, we're using YOLO, doesn't really matter which one, and we see that our… we did detect both objects, and we see that
+
+142
+00:27:05.120 --> 00:27:14.419
+Benjamin Houghton: Well, if we put this object here, and this one here, then we're, like, they're the closest. Like, it's really as simple as that. We're just gonna match them based upon
+
+143
+00:27:14.440 --> 00:27:27.800
+Benjamin Houghton: on how close they are. I'm saying close, but we're really going to use a loss function, right? We're going to use some cost function that's going to define, like, the overall cost. And so you'll just do this for every single object in every single
+
+144
+00:27:27.960 --> 00:27:41.729
+Benjamin Houghton: prediction, like, every single common… like, every single… what we call a track, right? And so… and that's… this is really the fundamentally kind of how object tracking works, even in 2026, alright? It's really that simple. Now, we're going to talk about more exotic methods.
+
+145
+00:27:41.730 --> 00:27:50.600
+Benjamin Houghton: like, a whole end-to-end transformer implementation. But for now, like, this is kind of like the, you know, this is kind of like the…
+
+146
+00:27:51.810 --> 00:27:57.529
+Benjamin Houghton: I want to say it's state-of-the-art, but, like, this is kind of, like, ever-changing, right? And, you know.
+
+147
+00:27:57.550 --> 00:28:11.429
+Benjamin Houghton: I'm gonna… we're gonna talk about hybrid methods as well, right? That instead of use a Kalman filter to make that association, they use a transformer, right? So it's… it's kind of like, you'll see what I… it's like a combination of those four methods I was talking about earlier.
+
+148
+00:28:11.430 --> 00:28:22.839
+Benjamin Houghton: I know I said there was four, I didn't… I didn't tell you what they were yet, but, there's, like, four main methods, alright? So anyways, that was just… I just wanted to give you guys an idea of, like, why does this… why does this filter… why does this matter?
+
+149
+00:28:23.150 --> 00:28:34.379
+Benjamin Houghton: Right? You need some way of saying, like, we… where we expect things to be, and then once we know where we expect things to be, and where we detected them, we can kind of match them all up, alright? So…
+
+150
+00:28:34.740 --> 00:28:44.610
+Benjamin Houghton: You can use a common filter just to do, like, just do pure tracking, right? And so that's what this does here. Again, we can use OpenCV.
+
+151
+00:28:45.580 --> 00:28:54.379
+Benjamin Houghton: Right, you see we just use OpenCV here, and we can just use a common filter to kind of predict exactly where, like, things are going, okay?
+
+152
+00:28:55.240 --> 00:28:57.040
+Benjamin Houghton: Alright,
+
+153
+00:29:00.220 --> 00:29:18.369
+Benjamin Houghton: this just shows the trajectory over time in the X and Y dimensions, and then this… so that was the big thing, was the Kalman filter. The last thing we should talk about is just this mean shift, okay? Which is kind of a… it's kind of a cool idea. So you can track an object through its… its color histogram distribution.
+
+154
+00:29:18.370 --> 00:29:23.750
+Benjamin Houghton: And so, like, if you, if you know, if you have an object, right, that you've detected,
+
+155
+00:29:24.200 --> 00:29:29.620
+Benjamin Houghton: Then, basically, essentially, you can just follow, like.
+
+156
+00:29:30.350 --> 00:29:42.679
+Benjamin Houghton: that distribution of colors, or color use around an image. And so that's the way that this looks like, or that's the way this works. Without really getting into the details, like, I want to spend time on the more modern stuff. Again.
+
+157
+00:29:42.680 --> 00:29:52.339
+Benjamin Houghton: But you can do this with OpenCV, and this just shows you, like, what… so this truck is moving… this is a colored… Emmet colored video now, so it's RGB.
+
+158
+00:29:52.340 --> 00:30:10.080
+Benjamin Houghton: And you can see, like, this truck is moving throughout this video, but you can see it's, like, its relative, like, color histogram is relatively constant. So, if we can find, like, where in the image that this histogram exists, we can have an idea of, like, where… where this works. Now, this isn't…
+
+159
+00:30:10.080 --> 00:30:24.469
+Benjamin Houghton: I tried to, like, implement this, but, I couldn't get it to work really well with OpenCV. There's gonna be a lot of hyperparameter tuning. It's one of the things I've found with these non-cloud… I don't know how much you guys are messing around with this, but, like, not just this, but I've done a lot of different stuff, like…
+
+160
+00:30:24.470 --> 00:30:40.870
+Benjamin Houghton: detection, segmentation, all sorts of stuff using OpenCV, and a lot of times it works well for, like, one particular application or one little thing you're doing, but as soon as you try to, like, generalize it and apply it to something else, like, it just all falls apart, and, like, all the time you spent, like, messing with hyperparameters just kind of goes out the window.
+
+161
+00:30:41.060 --> 00:30:57.310
+Benjamin Houghton: you know, I've personally had always had a lot more success just using deep learning methods, right? But that's neither here nor there. I guess my point is, is that I experienced the same thing with this particular video. I tried to get this to work, and I couldn't get it to work real well, okay?
+
+162
+00:30:57.310 --> 00:31:06.039
+Benjamin Houghton: But I also didn't… wasn't gonna spend, like, 2 hours, like, trying to prove a point to you guys, right? So I was like, it didn't work, whatever, like, moving on, okay?
+
+163
+00:31:06.360 --> 00:31:16.480
+Benjamin Houghton: All right, cool, single object tracking, right? So, we'll talk about this real fast, and we'll get into the, like, the modern multi-object tracking landscape. Right, so,
+
+164
+00:31:18.530 --> 00:31:37.519
+Benjamin Houghton: the input, the first frame target box, and the video frames output one target directory over time, right? So it's gonna be best for scenarios like the drone… let's see, drone follow mode, camera… player camera lock, okay, and AR target tracking. All right, so the key limitation for this is gonna be…
+
+165
+00:31:37.520 --> 00:31:52.329
+Benjamin Houghton: Yeah, SOT does not solve the multi-object identity association, right? So, it is what it is, but I just wanted to, like, throw this out there that there are methods. This is one of them. So this template matching via cross-correlation.
+
+166
+00:31:52.330 --> 00:32:05.879
+Benjamin Houghton: Right, so the idea is to track a single object by matching a template to a search region, right? So, frame 1, crop the target, extract the features with the CNN, right? That's your template, and then the next frame,
+
+167
+00:32:06.230 --> 00:32:18.910
+Benjamin Houghton: frame T, extract a larger search region around the last known location, okay? Makes sense. Extract features, and then cross-correlate template features with search features, and it produces, like, a similarity heat map.
+
+168
+00:32:19.340 --> 00:32:31.679
+Benjamin Houghton: Makes sense, right? So, like, you're basically gonna crop out a larger area where it was before in the previous frame, and kind of do, like, this, cross-correlation, and it's gonna draw, like, this heat map.
+
+169
+00:32:31.680 --> 00:32:40.180
+Benjamin Houghton: And, which would be kind of cool, like, it'll see, like, which… the features of the CNN will tell you which areas of the larger
+
+170
+00:32:41.160 --> 00:32:44.069
+Benjamin Houghton: Crop is similar to this… to the smaller one.
+
+171
+00:32:44.220 --> 00:32:55.230
+Benjamin Houghton: Alright, that's it. Like, that's all I want to talk about as far as that goes. I don't want to get into, like, a ton of detail on that, but just to say it exists, again, this isn't super important. Now.
+
+172
+00:32:55.530 --> 00:33:14.370
+Benjamin Houghton: we're starting to really get into the modern stuff, and this is, like, where the stuff really starts to… this is the stuff you really should take away from this lecture, and the stuff that is really important. So, the modern multi-opject tracking landscape, okay? So, tracking by detection… tracking by detection, this is… this is kind of the… the de facto, right? This is what I was…
+
+173
+00:33:14.370 --> 00:33:21.899
+Benjamin Houghton: This is what I was describing before, with that silly little picture that I drew, of where we have… we have one frame, we detect the objects.
+
+174
+00:33:21.900 --> 00:33:31.950
+Benjamin Houghton: And then we estimate, based upon their, like, how fast they're moving, where we think they're gonna go, okay? And then in the next frame, then we detect them again.
+
+175
+00:33:31.950 --> 00:33:41.890
+Benjamin Houghton: And, we… we just match them, right? So, it says strong practical accuracy, because that's what it is, right? It's a… it's… this is kind of like the…
+
+176
+00:33:41.890 --> 00:33:57.389
+Benjamin Houghton: the de facto, go-to method in the current landscape. Its ID… its limitation is going to be ID switches and inclusion, right? So, if two people walk past each other, right, it's, you know, or maybe…
+
+177
+00:33:57.410 --> 00:34:03.949
+Benjamin Houghton: you know, if, you know, if they're moved past each other, going opposite directions, and, you know, with the common filter, it's gonna take that into account.
+
+178
+00:34:04.030 --> 00:34:11.249
+Benjamin Houghton: One person's going one way, one person's going the other way, but maybe, like, they're, like, walking slightly behind, like, maybe they're far away.
+
+179
+00:34:11.480 --> 00:34:16.629
+Benjamin Houghton: Okay? From the camera, and they're walking the same direction now.
+
+180
+00:34:16.670 --> 00:34:33.620
+Benjamin Houghton: and then, you know, one person, like, goes in front of the other, or maybe one person speeds up, slows down. You can see where, where they cross paths, there's gonna be a… it's gonna be a chance for the… the… for you to lose track of which one's which, right? You have that ID switch, okay?
+
+181
+00:34:34.489 --> 00:34:36.979
+Benjamin Houghton: There's the joint.
+
+182
+00:34:37.730 --> 00:34:47.409
+Benjamin Houghton: Right? So, we'll talk about this as well. Not as in much detail as… as… as the… we'll talk about this one the most, the tracking by detection. There's the joint…
+
+183
+00:34:47.540 --> 00:34:51.410
+Benjamin Houghton: Version, which is, you know, we'll…
+
+184
+00:34:51.510 --> 00:34:55.429
+Benjamin Houghton: we haven't… I haven't fully defined, like, what all this stuff means, but,
+
+185
+00:34:55.530 --> 00:35:02.799
+Benjamin Houghton: basically, what is this good at? It's very efficient, because it uses this thing called ReID, so it's good,
+
+186
+00:35:03.060 --> 00:35:07.409
+Benjamin Houghton: I'm sorry, has this re-ID conflict, right? But, essentially.
+
+187
+00:35:09.090 --> 00:35:26.549
+Benjamin Houghton: the joint is going to do both your detection and tracking all in one go. Remember before I said with this, the tracking by detection? It's like, we kind of do it in two different steps. The joint is going to be basically exactly that. It's going to be joint, where you do, both the,
+
+188
+00:35:27.290 --> 00:35:38.710
+Benjamin Houghton: you're gonna do both the… a single pass of the model will be the tracking and the detection. We'll talk, kind of, more about what that means.
+
+189
+00:35:39.190 --> 00:35:42.370
+Benjamin Houghton: The hybrid is probably…
+
+190
+00:35:42.430 --> 00:35:51.610
+Benjamin Houghton: one of the most promising areas, and how does the hybrid work? Well, the hybrid works by
+
+191
+00:35:51.670 --> 00:36:05.679
+Benjamin Houghton: still doing that tracking by detection, but then it's going to use a better, it's gonna basically use a better, basically a better model to determine through that matching, okay? And so, like, you can imagine that
+
+192
+00:36:05.680 --> 00:36:14.449
+Benjamin Houghton: Well, instead of using a Coleman filter, something… Coleman filter, something like that, what if you used a transformer? Something that was really good at doing, like, that… that…
+
+193
+00:36:14.690 --> 00:36:20.820
+Benjamin Houghton: hyperworld component, right? So that's kind of what a hybrid model would look like. And then you have the
+
+194
+00:36:20.820 --> 00:36:42.959
+Benjamin Houghton: full end-to-end hybrid of… oh yeah, I'm sorry, the last one is this MOTR, multi-object tracking, with transformers, and this is a full end-to-end transformer. It's a unified model, and it's kind of, like, it's not really… there are papers that have been written on it and published. It's not necessarily, like, the go-to today. Like, right now, it's going to be this.
+
+195
+00:36:43.040 --> 00:37:00.540
+Benjamin Houghton: Right? And maybe a hybrid model, right? But, you know, these are kind of where we're at, right? So, tracking by detection, full production. If you were on the job and you needed something done with a proven track record, you would use that. If you weren't getting the results you wanted.
+
+196
+00:37:00.540 --> 00:37:04.540
+Benjamin Houghton: Maybe you look at a hybrid model to buff up, like, your
+
+197
+00:37:04.550 --> 00:37:23.750
+Benjamin Houghton: your ID matching, that's where you might use hybrid model. And then, if you're, like, a researcher, you know, like, I've had jobs where I've just done research, maybe you mess around with a MOTR or a transformer, who knows, right? But there's not a lot of reason to not use either a hybrid for it for a tracking by detection right now.
+
+198
+00:37:24.450 --> 00:37:26.509
+Benjamin Houghton: I would say the joint is kind of, like.
+
+199
+00:37:26.890 --> 00:37:32.150
+Benjamin Houghton: we're starting to move away from that, right? Trans… Transitional, meaning that
+
+200
+00:37:32.330 --> 00:37:44.630
+Benjamin Houghton: We're not… they were kind of popular, but they've kind of lost favor, to the tracking by detection in the hybrid, and… but they're kind of… we've… we decided that's not really
+
+201
+00:37:44.630 --> 00:37:57.070
+Benjamin Houghton: the way to go, and the reason is, is because it's really hard to train a model, a deep learning model, to learn both tracking and detection at the same time. It's better to have, kind of, like, specialized models, right?
+
+202
+00:37:57.710 --> 00:38:01.420
+Benjamin Houghton: Okay, so…
+
+203
+00:38:02.220 --> 00:38:12.609
+Benjamin Houghton: we'll… this is, like, a brief overview of all these, and then we'll talk about some of these in more detail. But, here's, like, this is, like, a really good summary of all these, and
+
+204
+00:38:15.050 --> 00:38:19.760
+Benjamin Houghton: This is the kind of stuff that, like, we probably would… Let me think here.
+
+205
+00:38:19.920 --> 00:38:22.420
+Benjamin Houghton: you should definitely know this stuff, right? Like.
+
+206
+00:38:22.960 --> 00:38:32.049
+Benjamin Houghton: it's probably good quiz questions, but I'm thinking, like, in the back of my head, like, knowing this stuff committed to… to memory, like, this is the stuff you would
+
+207
+00:38:32.060 --> 00:38:37.360
+Benjamin Houghton: want to know as a data scientist in today's age is, like, knowing what these models are good at.
+
+208
+00:38:37.360 --> 00:38:38.960
+Benjamin Houghton: Generally, how they work.
+
+209
+00:38:38.960 --> 00:39:01.369
+Benjamin Houghton: And, like, what the core ideas are, right? So, okay, tracking by detection. You should already kind of know what the core idea is here. We detect objects in every frame, and then we associate them across time. Simple as that, right? There's different ways of doing that, but that's the… that's the general idea, is that we have a list of objects in this… we have a list of objects from frame 1, we have a list of objects from frame 2, and now we need to match them.
+
+210
+00:39:01.370 --> 00:39:05.900
+Benjamin Houghton: And we also need to determine if one object doesn't get matched.
+
+211
+00:39:05.900 --> 00:39:21.489
+Benjamin Houghton: one object from list 1 doesn't match any objects in 2, and one object from list 2 doesn't match any objects in list 1. That would be, like, an object leaving a frame, or a new object coming into it, all right? So that's the… that is the association problem, which we're going to talk more about.
+
+212
+00:39:21.870 --> 00:39:32.940
+Benjamin Houghton: the pipeline, the detector, right, that's gonna be, like, YOLO or something like that, faster RCNN, whatever it may be. Probably YOLO, because YOLO's fast, so it's good for object tracking.
+
+213
+00:39:32.940 --> 00:39:46.510
+Benjamin Houghton: Okay? The matching, so you'll have intersection of reunion, or the REID, right? Which the REID is just a fancy way of saying, using a convolutional neural network to… basically, what it does is it…
+
+214
+00:39:46.830 --> 00:39:59.610
+Benjamin Houghton: you create an… you… you create a feature map of your object, from all your objects that you've detected, and then you can kind of match them up based upon feature maps, right? How similar the feature maps are.
+
+215
+00:39:59.700 --> 00:40:10.310
+Benjamin Houghton: So that's what the re-ID is, we'll talk about that. So the models… ByteTrack is kind of… so ByteTrack is, like, the de facto standard to go to. Maybe not…
+
+216
+00:40:10.400 --> 00:40:21.800
+Benjamin Houghton: specifically bike track, but it's, like, it's that family of models, right? When I say bike track, it's… think of it like YOLO, per se, right? Like, YOLO is a family of models, bike track is a family of models, okay?
+
+217
+00:40:22.820 --> 00:40:34.540
+Benjamin Houghton: Byte track is, like, a very simple extension of sort and deep sort, which are very much like the grandfather models of… the very… like, DeepSort is, like, like, the…
+
+218
+00:40:34.600 --> 00:40:50.379
+Benjamin Houghton: the grandfather deep learning model, we'll talk about DeepSort, and ByteTrack is, like, a very simple extension over that, alright? Alright, strengths, strong performance, modular, easy to tune. Like, they're simple, fast, and effective, right? That's what we're looking for in object tracking. So that's why they're hard to beat.
+
+219
+00:40:50.420 --> 00:41:01.250
+Benjamin Houghton: weaknesses, identity switches under occlusion that are similar appearance, and, why it works. Modern textures are, yeah, are extremely strong, right? So, basically, this is saying that
+
+220
+00:41:01.420 --> 00:41:13.619
+Benjamin Houghton: YOLO V8, or whatever model, they're really, really good, right? And so, if you have a really good… like, that's the majority of the problem. What this sentence is saying, or why this works, what this really means is that
+
+221
+00:41:13.870 --> 00:41:19.740
+Benjamin Houghton: Most of your job in object tracking is really object detection. Like, that's the hard part.
+
+222
+00:41:19.900 --> 00:41:26.150
+Benjamin Houghton: If all the objects are, like, moving a different direction, it almost becomes, like, It almost becomes…
+
+223
+00:41:26.960 --> 00:41:35.689
+Benjamin Houghton: like a trivial problem, right? Like, there's… if these objects are going like this, like, there's no way you're going to mix them up, right? Like, not with one of these modern…
+
+224
+00:41:36.100 --> 00:41:43.040
+Benjamin Houghton: models, okay? As long as your detector detects it, you're good to go, basically, okay?
+
+225
+00:41:45.140 --> 00:41:53.170
+Benjamin Houghton: So, the joint detection, it's one network that predicts both the boxes and identity embeddings, right? So,
+
+226
+00:41:53.170 --> 00:42:08.569
+Benjamin Houghton: The problem with this is that the detection and the reID objectives can compete. Don't worry too much about understanding this one. This is probably of the… remember I said there's a list of four, and these are the four? The tracking by detection, the joint, the hybrid, and the end-to-end transformer.
+
+227
+00:42:08.570 --> 00:42:26.050
+Benjamin Houghton: This is probably the least important, because it's the one that the space is moving away from, right? This is not something you would want to use in today's age, more than likely. But it's just good to know about, like, it's a… I mean, it makes sense, like, oh yeah, unified network, great, like, it sounds great in theory, but it just didn't work, right?
+
+228
+00:42:26.350 --> 00:42:36.139
+Benjamin Houghton: So the core idea is a single network outputs both the detections and the identity embeddings, and the identity embeddings, remember, are, like, whatever it detects, you also need to have
+
+229
+00:42:36.140 --> 00:42:48.719
+Benjamin Houghton: then some embedding for that object so that you can match it up later, right? So the pipeline, the shared backbone, and then you have the boxes plus the embeddings, and then you do the matching, all right? So…
+
+230
+00:42:48.780 --> 00:42:54.760
+Benjamin Houghton: Again, one model producing, like, the same thing isn't necessarily… probably not the best idea here, like…
+
+231
+00:42:54.890 --> 00:43:10.310
+Benjamin Houghton: it's better to have a specialized detector, like YOLO V8, find your boxes, and then just feed those to a specialized embedding model, right, that takes those and then does its embeddings, creates a feature space for its detected objects, rather than trying to do it all with one model.
+
+232
+00:43:11.250 --> 00:43:20.979
+Benjamin Houghton: So, here are some of the models. Again, like, there's not much to say here. I don't really know much about these models. I've never used any of them, personally, but here they are for you, okay?
+
+233
+00:43:21.020 --> 00:43:31.960
+Benjamin Houghton: Strength's efficient. It is efficient, right? So, like, it's not to say that this… these are completely useless. I guess they're good to know about if,
+
+234
+00:43:32.210 --> 00:43:38.500
+Benjamin Houghton: You know, maybe you're, like, severely computer, like, severely computationally,
+
+235
+00:43:38.640 --> 00:43:51.879
+Benjamin Houghton: limited, maybe, in that scenario, you might look at a hybrid? I don't… I don't know, like, but it's, you know, at least you know about them, right? It's just about having another tool in your toolbox, right? And, knowing when…
+
+236
+00:43:52.830 --> 00:44:11.229
+Benjamin Houghton: you know, just kind of knowing, like, if you're going down the right path or not, right? Your job as a data scientist really is to kind of… you need to think of yourself really as the architect, right? As, like, guiding the approach and knowing, like, what's possible, what's not possible, and, like, what makes sense and just what doesn't, right? Because that's what…
+
+237
+00:44:12.200 --> 00:44:20.160
+Benjamin Houghton: where, like, we… that's where our value really comes in, okay? Anybody can go to Google and be like, what's an object tracker, right? It's your job to know
+
+238
+00:44:20.600 --> 00:44:23.899
+Benjamin Houghton: The strengths and weaknesses and the nuances of them, alright?
+
+239
+00:44:25.030 --> 00:44:25.730
+Benjamin Houghton: Okay.
+
+240
+00:44:29.010 --> 00:44:47.759
+Benjamin Houghton: All right, hybrid. Okay, so this is a pretty cool idea. I think, you know, this is… this… there's a very strong chance that this is… is… this kind of is becoming state-of-the-art, and or is… it's a very strong chance that this will be, and or already is kind of state-of-the-art.
+
+241
+00:44:47.990 --> 00:44:52.170
+Benjamin Houghton: if you go to… I'll look at it, I'll show you guys here in a minute. Actually.
+
+242
+00:44:52.260 --> 00:45:08.770
+Benjamin Houghton: Yeah, we'll look at it in a minute, but on that Mach 17 challenge, like, you can go on there and, like, look at all the models that, like, and look at all the results from all the models, and my point being that there's so many of them, like, this space, like, I was kind of blown away
+
+243
+00:45:08.860 --> 00:45:11.500
+Benjamin Houghton: Like, how many, like, different, like.
+
+244
+00:45:11.530 --> 00:45:22.170
+Benjamin Houghton: models are out there. You know, like, when you talk about object detection, there's really only two answers. Like, you have your YOLOs, and you have your… what's your single-stage detectors?
+
+245
+00:45:22.170 --> 00:45:35.740
+Benjamin Houghton: and you have your two-stage detectors, fast charge, like, that's it. Like, that's all you have. And, like, those models just dominate that space. And, it's not really like that in object tracking. Like, there's a lot… there's so many different models out there, right? So…
+
+246
+00:45:35.950 --> 00:45:53.439
+Benjamin Houghton: I don't want to sit up here and say, like, oh yeah, this is a go… like, I can say with confidence, YOLO is the go-to model for fast object detection. I can't necessarily say that about object detection tracking, because it's… it's kind of much more convoluted, and things are kind of changing pretty quickly, right? But…
+
+247
+00:45:53.750 --> 00:45:58.140
+Benjamin Houghton: That being said, let's look at the hybrid detectors. I think this is a pretty…
+
+248
+00:45:58.280 --> 00:46:14.850
+Benjamin Houghton: interesting… very interesting concept, and it makes a lot of sense to me as to why it's kind of powerful. So, you keep your detection pipeline, so we're going to keep the strengths of YOLO, we're gonna keep the strengths of Faster RTNN, the things that make them so great, but we're just going to improve the matching.
+
+249
+00:46:14.930 --> 00:46:32.510
+Benjamin Houghton: Okay? Instead of doing simple things like, oh, this object was going this way, and this object was going this way, so then that's the way… that's the way we should match things, right? Like, with a simple thing, like a simple Hungarian matching algorithm, which is… which is the way this works, right?
+
+250
+00:46:32.510 --> 00:46:35.740
+Benjamin Houghton: It's just Hungarian matching.
+
+251
+00:46:37.030 --> 00:46:48.040
+Benjamin Houghton: we're going to use something like a transformer, and the transformer is gonna, basically gonna take into con… it's gonna… its context is gonna be the tracks.
+
+252
+00:46:48.200 --> 00:46:58.910
+Benjamin Houghton: like, where things are going from frame to frame, and the detections, and it's gonna match them. It's going to create a score. It's gonna have a number… it's… if you had…
+
+253
+00:46:59.440 --> 00:47:01.180
+Benjamin Houghton: If you had T-tracks.
+
+254
+00:47:01.300 --> 00:47:15.979
+Benjamin Houghton: and oh, say, so D… D detections and T tracks, you're gonna have a D times T output vector that's gonna score the confidence of every single pairing. And so that's what the transformer
+
+255
+00:47:16.010 --> 00:47:32.110
+Benjamin Houghton: that's what the hybrid will output, right? So that's the idea, is just have a… have a transformer, run the attention mechanism, and run the attention mechanism, and allow the tracks to attend to the detections, and then out…
+
+256
+00:47:32.110 --> 00:47:47.670
+Benjamin Houghton: output a score, right, for every single possible pairing. So that's the way that… the overall idea of how it works. Yeah. So, the strengths… or here are some of the models. Unfortunately, the Twix paper is pretty terrible.
+
+257
+00:47:47.730 --> 00:48:02.689
+Benjamin Houghton: not to say it's a badly written paper, but there's, like, zero visual cues. I didn't really enjoy it at all, but it's there if you want to look at it in more detail. I'm not sure it's really necessary for you to do that, but…
+
+258
+00:48:02.690 --> 00:48:14.099
+Benjamin Houghton: You can if you want to. Like, sometimes people are just curious, I know I am, sometimes. But it was one of them papers I just couldn't get into because there was, like, no visual… like, I like papers that have good visuals.
+
+259
+00:48:14.450 --> 00:48:29.250
+Benjamin Houghton: All right. So anyways, and then the… there's these transformer, basically, augmented, bike track variants as well, right? So, instead of using a simple, like,
+
+260
+00:48:29.610 --> 00:48:37.150
+Benjamin Houghton: You know, you could do… You could do something where you have a convolutional neural network.
+
+261
+00:48:37.150 --> 00:48:58.300
+Benjamin Houghton: create these embedded, like, take your objects and embed them into some embedding space, and then you just match up based upon embedding, like, cosine similarity, right? So, and that's kind of, like, the way bike track variants will work, but you could also do the same thing, instead of using a convolutional neural network, convolutional neural network, you could just use a transformer as well.
+
+262
+00:48:58.320 --> 00:49:05.420
+Benjamin Houghton: Right, so it's the same thing as the ByteTrack pipeline, it's just using a convolutional neural network. We'll talk more about ByteTrack in a little bit.
+
+263
+00:49:06.090 --> 00:49:21.009
+Benjamin Houghton: All right, well, actually we should look at the rest of this. Right, so it's obviously going to be more complex, and then maybe not as obvious, it's going to be harder to train. As we know, the attention mechanism is kind of the killer when it comes to… it's very complex.
+
+264
+00:49:21.010 --> 00:49:29.570
+Benjamin Houghton: and… or has a lot of computational overhead, and that's always going to be harder than doing, like, simple things like CNNs and stuff like that.
+
+265
+00:49:30.380 --> 00:49:38.350
+Benjamin Houghton: Okay, so it's emerging… it's at the status, emerging, promising direction, you know, on the verge of maybe becoming state-of-the-art, alright?
+
+266
+00:49:38.970 --> 00:49:56.139
+Benjamin Houghton: End-to-end transformer, so, right, so this is… we'll look at this in detail, just because I think it's cool, and I think it's… it is somewhat relevant. We'll look at this in detail towards the end of the lecture. Not to say, like, it's the end-all, be-all, but it's kind of important.
+
+267
+00:49:57.010 --> 00:50:00.280
+Benjamin Houghton: So it's… and I just realized, so it's 4.30 now.
+
+268
+00:50:00.400 --> 00:50:11.130
+Benjamin Houghton: So we… we're probably gonna go till… we have about 45 minutes, roughly, left of lecture. That'll put us at 5.15, right? And…
+
+269
+00:50:11.550 --> 00:50:20.500
+Benjamin Houghton: We'll do our presentation, and yeah, so we'll take a… let's take a break, and then… let's see, we've had a lot…
+
+270
+00:50:20.610 --> 00:50:25.650
+Benjamin Houghton: To get through still, but… yeah, we'll take a quick, quick break, so we'll…
+
+271
+00:50:26.180 --> 00:50:30.709
+Benjamin Houghton: time is it again? 4.31. We'll resume around 440.
+
+272
+00:50:31.670 --> 00:50:35.099
+Benjamin Houghton: Yeah, so about a 9-minute break, and we'll get back going.
+
+273
+00:50:36.020 --> 00:50:40.110
+Benjamin Houghton: Did we… one second, though, sorry.
+
+274
+00:50:43.330 --> 00:50:53.469
+Benjamin Houghton: Okay, actually, I'm sorry. Let's do this one slide, and then we'll… then we'll take a break. I apologize. So, the end-to-end transformer, that's… we'll do this, and then we'll take a break, because
+
+275
+00:50:53.480 --> 00:51:09.249
+Benjamin Houghton: Then we'll get into this tracking by detection, which is this very first category, right? And that's kind of the meat, really, of today's… that's really the most important part of today's lecture. Alright, so the end-to-end transformer, though, right? So this transformer directly outputs and maintains the tracks, right?
+
+276
+00:51:09.250 --> 00:51:21.010
+Benjamin Houghton: You have… the pipeline is gonna be an image. It goes into some encoder, which is gonna be, well, actually, you would… actually, you're gonna do an image encoder, a vision…
+
+277
+00:51:21.080 --> 00:51:37.640
+Benjamin Houghton: can't remember exactly, I think MOTR uses a vision transformer encoder, and then the output of the encoder will go into the decoder, and you'll have these things called track queries. So instead of a… instead of, like, a… you remember when we were doing language stuff with transformers? It… it would be, like, the
+
+278
+00:51:37.700 --> 00:51:46.639
+Benjamin Houghton: the previous word, right? Now it's going to be, like, these track queries, right? That's… the track is going to be the query into the decoder, and then the query
+
+279
+00:51:46.640 --> 00:51:58.499
+Benjamin Houghton: is going to attend to the image encoder. And so there's no detections, there's no objects, nothing like that, there's no YOLO or boxes, it's just the raw image going in, and these tracks
+
+280
+00:51:58.500 --> 00:52:09.809
+Benjamin Houghton: right, are going to attend to the image… the image coming in, and it's going to output these new… like, it's going to keep these tracks, which are basically, like, the current state of the model. It's almost like an LSTM in that sense.
+
+281
+00:52:09.810 --> 00:52:13.750
+Benjamin Houghton: Where, like, it has, like, this hidden state, where it,
+
+282
+00:52:13.930 --> 00:52:30.750
+Benjamin Houghton: you know, the tracks, the queries initially tracks the queries, they go in, they're blank, they don't really know anything, they attend to the images, and they attend to the objects, they do their own detections and all that stuff, and each track… and each track query represents a certain track, and then those queries
+
+283
+00:52:30.750 --> 00:52:47.889
+Benjamin Houghton: become the input again, and we'll look more… we'll look at it in… in… over several slides worth of detail, but it's a pretty cool idea. So MOTR, motor… I don't… I just like to say… I don't know if that's… I don't think anybody says it like that, but I like to say motor. That's, the,
+
+284
+00:52:48.110 --> 00:53:01.359
+Benjamin Houghton: the model we're gonna look at, and that's kind of, like, the one that started it all. Strengths, it's elegant, aka it's cool, it's unified, learns association implicitly, right? Right, so anyways.
+
+285
+00:53:02.100 --> 00:53:07.580
+Benjamin Houghton: That's… sorry about that, now we'll take a break. It's 4.33, we will be back at 4.40, alright?
+
+286
+00:53:11.490 --> 00:53:12.540
+Benjamin Houghton: Pauses.
+
+287
+00:53:13.630 --> 00:53:15.220
+Benjamin Houghton: And…
+
+288
+00:53:15.520 --> 00:53:22.029
+Benjamin Houghton: where were we at? So, tracking by detection, okay, so this is kind of the modern paradigm. This is…
+
+289
+00:53:23.400 --> 00:53:24.250
+Benjamin Houghton: Sorry.
+
+290
+00:53:27.330 --> 00:53:28.949
+Benjamin Houghton: You guys weren't gonna tell me to worry.
+
+291
+00:53:36.330 --> 00:53:37.219
+Benjamin Houghton: That is.
+
+292
+00:53:38.110 --> 00:53:39.280
+Benjamin Houghton: I didn't know that.
+
+293
+00:53:39.540 --> 00:53:42.280
+Benjamin Houghton: That wasn't on, sorry about that, on this side.
+
+294
+00:53:43.650 --> 00:53:50.950
+Benjamin Houghton: Okay, you guys were looking at the wrinkly screen the whole time. Alright, so, tracking by detection,
+
+295
+00:53:51.270 --> 00:54:06.370
+Benjamin Houghton: So, instead of building a tractor from scratch, right, like, building a full specialized tracking model, again, you're gonna, like we said before, we're gonna leverage the strength of a modern detector, aka YOLO or something like that, and
+
+296
+00:54:06.590 --> 00:54:10.880
+Benjamin Houghton: So, in… in frame T, the initial… some time frame, or some…
+
+297
+00:54:11.290 --> 00:54:25.150
+Benjamin Houghton: initial frame from the video, we'll run it through detector, we'll generate bounding boxes. Those bounding boxes will do some association, and then we have… and then we have… we have a track, right? Because we've… we've basically said, this…
+
+298
+00:54:25.670 --> 00:54:33.340
+Benjamin Houghton: this object here matches this object here, and we can define a track. Like, here's where the object is moving over time, that's what a track is, okay?
+
+299
+00:54:34.190 --> 00:54:50.889
+Benjamin Houghton: All right, yeah, so we run this independently on every single frame, and then we do the association across the frames to form these tracks, right? And this decouples the what from the who is… the what is there versus the who is from who is who, right? You need to detect
+
+300
+00:54:50.920 --> 00:54:54.239
+Benjamin Houghton: Where people are, and then which person is which.
+
+301
+00:54:55.030 --> 00:55:05.399
+Benjamin Houghton: So why is this… I said this is kind of dominant, right? So the detectors are really good, right? That's the main reason why this dominates so well, because
+
+302
+00:55:05.960 --> 00:55:10.340
+Benjamin Houghton: YOLO and stuff like that are so perfected, alright?
+
+303
+00:55:10.930 --> 00:55:22.299
+Benjamin Houghton: Kind of gets back to the same reason why vision transformers aren't necessarily, like, remember we talked about DETR, the detection transformer, last week? And I said, although it's really cool and novel.
+
+304
+00:55:22.980 --> 00:55:27.369
+Benjamin Houghton: most… you're probably just gonna use YOLO anyways, right? But…
+
+305
+00:55:27.380 --> 00:55:42.270
+Benjamin Houghton: it's kind of the same thing here, like, these models are so good, and so that they've been so perfected that they do most of the work for us, right? It's a very modular setup, you can swap out detectors or association methods independently.
+
+306
+00:55:42.270 --> 00:55:48.879
+Benjamin Houghton: And I already kind of hinted at the idea that, like, we kind of have the best of both worlds. Like, we have a fast, powerful CNN,
+
+307
+00:55:48.890 --> 00:56:04.289
+Benjamin Houghton: aka YOLO to do our detections, and then we can use a very specialized model, like a transformer, to do our associations, or we can use the CNN, right? We can do… we can embed our objects, like, we can crop out our… crop out our objects, right?
+
+308
+00:56:04.290 --> 00:56:21.540
+Benjamin Houghton: And we can run them through a CNN and create some feature, right? Like, output some vector that's a set of features, aka your embeddings, and then we can associate embeddings, like a simple method like cosine similarity, cosine distance, right? Compare our objects, basically.
+
+309
+00:56:21.560 --> 00:56:29.450
+Benjamin Houghton: So there's different… so you can swap out these methods and figure out which one's best for you. It's pretty cool, right? You don't have to, like… it's not like a…
+
+310
+00:56:29.810 --> 00:56:38.450
+Benjamin Houghton: You can swap them out piecemeal. You know, you're not gonna… if you swap out your association method, you don't necessarily need to change your detector, right?
+
+311
+00:56:39.160 --> 00:56:42.119
+Benjamin Houghton: It scales naturally to many objects, alright.
+
+312
+00:56:42.730 --> 00:56:47.230
+Benjamin Houghton: Alright, so let's talk about the association problem. We've talked…
+
+313
+00:56:47.580 --> 00:57:05.720
+Benjamin Houghton: And generally, how this all… how we do this, but we should talk in a little bit more detail, right? So, we have given N detections in a frame at some time frame, frame T, and we have M existing tracks from T-1. We need to find the best assignment. And this is a bipart… a biperate.
+
+314
+00:57:05.940 --> 00:57:17.220
+Benjamin Houghton: bipartite matching problem, right? We did this… this is kind of the way… remember the DTETR, the detection transformer, had the same
+
+315
+00:57:17.260 --> 00:57:27.730
+Benjamin Houghton: problem, right? And remember, we did… we solved this via Hungarian matching. It's exactly what we're going to do here. But let's talk about what this problem exactly is and define it a little bit more.
+
+316
+00:57:28.180 --> 00:57:31.670
+Benjamin Houghton: Each detection should be assigned to at most one track.
+
+317
+00:57:31.820 --> 00:57:42.630
+Benjamin Houghton: Right? So, meaning that, you know, a car moving through a frame, you know, car… or a person moving frame to frame, it can't be in two places at the same time. It needs to be on one particular track.
+
+318
+00:57:42.630 --> 00:58:01.989
+Benjamin Houghton: Each track should be assigned at most one detection, right? One object per track, and some detections may have new objects, start of a new track, and some tracks may have no matching detection, right? Object is occluded from the frame, right? So we have a track, something moving, but what that means is that, like, we already had a previous track defined.
+
+319
+00:58:02.030 --> 00:58:14.670
+Benjamin Houghton: and we go to the next frame, and we need to figure out what object in the new frame matches that track, well, that object might have left, right? So that's what that means. So some tracks are going to have no matches, right?
+
+320
+00:58:15.140 --> 00:58:17.070
+Benjamin Houghton: And new objects don't have a track yet.
+
+321
+00:58:18.020 --> 00:58:29.789
+Benjamin Houghton: All right, so matching cues, right? These are the things that tell us where… this is the things that allow us to do the matching. Motion, predicted from the Kalman filter, first detection position. So this is the first detection
+
+322
+00:58:29.790 --> 00:58:45.480
+Benjamin Houghton: in the, like, the go-to, right? Hungarian algorithm was used for… is used in sort, deep sort, and ByteTrack, right? I believe ByteTrack uses Hungarian algorithm, right? So it's kind of like… it's a very simple,
+
+323
+00:58:45.500 --> 00:58:53.130
+Benjamin Houghton: way of doing this. Another is appearance. So, visual similarity, right? So, do objects look the same?
+
+324
+00:58:53.130 --> 00:59:08.090
+Benjamin Houghton: Okay? Does, you know, is it a red car in frame 1? Then it should be a red car in frame 2. So we can do it based upon how they look. Also known as embeddings, right? Like, I'm sorry, not also known as embeddings. We can take that
+
+325
+00:59:08.200 --> 00:59:23.270
+Benjamin Houghton: visual cue, or that image, we can embed it with a CNN, right? That's what I was talking about before. And then geometry is the last one, so the bounding box size and aspect ratio. So these are all the hints that… the ideas that you can use to do your matching, all right?
+
+326
+00:59:23.950 --> 00:59:32.610
+Benjamin Houghton: Hungarian algorithm, right, is gonna solve this, this matching problem, so giving, oh, actually…
+
+327
+00:59:34.910 --> 00:59:41.329
+Benjamin Houghton: I actually cut this… Oh, wait, no, I still have it, I guess. Alright, so,
+
+328
+00:59:42.340 --> 00:59:47.630
+Benjamin Houghton: There was some code where I think I removed it from the lecture. I did.
+
+329
+00:59:56.130 --> 00:59:59.900
+Benjamin Houghton: Alright, don't worry about this slide, sorry about that.
+
+330
+01:00:00.480 --> 01:00:05.969
+Benjamin Houghton: Don't worry about this Hungarian algorithm slide, we're gonna talk about it here in a second, alright?
+
+331
+01:00:06.330 --> 01:00:09.659
+Benjamin Houghton: We don't really have a lot of time, anyways, left, so…
+
+332
+01:00:09.690 --> 01:00:21.040
+Benjamin Houghton: We're gonna talk about it via… for this algorithm specifically for tracking. So, we have these two sets of boxes where they come from, so we have no ground truth that's involved at runtime.
+
+333
+01:00:21.040 --> 01:00:32.439
+Benjamin Houghton: we have the intersection of union is basically computed between two sets of boxes that the system generates itself, right? So remember, we have the tracks.
+
+334
+01:00:32.440 --> 01:00:49.320
+Benjamin Houghton: which we have existing tracks from the Coleman filter that predicts a bounding box, like, it's given a bounding box in one frame, and it says, where's it going to go in the next frame, right? So, I'll draw it up here on the board for you guys, again, like, maybe it'll be a little bit better to do it up here, but…
+
+335
+01:00:49.490 --> 01:00:56.789
+Benjamin Houghton: If we have a box here, right, and let's say this is T equals 1, let's say we have T equals 0,
+
+336
+01:00:57.420 --> 01:01:12.789
+Benjamin Houghton: Okay? We have the same box that was over here, and then we see that in frame 1, it didn't really move far. It moved a little bit to the right, maybe. It's going this way, and now it's here, okay? So now, the filter's job is to say, in T2,
+
+337
+01:01:13.090 --> 01:01:19.630
+Benjamin Houghton: like, where… where is that box, right? It's as simple… as simple as that, right? That is the row, okay?
+
+338
+01:01:19.870 --> 01:01:26.300
+Benjamin Houghton: Now, we have a detector that's also kind of doing the same thing. In frame 1,
+
+339
+01:01:27.080 --> 01:01:33.320
+Benjamin Houghton: like, this was the box, this was where it was detected, okay? In frame 2, we have another box.
+
+340
+01:01:33.760 --> 01:01:36.320
+Benjamin Houghton: Here, and then in frame 3,
+
+341
+01:01:36.440 --> 01:01:41.769
+Benjamin Houghton: I'm sorry, this is frame 0, frame 1, frame 2, the box is here, okay? The detector.
+
+342
+01:01:42.050 --> 01:01:43.849
+Benjamin Houghton: Right? So…
+
+343
+01:01:50.410 --> 01:01:54.639
+Benjamin Houghton: there's some IOU associated with each of these, right?
+
+344
+01:01:54.990 --> 01:02:04.440
+Benjamin Houghton: So, we've established that, like, we have… and I can draw, like, more… I can draw more boxes here, the second one. It's the same thing I drew earlier, right?
+
+345
+01:02:04.920 --> 01:02:19.959
+Benjamin Houghton: Where we have boxes from the filter, and we have boxes from the detector. And we have some intersection over union associated with each of these, and now we're here in frame 2. This is what we're… what we're trying to do. And, you know, I'll just draw, like, three.
+
+346
+01:02:20.620 --> 01:02:21.730
+Benjamin Houghton: Boxes?
+
+347
+01:02:22.090 --> 01:02:23.120
+Benjamin Houghton: And…
+
+348
+01:02:25.770 --> 01:02:40.889
+Benjamin Houghton: Right? I can… I have some intersection of reunion associated with each of these, or… and or distance, and I can compute, basically, some cost function that matches… that… that we want to minimize, right? So, the detector, again, gave us the blue boxes.
+
+349
+01:02:40.890 --> 01:02:50.459
+Benjamin Houghton: The filter gave us the red boxes, and now we want to minimize our costs. And so that's what the Hungarian algorithm does. It's as simple as that. It's going to look at
+
+350
+01:02:50.480 --> 01:02:54.929
+Benjamin Houghton: And it's gonna draw… it's gonna build, like, out a matrix, right? So we'll have, like.
+
+351
+01:02:54.980 --> 01:03:01.760
+Benjamin Houghton: We'll have track one, well, I'll say T1, we'll have T2, In T3…
+
+352
+01:03:02.250 --> 01:03:14.310
+Benjamin Houghton: let's say we have 3 objects, too. You could have… it doesn't have to be the same number, because objects can leave and can, or three… usually this is a D, not an O for detect… detection, but whatever. So we have object…
+
+353
+01:03:14.450 --> 01:03:24.599
+Benjamin Houghton: detection 1, 2, and 3. This could be 4 or 5, whatever, it just depends on what's in the image. Okay, and now we need to match these up. And so let's say the cost
+
+354
+01:03:24.850 --> 01:03:36.370
+Benjamin Houghton: where this is, like, you know, this might be 0.8, or it could be a score or a cost. Maybe this is 0.1, and this is 0.3, right? So if we're going based upon
+
+355
+01:03:36.560 --> 01:03:48.500
+Benjamin Houghton: IOU, or cost, right? Let's say cost, and this is the lowest number, right? So, we think that, you know, this probably goes here, and ideally, you know, this might be 0.1,
+
+356
+01:03:48.800 --> 01:04:00.469
+Benjamin Houghton: let's say 0.5 and 0.6, I don't know, right? But we see, again, this is the lowest number, and so we've matched up track 1 with object 2. And then finally.
+
+357
+01:04:00.600 --> 01:04:01.919
+Benjamin Houghton: To the last one.
+
+358
+01:04:02.030 --> 01:04:10.150
+Benjamin Houghton: 0.5, 0.9… 4.1, right? And so, this one matches this. And so, basically, we have
+
+359
+01:04:10.370 --> 01:04:16.579
+Benjamin Houghton: the summation of this table, whatever the smallest number is, is how we match things up, right? There's no…
+
+360
+01:04:17.150 --> 01:04:21.989
+Benjamin Houghton: It really is as simple as that. These numbers represent some cost.
+
+361
+01:04:22.410 --> 01:04:27.369
+Benjamin Houghton: Which we've yet to define, okay? We can look at the cost real fast. I think I have it.
+
+362
+01:04:27.530 --> 01:04:33.709
+Benjamin Houghton: Rick, yeah, so… And this one is just Intersection of Reunion,
+
+363
+01:04:37.000 --> 01:04:38.449
+Benjamin Houghton: But there's other…
+
+364
+01:04:38.640 --> 01:04:49.099
+Benjamin Houghton: You can use other… you can use other costs, though, right? So, in this, it would be the opposite, like, this… you would pick the large numbers, and I mean, these… some of these objects don't even overlap, right?
+
+365
+01:04:51.360 --> 01:04:56.809
+Benjamin Houghton: But… There are other… there are other costs
+
+366
+01:04:56.980 --> 01:05:00.040
+Benjamin Houghton: That you can use besides that. Alright, so…
+
+367
+01:05:00.530 --> 01:05:04.679
+Benjamin Houghton: That's how this works. You know, this would probably be a,
+
+368
+01:05:06.640 --> 01:05:21.960
+Benjamin Houghton: you know, I don't know, I mean, how we would… how I'd do this for a quiz, but, you know, it's something, like, it's a pretty simple process, right? You just find out… you put… you put them in a table, and you figure out what the lowest numbers are, or the largest numbers, depending on whatever your metric is, alright?
+
+369
+01:05:30.220 --> 01:05:38.500
+Benjamin Houghton: Right, and so this is the same thing I just said in flowchart version. We have our predictions, our tracks, we have our detections, compute the IOU pairs.
+
+370
+01:05:39.410 --> 01:05:44.200
+Benjamin Houghton: So on and so forth, right? There's gonna be some, like, threshold as well you're gonna set with this.
+
+371
+01:05:44.320 --> 01:05:49.200
+Benjamin Houghton: Right, so… If…
+
+372
+01:05:49.450 --> 01:06:07.130
+Benjamin Houghton: you have more objects than you do tracks, right? So let's say we have some new one, and, like, this one's, like, the odd one out, it doesn't have any intersection over Union, or a low intersection over Union with all the other tracks, then we would start a new track for it. Or if we have some object that has a
+
+373
+01:06:07.340 --> 01:06:23.670
+Benjamin Houghton: really low intersection of reunion, or a bad cost with all the tracks, then we might say that that is exited, right? So that's how you define… you're just going to arbitrarily set some threshold based upon your metric, so as objects come and go. So that's how that would work. All right? Any questions on that?
+
+374
+01:06:34.350 --> 01:06:39.719
+Benjamin Houghton: Alright, so yeah, that's all the Hungarian matching algorithm does, is
+
+375
+01:06:39.970 --> 01:06:43.059
+Benjamin Houghton: Defined some cost, and we try to minimize it.
+
+376
+01:06:43.450 --> 01:06:49.600
+Benjamin Houghton: Alright, so, next, we'll talk about sort.
+
+377
+01:06:51.500 --> 01:07:03.240
+Benjamin Houghton: This is, like, an actual pipeline, right? And it's not necessarily a tracker or detector in itself. The source paper is just the thing that kind of, like, tells you how to connect all the components, right?
+
+378
+01:07:03.240 --> 01:07:17.039
+Benjamin Houghton: So it's more or less the glue, right? It takes any off-the-shelf detector, as an input, and it adds these two things. It adds the Kalman filter per track and the Hungarian algorithm. So it's what we've been talking about. So, like, YOLO gives us the boxes.
+
+379
+01:07:17.040 --> 01:07:26.210
+Benjamin Houghton: The detections, the Kalman filter tells us a track, and then the Hungarian algorithm tells us, to match those predictions with new,
+
+380
+01:07:26.320 --> 01:07:29.790
+Benjamin Houghton: How to match the predictions and detections.
+
+381
+01:07:35.190 --> 01:07:47.319
+Benjamin Houghton: So, let's read this real fast. I think you guys probably have a good understanding now, like, I don't… we've talked about it quite a bit today, but detect. So, run an external detector on frame T, get your bounding boxes.
+
+382
+01:07:47.350 --> 01:07:56.919
+Benjamin Houghton: Step 2. Predict each existing tracked Kalman filter, predicts its bounding box for frame T. So for the next frame,
+
+383
+01:07:57.580 --> 01:07:58.969
+Benjamin Houghton: We get… er…
+
+384
+01:07:59.580 --> 01:08:10.170
+Benjamin Houghton: yeah, for the next… or for the current frame, we… we have some… we say, where is this thing going, or where should it be going, right? From the previous frame to now, where should it be going?
+
+385
+01:08:10.170 --> 01:08:20.419
+Benjamin Houghton: associate, compute the IOU, intersection of reunion between the predicted boxes and the detected boxes, right? So this kind of assumes, like, a pretty high frame rate, too, right? Like.
+
+386
+01:08:20.510 --> 01:08:26.389
+Benjamin Houghton: you know, it's not… you have to… for this particular, you know, for this particular… I wonder if they talk about…
+
+387
+01:08:27.300 --> 01:08:34.279
+Benjamin Houghton: I'm gonna look real fast just to see, if they do mention…
+
+388
+01:08:38.520 --> 01:08:41.790
+Benjamin Houghton: other costs for their Hungarian matching?
+
+389
+01:08:43.790 --> 01:08:45.940
+Benjamin Houghton: Other than intersection or reunion.
+
+390
+01:08:46.569 --> 01:08:48.250
+Benjamin Houghton: Because you can imagine, like.
+
+391
+01:08:48.990 --> 01:09:06.709
+Benjamin Houghton: It says here, for tuning the initial common filter covariances, intersection of reunion and T loss parameters, we use the same training validation split. Okay, so I'm not sure exactly what this T loss… tracks are terminated if they're not detected for T-loss frames. Okay.
+
+392
+01:09:06.890 --> 01:09:11.439
+Benjamin Houghton: So yeah, they just use Intersection or Reunion for their filter, it sounds like, okay?
+
+393
+01:09:18.790 --> 01:09:33.130
+Benjamin Houghton: And this is how they… if the tracks are terminated, they're not… so basically, if they don't have it… they don't have the match detected, they don't have the match detection for so many frames, then that track gets deleted, is what they're saying here. Okay, it's pretty simple, right? Like, there's nothing like…
+
+394
+01:09:33.580 --> 01:09:44.030
+Benjamin Houghton: The only thing that's really new here is this idea of, like, of the Kalman filter, right, which is a pretty simple idea. Predicts, like, you know, use motion to…
+
+395
+01:09:44.130 --> 01:09:56.360
+Benjamin Houghton: To predict where a box is going, okay, like, it's moving this fast, then we expect the box to be here in the next frame, and then we just match them up based upon intersection or reunion with our detector, right?
+
+396
+01:09:56.900 --> 01:09:59.050
+Benjamin Houghton: Pretty simple idea, I think.
+
+397
+01:10:00.190 --> 01:10:01.899
+Benjamin Houghton: Okay, any questions on this?
+
+398
+01:10:02.690 --> 01:10:03.810
+Benjamin Houghton: So far?
+
+399
+01:10:06.560 --> 01:10:17.469
+Benjamin Houghton: associate the intersection over union predictive boxes, using the Hungarian algorithm, and find the optimal assignment, right? Whatever detections overlap the best with the tracks.
+
+400
+01:10:18.300 --> 01:10:29.690
+Benjamin Houghton: update the match tracks. Now we correct the… the Coleman filters corrected with a blend of the prediction and the detection, right? Meaning that, like, so, you know, the…
+
+401
+01:10:29.690 --> 01:10:40.700
+Benjamin Houghton: what does that mean? Well, the track, remember, is going, like, at a certain speed across the screen, right? So maybe it's going 10 pixels per sec… 10 pixels per frame.
+
+402
+01:10:40.710 --> 01:10:53.730
+Benjamin Houghton: Right? Plus, like, what we… what we just saw with the detection. So it's going to be a blend of that, right? You're going to take those… both things into consideration, like, what's… what we're seeing with the detector, plus what we've seen in the past, like the motion, all right?
+
+403
+01:10:53.990 --> 01:11:03.120
+Benjamin Houghton: unmatched detections, right? We start a new track, and then unmatched tracks after T-loss frames get… they get deleted, okay?
+
+404
+01:11:05.370 --> 01:11:18.950
+Benjamin Houghton: No appearance model. Sort only uses position and motion, right? That's what makes it fast, right? So, appearance model, remember what an appearance model is? It's taking, the appearance model takes,
+
+405
+01:11:19.890 --> 01:11:28.699
+Benjamin Houghton: it's a way of basically embedding the object, right? And, you know, so you can use a CNN or something like that, right? That's what the… that's what the appearance model is.
+
+406
+01:11:28.880 --> 01:11:33.599
+Benjamin Houghton: Alright, sort, strengths and weaknesses, it's very fast.
+
+407
+01:11:33.600 --> 01:11:45.250
+Benjamin Houghton: Very simple. Weaknesses, no appearance model, okay? So, the tracker cannot distinguish between two similar-looking objects, so that's… you can run, you know, just using intersection or reunion and, like, direction.
+
+408
+01:11:45.250 --> 01:11:59.140
+Benjamin Houghton: Okay, so if two objects look, you know, it doesn't even matter if they look the same. It could be two objects that look completely different, a red car and a blue car, that are, like, close to each other, and their paths merge, then, you know, it's very easy to get them swapped, mixed up.
+
+409
+01:12:00.570 --> 01:12:19.209
+Benjamin Houghton: All right, and then we have deep sort, which introduces this reID embedding, all right? Which is, so this key addition is the re-identification, or the RID network, and it's just a small CNN that takes a crop of the detected object and produces a feature embedding vector, right? So we take our detected object.
+
+410
+01:12:20.870 --> 01:12:38.690
+Benjamin Houghton: we run it through a detect… we take a crop of our, object, we run it through a CNN that creates a vector, and now, instead of just… now we know what things look like. We know if things… if we have a red car and one…
+
+411
+01:12:38.830 --> 01:12:44.400
+Benjamin Houghton: frame in the first frame, it's gonna look a lot like the red car in the next frame, all right?
+
+412
+01:12:47.580 --> 01:12:53.460
+Benjamin Houghton: So the deep sort pipeline, we detect the bounding boxes.
+
+413
+01:12:53.670 --> 01:13:05.620
+Benjamin Houghton: We do… we extract the appearance, right? So after we do the detection via YOLO or whatever, we run through a small CNN, the re-ID CNN, create our embeddings.
+
+414
+01:13:05.810 --> 01:13:11.390
+Benjamin Houghton: When we do a prediction, we use the Kalman to predict, for each existing track, and then we associate
+
+415
+01:13:11.440 --> 01:13:24.519
+Benjamin Houghton: the cascaded matching using both the motion and appearance costs, and then we update the common update again, right? So we see this new cost function, right? So, what I was saying before, the cost function for Hungarian matching doesn't necessarily need to be
+
+416
+01:13:24.520 --> 01:13:38.359
+Benjamin Houghton: just, like, IOU or whatever, right? It can be… here we have the… the Kalman filter, which is the motion, where… what direction the box is going, plus now the appearance, right? The embeddings from the CNN.
+
+417
+01:13:38.510 --> 01:13:46.549
+Benjamin Houghton: Right, so this is going to give us a better… a much better estimation. So now we have two things that… that do cross that are…
+
+418
+01:13:46.680 --> 01:13:57.639
+Benjamin Houghton: basically moving the same direction, the same, basically, motion. We can, we can kind of estimate if, you know, if they look differently, we're going to be able to distinguish them after they cross paths.
+
+419
+01:14:00.060 --> 01:14:00.810
+Benjamin Houghton: Alright.
+
+420
+01:14:02.120 --> 01:14:09.979
+Benjamin Houghton: And I'm going kind of fast because, you know, we only have a little bit of time left. We'll probably go for another 15 minutes. We'll do our presentation at 520.
+
+421
+01:14:10.010 --> 01:14:14.230
+Benjamin Houghton: And then we'll… yeah, that should be enough time. Alright, so appearance types.
+
+422
+01:14:14.240 --> 01:14:30.239
+Benjamin Houghton: Remember I said before, maybe you don't remember, but there are different types of appearance. An appearance model is any visual representation, okay? It can be things like color, texture cues, it can be the deep embeddings, like from a CNN or even a transformer.
+
+423
+01:14:30.240 --> 01:14:36.100
+Benjamin Houghton: Right, and then… or attempt some type of similarity, like the Siamese-style, matching.
+
+424
+01:14:36.100 --> 01:14:43.569
+Benjamin Houghton: So there's… there's… when people say appearance, it can be any one of these things. In 2026, though, when people say appearance model.
+
+425
+01:14:43.570 --> 01:14:57.680
+Benjamin Houghton: more than likely, they're referring to one of these re-ID CNNs, alright? So, typically, they mean this, right? They're using a CNN, maybe a transformer, to embed the object into some embedding space.
+
+426
+01:14:59.860 --> 01:15:18.710
+Benjamin Houghton: there's a little chart that you can, we can look at here. So, appearance type, handcrafted features, classical trackers, right? We don't need to worry too much about that category. We're gonna focus more on these other ones. The deep re-ID embedding, so deep sort, hybrid, trackers.
+
+427
+01:15:18.790 --> 01:15:23.430
+Benjamin Houghton: We would use this, and then the query state features would be like a,
+
+428
+01:15:23.660 --> 01:15:26.860
+Benjamin Houghton: basically a Transformer style, alright?
+
+429
+01:15:27.860 --> 01:15:31.769
+Benjamin Houghton: Okay, so that brings us to BiteTrack, which is kind of like…
+
+430
+01:15:32.570 --> 01:15:42.369
+Benjamin Houghton: we're kind of at, like, the modern… this is… this is kind of, like, the pinnacle of where we're at, in object tracking, or some… like, there's gonna be some variation of this. And so,
+
+431
+01:15:42.520 --> 01:15:46.660
+Benjamin Houghton: The key insight here is not to discard low-confidence detections too early.
+
+432
+01:15:47.960 --> 01:16:06.500
+Benjamin Houghton: That's… it's, like, literally as simple as that. Like, that's… they wrote a whole paper on this. It's kind of funny if you read the paper, like, you… I read the abstract, and I was, like, done with the paper. I was like, okay, I guess I don't need to read this anymore, because literally all I did was take, like, Deepsort, and instead of, like, discarding these old tracks.
+
+433
+01:16:06.550 --> 01:16:18.760
+Benjamin Houghton: Right? They just… they still matched them. Like, they kept the low confidence ones. So they matched the existing tracks, the high confidence detections, matched the remaining on-tracks to low-confidence detections.
+
+434
+01:16:21.050 --> 01:16:22.190
+Benjamin Houghton: Simple as that.
+
+435
+01:16:22.550 --> 01:16:40.170
+Benjamin Houghton: I'm sure they use, like, some type of, like, threshold to, like, what they're… like, you know, they just keep them… they probably keep these low-confidence ones around for later, in case they become high confidence again. I don't know, you have to read the entire paper, but it's… it's as simple as that, right? So,
+
+436
+01:16:42.240 --> 01:16:52.910
+Benjamin Houghton: Yeah. There's this nice little table here we have, let's look at this. Motion model, they all use the common filter for the motion model. The appearance model is gonna be…
+
+437
+01:16:53.070 --> 01:17:08.959
+Benjamin Houghton: really, DeepSort's the only one that has one, but you could use an appearance model with bike track. Like, that's one of the cool things about this, it's like, it's so modular. There's no reason why you couldn't use some type of appearance model, whatever it may… whatever you want to use, okay?
+
+438
+01:17:08.960 --> 01:17:14.480
+Benjamin Houghton: association, so intersection of reunion with the Hungarian matching.
+
+439
+01:17:14.490 --> 01:17:27.570
+Benjamin Houghton: And then the deep sort is motion plus appearance, and then the bike track, two-stage intersection of reunion plus Hungarian matching. All right. All right, that's… that's good enough for now, with that table.
+
+440
+01:17:28.370 --> 01:17:32.440
+Benjamin Houghton: Okay, joint tracking and detection, so…
+
+441
+01:17:32.550 --> 01:17:36.730
+Benjamin Houghton: We… I mentioned earlier, this is… so now we've moved past the first type.
+
+442
+01:17:36.870 --> 01:17:55.499
+Benjamin Houghton: the… of the… basically the… the modern paradigm, which is the… which… which is referred to as tracking by detection, into the joint detection and tracking. So now we do it with, like, a single model. All right, so what does this look like? Joint detecting… detection and tracking,
+
+443
+01:17:56.270 --> 01:18:04.729
+Benjamin Houghton: Instead of running a detection and tracking as separate steps, we predicted them all in one forward pass, and here are some of the models that do this, right?
+
+444
+01:18:04.860 --> 01:18:11.620
+Benjamin Houghton: Okay? We already kind of, you know, this slide is not…
+
+445
+01:18:12.030 --> 01:18:15.610
+Benjamin Houghton: really a lot more to this, I think.
+
+446
+01:18:20.800 --> 01:18:32.889
+Benjamin Houghton: that I want to get into. Well, there's more to this, but this is, like, as deep as I want to go, alright? Because I said before, these models are kind of on their way out, all right? And I kind of debated even putting them in the lecture. But,
+
+447
+01:18:33.660 --> 01:18:34.929
+Benjamin Houghton: Instead of running…
+
+448
+01:18:34.950 --> 01:18:43.850
+Benjamin Houghton: But we can read this, what these… about these three models. The FAIR MOT adds a re-ID branch to the center net, okay?
+
+449
+01:18:43.850 --> 01:18:58.130
+Benjamin Houghton: Center track detects objects in the current frame, conditioned on the previous frame, and then we have the joint detection embedding, share backbone for detection, plus free ID. Yeah. So, the reason why… the thing to really take away from this is that
+
+450
+01:18:58.230 --> 01:19:12.100
+Benjamin Houghton: the… this is the problem, is that they're really hard to train, and that's because the detection and the re-ID objectives conflict with each other, right? The tracking portion and the detection portion.
+
+451
+01:19:15.480 --> 01:19:19.139
+Benjamin Houghton: Alright, hybrid tracking, okay, so…
+
+452
+01:19:22.700 --> 01:19:39.909
+Benjamin Houghton: This is basically like adding a transformer onto the tracking by detection. It's kind of, like, basically what this is. The hybrid methods keep the strong detector pipeline, then they use, like, some type of learned association module, right, to improve the identity… prove identity. So.
+
+453
+01:19:42.060 --> 01:19:51.679
+Benjamin Houghton: This is going to help a lot with the switches and the crowded interactions, especially if you have, like, a really powerful appearance, a really powerful, association model.
+
+454
+01:19:53.830 --> 01:20:04.100
+Benjamin Houghton: Alright, so let's look at some of the components of this. So the detector is the same, like, you have something like YOLO, and then the track state, you have motion plus some short-term history.
+
+455
+01:20:04.100 --> 01:20:15.330
+Benjamin Houghton: association module, so this could be a multi-layer perceptron, transformer, or even a graph neural network, right? So there's… there's different models that you would use here.
+
+456
+01:20:15.440 --> 01:20:24.610
+Benjamin Houghton: I don't really have a lot of experience with a lot of these. I would say the transformer would be the one that I would probably go to, though. Matching output…
+
+457
+01:20:25.190 --> 01:20:27.790
+Benjamin Houghton: Assignment scores and updated identities.
+
+458
+01:20:29.360 --> 01:20:34.119
+Benjamin Houghton: Moving on pretty fastly… pretty fast. Let's look at,
+
+459
+01:20:34.620 --> 01:20:39.979
+Benjamin Houghton: Yeah, it's kind of like a bridge, it says here, between DeepSort and, like, a full transformer.
+
+460
+01:20:41.150 --> 01:20:54.220
+Benjamin Houghton: Let's look at a typical pipeline. So, I just wanted to give you guys an example, like, what this might look like. This is going to be different based upon, like, different papers and different, implementations, though. So, we detect some… some number… some objects in some frame T,
+
+461
+01:20:54.250 --> 01:21:06.089
+Benjamin Houghton: We build the candidate pairs between active tracks and new detections, just like we did before. Score pairs with a learned association module, right? So this time now, we're gonna…
+
+462
+01:21:06.090 --> 01:21:18.540
+Benjamin Houghton: have some model or module that does some type of scoring. It's very similar to what we did before with the appearance model, okay? But we're gonna have some type of scoring here, all right?
+
+463
+01:21:18.700 --> 01:21:22.280
+Benjamin Houghton: And then we do… then we do the matching again.
+
+464
+01:21:25.480 --> 01:21:30.140
+Benjamin Houghton: Alright, so… I…
+
+465
+01:21:30.520 --> 01:21:40.970
+Benjamin Houghton: wanted to build out, like, what this might… the association… so what does this association module look like, right, for… for, like, a transformer? So, in this example, we have T-tracks.
+
+466
+01:21:41.100 --> 01:21:54.879
+Benjamin Houghton: We have de-detection, and we have de-detection features, and we have some op… some optional positional motion encoding if you want to… if you want to use that as well. So what does a transformer-style association? Looks like? What attends to what?
+
+467
+01:21:54.880 --> 01:22:08.989
+Benjamin Houghton: Well, we have some detections D, right, and we use the track tokens from T as queries. The track queries are going to do cross-attention over your detection tokens, okay? Oh yeah, so build our detection tokens from D,
+
+468
+01:22:13.780 --> 01:22:16.050
+Benjamin Houghton: Right, which we do here, in this step.
+
+469
+01:22:16.160 --> 01:22:19.520
+Benjamin Houghton: I'm sorry, no, we don't. It's here.
+
+470
+01:22:20.060 --> 01:22:27.299
+Benjamin Houghton: here's our detection… our detection features, right? And then we have our track features, and we have
+
+471
+01:22:27.430 --> 01:22:43.829
+Benjamin Houghton: tokens and detection tokens, right? So you have some embedding space, whatever that looks like, you know, this, you know, it's basically like you take your track features and embed them into the proper dimension to go into the attention… into the attention mechanism. And so then.
+
+472
+01:22:43.830 --> 01:22:48.319
+Benjamin Houghton: We can go… this would be the attention module here, the cross attention.
+
+473
+01:22:49.420 --> 01:22:58.140
+Benjamin Houghton: Here, and the tracks are going to attend to your detection tokens, and out comes the other side, or you're going to be updated
+
+474
+01:22:58.140 --> 01:23:20.680
+Benjamin Houghton: tracks, right? So the tracks have now attended to the detection, so they have an idea of, like, what's going on. And you would do, you know, you could probably do, like, self-attention as well amongst the tracks, so all the tracks know what's going on with the other tracks, and they also attend to all the detections. So once you've done that, you can do the rest of this, right? So let's look at… now focus your attention to the right side here.
+
+475
+01:23:20.680 --> 01:23:21.650
+Benjamin Houghton: And…
+
+476
+01:23:22.380 --> 01:23:40.890
+Benjamin Houghton: you have your updated tracks, right, that we got from the… that we got from our transformer, right? And we also have our detection features. And so what we'll do is we'll concatenate these features together, and we'll run them through a multi-layer perceptron, and basically we're just doing, at this stage here, we're combining
+
+477
+01:23:41.520 --> 01:23:51.159
+Benjamin Houghton: we're combining the features, and we're doing some type of, we're doing some type of linear projection, right, into the correct dimensionality. Because we need an S…
+
+478
+01:23:51.460 --> 01:24:07.889
+Benjamin Houghton: Here, remember, we need an S by N by D, so this is a S… this score matrix, S, is going to be T by D dimensionality. For every single track, we need to basically match all the tracks and detections, so that's why we have a T by D matrix.
+
+479
+01:24:08.130 --> 01:24:18.100
+Benjamin Houghton: All right? And then we do the matching, greedy Hungarian or greedy matching, meaning that we just match, you know, if you did the… basically, we just match
+
+480
+01:24:18.100 --> 01:24:28.609
+Benjamin Houghton: you know, we just take the best score, essentially, right, for each… for each detection in each track. So that's, and then you do your final assignments. So that's how this would… this would kind of work, all right?
+
+481
+01:24:29.580 --> 01:24:42.080
+Benjamin Houghton: Is there any questions on this? And this is, like, totally hypothetical, like, this isn't, like, an actual, like, you know, this is very similar to how this would be done, but I just wanted to give you an idea, like, how this, like, what this would look like, and, you know.
+
+482
+01:24:42.510 --> 01:24:47.629
+Benjamin Houghton: But this isn't, like… I just kind of cherry-picked this, this isn't, like, from a specific model, per se.
+
+483
+01:24:51.880 --> 01:25:05.640
+Benjamin Houghton: All right, so we have, like, 5 minutes left of lecture, which is probably enough time to do the transformer-based tracking, which is pretty cool, right? Now, this isn't… again, this isn't state-of-the-art today. Maybe one day it will be, I don't know, we'll see what happens.
+
+484
+01:25:05.640 --> 01:25:22.160
+Benjamin Houghton: But it's a pretty cool paper. You can read about it here. But this MOTR, right, so it's this end-to-end transformer tracking, and we have these… and it's going to kind of combine the ideas of what we talked about today, as well as what we talked about last week with the detection transformers.
+
+485
+01:25:22.160 --> 01:25:25.000
+Benjamin Houghton: Alright? Because it's going to do both the detection and the tracking.
+
+486
+01:25:25.160 --> 01:25:26.939
+Benjamin Houghton: Alright,
+
+487
+01:25:27.760 --> 01:25:43.550
+Benjamin Houghton: So let's look at the overview here. So, this frames out… this frames multi-object tracking as an end-to-end transformer task. Yes, we knew that. A set of track queries is carried across frames, so identities persist over time, right? So you have these track queries here, in this diagram.
+
+488
+01:25:44.190 --> 01:25:51.739
+Benjamin Houghton: Right? These are gonna persist over time. On the left here, we have one-shot detection with DETR, so this is just
+
+489
+01:25:51.950 --> 01:26:08.290
+Benjamin Houghton: you know, you have your… remember… remember we talked about last week, we have these, like, these learned queries, right? These queries don't represent anything. They're just learned embeddings, okay? Like, we just have these random… not random, but they're learned. Like, we have these… these… these queries, because we need inputs
+
+490
+01:26:08.290 --> 01:26:12.129
+Benjamin Houghton: Remember, remember I said before, like, for every single object query.
+
+491
+01:26:12.130 --> 01:26:19.230
+Benjamin Houghton: you'll have, like, some prediction, right? Even if you have 3 objects, and you have 15… I think N is usually, like, 100,
+
+492
+01:26:19.230 --> 01:26:42.060
+Benjamin Houghton: can't remember exactly what it is, for DETR, but you have some set number of object queries. Might be larger than that, actually. But let's just say it's 100, and you only have 3 objects. Well, the rest will be, ideally, will predict, like, no class, right? But that's the way this works. Like, you have some object query, and that's what this left-hand diagram represents, and the right-hand side, we have, these track queries. So.
+
+493
+01:26:42.060 --> 01:26:45.410
+Benjamin Houghton: The shift here is to think about, instead of thinking about
+
+494
+01:26:45.690 --> 01:26:57.409
+Benjamin Houghton: object queries, now we have these track queries that get updated every single frame, and then they get reused as the input on the next… on the next cycle forward past the model, okay? And so these…
+
+495
+01:26:57.410 --> 01:27:12.950
+Benjamin Houghton: these track queries are, essentially, are going to be… are going to tell us basically everything we need to know. They're going to tell us, like, where our objects are, and where they've been, right? Like, they're the… they basically embed or encode the object as it moves through the, like, every single frame.
+
+496
+01:27:13.140 --> 01:27:21.350
+Benjamin Houghton: Alright, so, detect and decoder queries, right? So, you actually do have,
+
+497
+01:27:22.520 --> 01:27:35.040
+Benjamin Houghton: In this model, you'll have, you know, it doesn't show it in their… in their paper, but, what you're gonna do is you're gonna have, like, some encoder, like, some encoder, you'll have some backbone.
+
+498
+01:27:35.040 --> 01:27:47.560
+Benjamin Houghton: some CNN, right? Some CNN that does… that takes the raw images, and it does its embedding, it does, the backbone will do its feature extraction, so this could be something like VGG,
+
+499
+01:27:47.560 --> 01:28:03.879
+Benjamin Houghton: or, ResNet, whatever, it doesn't really matter, and then it's gonna output, it's gonna go into this detect query, right? It's gonna… basically, its features will go into this encoder, so… and you'll have your detection queries. So you'll have your DE… this is like a DETR, right?
+
+500
+01:28:03.880 --> 01:28:10.879
+Benjamin Houghton: DE… and I know I'm going fast, guys, I'm sorry, but this… I want to try and get through this, right? So we have this DETR,
+
+501
+01:28:10.880 --> 01:28:17.639
+Benjamin Houghton: Here, and… This is, like, your… this is your encoder, right?
+
+502
+01:28:19.320 --> 01:28:23.809
+Benjamin Houghton: And then, over here, this is your decoder at the bottom, okay?
+
+503
+01:28:24.200 --> 01:28:26.009
+Benjamin Houghton: And it has the track queries.
+
+504
+01:28:26.340 --> 01:28:41.630
+Benjamin Houghton: Okay, so, we'll see… we see here initially, like, the track queries is blank. This is frame 1, and this is supposed to represent, like, multiple… let me erase some of this stuff. Way… what they're trying… what the authors are trying to illustrate here is that in every single frame.
+
+505
+01:28:42.070 --> 01:28:46.480
+Benjamin Houghton: you know, they… this basically gets updated, right? So you see that…
+
+506
+01:28:47.060 --> 01:28:52.320
+Benjamin Houghton: In frame 1, we have 3 objects detected, or I'm sorry, in T1,
+
+507
+01:28:52.730 --> 01:29:10.280
+Benjamin Houghton: T1, we have a person that's orange and a person that's blue, and they get detected, right? And then they get… and then in T2, they become track… like, basically in T1, the track queries will attend to these detections, and each, basically, each object will get assigned to a track, okay?
+
+508
+01:29:11.270 --> 01:29:30.159
+Benjamin Houghton: Right, so the encoder… the decoder will attend to the encoder's outputs, and now they get updated here, and now they're… these… now these people are these tracks. Well, in T2, we also detected a new person, the green person, and so now in T2, the decoder again is going to attend to the encoder's outputs.
+
+509
+01:29:30.160 --> 01:29:39.949
+Benjamin Houghton: and it's going to assign that object, Object 3, to this track. So that's that, that's the way this works. Every single iteration of this transformer, we have
+
+510
+01:29:39.960 --> 01:29:56.169
+Benjamin Houghton: the detection queries go into the encoder, and the track queries go into the decoder. Then the decoder attends to the encoder, right? So hopefully all that makes sense to you. We've talked about transformers so much, hopefully I can just say that now, and you can follow me. But that's… that's what's happening here.
+
+511
+01:29:56.170 --> 01:30:00.210
+Benjamin Houghton: Alright? The only thing that's changed here is that, you know, we have
+
+512
+01:30:00.590 --> 01:30:19.120
+Benjamin Houghton: really strange inputs, right? We have these things called detection queries, which are similar to the queries that we talked about last week from DETR, the detection transformer, and we have the track queries, which are the same thing as detection queries, where they're kind of similar, but now
+
+513
+01:30:19.460 --> 01:30:37.070
+Benjamin Houghton: instead of being static, like they are in… remember in DETR, they're static, because you do one forward passive detection, and with the track queries, you do multiple iterations, and every single iteration, you reuse… remember, you do this iterative update, right? You do this iterative update, so the output
+
+514
+01:30:37.090 --> 01:30:40.209
+Benjamin Houghton: Of the track queries gets used as input in the next
+
+515
+01:30:40.310 --> 01:30:45.940
+Benjamin Houghton: forward pass. As opposed to DETR, you know, for every… you only do it once, right? So.
+
+516
+01:30:45.940 --> 01:31:03.199
+Benjamin Houghton: you know, the detection query… if you did an… like, you're not going to reuse the outputs with the detection, with the detection transformer. So that's the difference. All right, so you can look at… here's our, like, the full workflow. This is a pretty nice little diagram that they have. So you have this video stream.
+
+517
+01:31:03.200 --> 01:31:16.559
+Benjamin Houghton: T1, T2, T3. We see that T1 that goes into the encoder, right? The encoder does its detections, okay? Then we have our detection queries. Detect queries, they go into the decoder.
+
+518
+01:31:16.580 --> 01:31:26.840
+Benjamin Houghton: Okay? And, you know, this is… this is… this part is basically DETR, okay?
+
+519
+01:31:26.950 --> 01:31:29.490
+Benjamin Houghton: This is… this… well, actually, let me…
+
+520
+01:31:29.660 --> 01:31:48.599
+Benjamin Houghton: step back. So, so far… and remember, there's one… I guess I… I might have confused you a little bit, because remember, the detection… DETR does have an encoder and a decoder, right? The encoder encodes the images, then we have the detection queries that go into the decoder, and they attend to the image. So this is what
+
+521
+01:31:49.180 --> 01:31:57.670
+Benjamin Houghton: So, I apologize. This is what the, like, the overall architecture actually looks like. In the part that's highlighted in red, this is DETR. This is a detection
+
+522
+01:31:57.730 --> 01:32:16.730
+Benjamin Houghton: transformer, right? We have this QIM, which is basically your track management, we'll talk about this in a second, and then output comes your predictions. So, so far, this is kind of just like DETR, except we have this new module that's called the QIM, which we need to talk about, okay?
+
+523
+01:32:16.760 --> 01:32:25.019
+Benjamin Houghton: Right? So, in T1, we just have our… basically all we have is detections. We have two people, we have two detections, we're done, right?
+
+524
+01:32:25.060 --> 01:32:26.679
+Benjamin Houghton: Now let's go to T2.
+
+525
+01:32:27.050 --> 01:32:34.479
+Benjamin Houghton: So now, though, we have something… we have something new in T2. We have track queries, okay? And so these queries
+
+526
+01:32:34.480 --> 01:32:54.410
+Benjamin Houghton: are just going to be inputs into the decoder, and they're going to get concatenated with these detection queries. Remember, these detection queries are static in DTER. These are static vectors, these are static learned vectors. They get concatenated together with these track queries that we got from the previous step. They go into the decoder.
+
+527
+01:32:54.410 --> 01:33:07.180
+Benjamin Houghton: Right? And the decoder, what do they attend to? They attend to the encoder's outputs, which is just… the encoder, it encodes the raw image. And the process continues, okay? And all we need to do is kind of manage
+
+528
+01:33:07.530 --> 01:33:13.260
+Benjamin Houghton: The only thing that changes… what changes iteration to iteration, it's this part.
+
+529
+01:33:13.470 --> 01:33:30.490
+Benjamin Houghton: it's these track queries, and that's the font, and that… and then they… they… the authors talk about how they manage this later, how they manage this, right? So here is the QIM, the Query Interaction Module. So stick with me, guys, a couple more minutes, alright?
+
+530
+01:33:31.310 --> 01:33:35.180
+Benjamin Houghton: And so, what does this look like?
+
+531
+01:33:35.660 --> 01:33:46.759
+Benjamin Houghton: The QIM refines and manages the query states between each frame, like I said. It helps preserve the strong tracks and gets rid of the old ones, essentially, okay?
+
+532
+01:33:48.580 --> 01:33:50.670
+Benjamin Houghton: So, this is what it looks like.
+
+533
+01:33:51.350 --> 01:34:00.650
+Benjamin Houghton: It's a really good little diagram here. So they have… number 1 is a tracked op… so a 1 is a track object… so this… these are tracked objects.
+
+534
+01:34:00.670 --> 01:34:15.190
+Benjamin Houghton: 2 means exited, and then 3 is a newborn object, okay? Right, these are just examples, and these are the… the yellow are the detection queries, and the red are the track queries, okay? So, remember, they have…
+
+535
+01:34:16.680 --> 01:34:33.089
+Benjamin Houghton: they have this query interaction module, right? And basically, if an object has a high score, right, that means a high detection. Remember, the detection queries are static. They're… each one of these is like a… is its own query?
+
+536
+01:34:33.170 --> 01:34:42.260
+Benjamin Houghton: one of these… each one of these is its own query, and if it's a high score, it means an object was detected. Okay, so they filter that out, here.
+
+537
+01:34:43.520 --> 01:34:48.959
+Benjamin Houghton: Right? So it just… it passes through. And then… and the tracking queries…
+
+538
+01:34:49.710 --> 01:35:07.930
+Benjamin Houghton: if it's a high score, right, it means that… that means that it's… it's a tracked object, it's not an exited object, right? So this is a… the one carries forward, and two disappears because this vector, this query, was… was tracked, okay? They run it through this tan,
+
+539
+01:35:09.010 --> 01:35:20.100
+Benjamin Houghton: they run it through this part, which is basically, you can hear it, see, it's exploded here, which is basically the multi… they have this multi-headed attention here, right?
+
+540
+01:35:21.040 --> 01:35:24.600
+Benjamin Houghton: And then they concatenate these features together.
+
+541
+01:35:24.810 --> 01:35:33.120
+Benjamin Houghton: here, and then this is what goes forward. So this is the new… the new track queries. All right, so this is the query interaction module, all right?
+
+542
+01:35:33.470 --> 01:35:39.210
+Benjamin Houghton: So I know that's pretty fast, and, you know, I think what we might do…
+
+543
+01:35:39.210 --> 01:35:56.180
+Benjamin Houghton: is because we're just… we're out of time, and I want to make sure we have enough time for our quiz and our presentation. We might revisit some of this stuff next week. We might go… we'll probably go through this, like, really quick again next week, and talk maybe more about this portion in detail, and we'll talk about some of the evaluation metrics for, like, 10 minutes.
+
+544
+01:35:56.180 --> 01:36:03.489
+Benjamin Houghton: Beginning of next class. So, is there any questions on this? And then our presenters, you guys can come down and start getting ready as well.
+
+545
+01:36:03.960 --> 01:36:06.269
+Benjamin Houghton: While I answer any questions there might be.
+
+546
+01:36:17.910 --> 01:36:19.130
+Benjamin Houghton: No questions?
+
+547
+01:36:22.420 --> 01:36:23.150
+Benjamin Houghton: Okay.
+
+548
+01:36:25.090 --> 01:36:30.610
+Benjamin Houghton: Alright. Well, let's do our presentation then, and then…
+
+549
+01:36:32.230 --> 01:36:38.519
+Benjamin Houghton: We'll do our quiz. And the quiz is, like, pretty… about the same level of difficulty as last week, so I don't…
+
+550
+01:36:38.890 --> 01:36:45.079
+Benjamin Houghton: I don't think you guys will take too long, so I know that I… I went a little bit over there.
+
+551
+01:37:54.070 --> 01:37:54.700
+Akshay Arun: Okay, cool.
+
+552
+01:38:10.650 --> 01:38:14.389
+Akshay Arun: We're using the screen and the audio. Yeah.
+
+553
+01:38:15.890 --> 01:38:16.530
+Akshay Arun: Yes, Mr.
+
+554
+01:38:16.530 --> 01:38:17.699
+Benjamin Houghton: Start whenever you're ready.
+
+555
+01:38:17.700 --> 01:38:23.750
+Akshay Arun: Okay, cool. So today we're going to be talking about AI in space discovery.
+
+556
+01:38:24.730 --> 01:38:40.010
+Akshay Arun: Yeah, so space missions rely heavily on data such as images, videos, or sensors. And, in space, with the amount of data that's taken in by things such as satellites or rovers, humans can't really operate things manually or in real time.
+
+557
+01:38:40.080 --> 01:38:52.830
+Akshay Arun: Especially that on top of the communication delay that we get from sending signals back and forth between these things and the Earth. And essentially, AI enables machines to see, understand, and act independently.
+
+558
+01:38:54.770 --> 01:39:19.250
+Akshay Arun: Alright, so for, what does computer vision in space actually look like in practice? So these systems effectively rely on images collected from rover cameras as well as satellites, and also some different types of telescopes. So they effectively use computer vision to identify different things such as terrain, obstacles, or patterns in larger data sets.
+
+559
+01:39:19.440 --> 01:39:41.720
+Akshay Arun: And then that visual info is then turned into more, sort of, actionable decisions, such as where a rover could, you know, like, where a rover could possibly drive on any surface, and what a satellite should focus on. And then, just as Akshay was saying, because of communication delays and the scale of certain types of data, these systems often operate without any real-time human control.
+
+560
+01:39:43.220 --> 01:40:01.119
+Akshay Arun: So, as mentioned before, a couple of the really big difficulties that computer vision helps is the communication delay and the sheer size of data. And also, given just how unpredictable space is in general, you kind of need to be able to make certain decisions in terms of, like, rovers and satellites that
+
+561
+01:40:01.120 --> 01:40:14.840
+Akshay Arun: kind of need to happen in real time, and so by the time that the data gets to Earth and someone makes that decision, and then data gets sent back, things would have changed drastically. And because of all of this, we need some sort of autonomous operation.
+
+562
+01:40:15.890 --> 01:40:36.489
+Akshay Arun: So, one key example is rover navigation. Rovers use onboard cameras to capture images of the terrain around them, and these images are processed using computer vision techniques such as object detection and segmentation, which basically allow the system to identify obstacles, such as unsafe terrain or, you know, any rocks.
+
+563
+01:40:36.490 --> 01:41:01.239
+Akshay Arun: And, you know, while models such as YOLO are used for object detection in some more general applications, NASA actually uses similar types of vision models that are more adapted for unpredictable space environments. And the output of these models is then, you know, sort of used to plan a safe path in the case of a rover. So it basically allows the rover to navigate autonomously without
+
+564
+01:41:01.240 --> 01:41:03.289
+Akshay Arun: any human input from Earth.
+
+565
+01:41:03.290 --> 01:41:15.749
+Akshay Arun: For example, the Perseverance rover on Mars is actually able to, obviously, drive itself, using onboard computer vision, so it navigates around obstacles without needing any real-time input from Earth.
+
+566
+01:41:15.780 --> 01:41:34.050
+Akshay Arun: And then obviously, despite sort of having pretty limited computing power, NASA's Perseverance rover also uses a system called Enhanced Autonomous Navigation, which effectively sort of analyzes images and evaluates over 1,700 possible paths before selecting the safest one it should pursue.
+
+567
+01:41:34.380 --> 01:41:49.760
+Akshay Arun: So the second use case is satellite image analysis of Earth, and basically, computer vision is used in satellites to detect things such as natural disasters, like wildfires and floods, as well as just overall, like, economic urban growth.
+
+568
+01:41:49.870 --> 01:42:04.360
+Akshay Arun: And so not only can AI detect them as they're happening, they can also detect, like, how well, the urban infrastructure is dealing with it. For example, detecting blue tarps after hurricanes to figure out how well a city is dealing with everything.
+
+569
+01:42:04.410 --> 01:42:14.579
+Akshay Arun: And so, obviously, with the amount of data that satellites get, it would be rather impossible to have a human looking at every single thing that's happening in the world.
+
+570
+01:42:17.390 --> 01:42:41.020
+Akshay Arun: And then AI, of course, is also used for scientific discovery in space. For example, models can analyze different types of telescope data, effectively to detect extremely subtle patterns, like really small dips in a star's brightness that can actually indicate an orbiting planet. These signals are often a bit too faint for humans to sort of consistently identify, but
+
+571
+01:42:41.020 --> 01:42:54.540
+Akshay Arun: You know, ML models can detect them across more massive data sets, from missions like Kepler, the Space Telescope, which I'm sure some of you may have heard of, which obviously enables discovery at sort of a larger scale.
+
+572
+01:42:55.100 --> 01:43:11.099
+Akshay Arun: And a more recent development in the space discovery space is the VR Rubin Observatory, which is in Chile right now. So this first operated 8 months ago, and as of this February, it… basically, it's a telescope that's pointed
+
+573
+01:43:11.100 --> 01:43:16.039
+Akshay Arun: At various different places in space, and takes 30-second,
+
+574
+01:43:16.040 --> 01:43:22.519
+Akshay Arun: 30-second exposure images to track transient changes, or just overall any sort of change that's happening in space.
+
+575
+01:43:22.520 --> 01:43:43.139
+Akshay Arun: And every single night, it sends out a certain amount of alerts to things that are just, in general, happening. At the moment, as of February, it's sending out about 600,000 alerts a night, but it's estimated that, by the time… since it's very new, it's not at its full capacity, by the time it actually gets to its full capacity, it will be sending out around 7 million alerts a night. And it is…
+
+576
+01:43:43.140 --> 01:43:50.450
+Akshay Arun: Projected to, to, in its first year, do more object detections than any other optical observation.
+
+577
+01:43:50.450 --> 01:43:51.890
+Akshay Arun: In human history combined.
+
+578
+01:43:54.630 --> 01:44:19.209
+Akshay Arun: All right, so, effectively, just to wrap up, computer vision is what allows machines to explore space autonomously. So, obviously, it builds directly on the models we have learned, but also applies them in far more extreme environments. And I think, you know, just as we think about it, as space missions sort of continue to evolve over time, these systems will obviously probably become increasingly important.
+
+579
+01:44:19.210 --> 01:44:24.339
+Akshay Arun: In the case of rovers or satellites, and any other sort of case in space, so…
+
+580
+01:44:24.690 --> 01:44:26.760
+Akshay Arun: Yeah. The resources.
+
+581
+01:44:27.160 --> 01:44:29.170
+Akshay Arun: Thank you, Gatch.
+
+582
+01:44:33.460 --> 01:44:35.160
+Akshay Arun: Questions for this week, please?
+
+583
+01:44:41.010 --> 01:44:43.849
+Akshay Arun: Surprised you guys didn't talk about, like… well, I guess…
+
+584
+01:44:44.340 --> 01:44:50.239
+Akshay Arun: I mean, did you come across anything that has to do with, like, automation as, like, for piloting or anything like that, or…
+
+585
+01:44:50.510 --> 01:45:06.930
+Akshay Arun: Yeah, nothing recently in terms of, like, you're saying, like, satellites being piloted? Yeah, that's what I… I just say for sure you guys were gonna talk about that, but I didn't know, I mean, I don't really know a lot about, like, space exploration, I'm just guessing. I mean, my assumption with that is that stuff like that probably…
+
+586
+01:45:06.980 --> 01:45:17.219
+Akshay Arun: would more recently be sent out, and probably doesn't have anything, like, substantial yet. Right. But yeah, the Mars rovers, like we were talking about, have, like, very, very bare-bones things, because it was about years ago.
+
+587
+01:45:18.120 --> 01:45:20.890
+Akshay Arun: That's… it's pretty cool. It's like a,
+
+588
+01:45:21.790 --> 01:45:29.010
+Akshay Arun: I remember in the reinforcement learning class, too, there was a group that was, like, trying to, like, look at doing… I think NASA had
+
+589
+01:45:29.350 --> 01:45:49.349
+Akshay Arun: say they did, like, a challenge, so, like, people used, like, a… they were basically trying to create, like, a rover control program, or something like that, and they said it was, like, a pretty cool idea, and, you know, like, so it goes, like, do the, like, automated exploration, and it's, like, a fusion of, like, all these different technologies.
+
+590
+01:45:50.420 --> 01:45:56.540
+Akshay Arun: Always thought, like, spaces like exploration's always really intrigued me, like, AI and ML, and it's kind of like…
+
+591
+01:45:57.010 --> 01:46:03.589
+Akshay Arun: alien or something. Like, that's cool. Any other questions or comments?
+
+592
+01:46:06.180 --> 01:46:15.250
+Akshay Arun: not. Thank our speakers one more time. The door's closed down, so… Some cool topics, guys? Tools.
+
+593
+01:46:15.650 --> 01:46:19.019
+Akshay Arun: Oh, wait, let's keep this on.
+
+594
+01:46:20.010 --> 01:46:21.160
+Akshay Arun: Excellent.
+

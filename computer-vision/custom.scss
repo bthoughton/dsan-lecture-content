@@ -41,6 +41,12 @@ $presentation-h3-font-size: 1.2em;
   padding-bottom: 0.2em;
 }
 
+// Ensure the title slide heading is larger than normal section H1 headings.
+.reveal .title-slide h1,
+.reveal h1.title {
+  font-size: 2.6em;
+}
+
 // Improve list spacing
 .reveal ul, .reveal ol {
   margin-top: 0.5em;

@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Prof.&nbsp;Ben Houghton">
+<meta name="dcterms.date" content="2026-04-07">
+
+<title>Multimodal Vision Systems</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="week-10_files/libs/clipboard/clipboard.min.js"></script>
+<script src="week-10_files/libs/quarto-html/quarto.js"></script>
+<script src="week-10_files/libs/quarto-html/popper.min.js"></script>
+<script src="week-10_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="week-10_files/libs/quarto-html/anchor.min.js"></script>
+<link href="week-10_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="week-10_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="week-10_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="week-10_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="week-10_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../custom.css">
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
+  <ul class="collapse">
+  <li><a href="#why-multimodal-is-central-to-agentic-ai" id="toc-why-multimodal-is-central-to-agentic-ai" class="nav-link" data-scroll-target="#why-multimodal-is-central-to-agentic-ai">Why Multimodal Is Central to Agentic AI</a></li>
+  <li><a href="#vision-language-models" id="toc-vision-language-models" class="nav-link" data-scroll-target="#vision-language-models">Vision-Language Models</a></li>
+  <li><a href="#model-taxonomy-at-a-glance" id="toc-model-taxonomy-at-a-glance" class="nav-link" data-scroll-target="#model-taxonomy-at-a-glance">Model Taxonomy at a Glance</a></li>
+  <li><a href="#representation-alignment" id="toc-representation-alignment" class="nav-link" data-scroll-target="#representation-alignment">Representation Alignment</a></li>
+  <li><a href="#fusion-strategies" id="toc-fusion-strategies" class="nav-link" data-scroll-target="#fusion-strategies">Fusion Strategies</a></li>
+  <li><a href="#early-fusion" id="toc-early-fusion" class="nav-link" data-scroll-target="#early-fusion">Early Fusion</a></li>
+  <li><a href="#layoutlmv3-early-fusion-example" id="toc-layoutlmv3-early-fusion-example" class="nav-link" data-scroll-target="#layoutlmv3-early-fusion-example">LayoutLMv3: Early Fusion Example</a></li>
+  <li><a href="#late-fusion-architecture" id="toc-late-fusion-architecture" class="nav-link" data-scroll-target="#late-fusion-architecture">Late Fusion Architecture</a></li>
+  <li><a href="#late-fusion-example-clip" id="toc-late-fusion-example-clip" class="nav-link" data-scroll-target="#late-fusion-example-clip">Late Fusion Example (CLIP)</a></li>
+  <li><a href="#cross-attention-hybrid-fusion-architecture" id="toc-cross-attention-hybrid-fusion-architecture" class="nav-link" data-scroll-target="#cross-attention-hybrid-fusion-architecture">Cross Attention &amp; Hybrid Fusion Architecture</a></li>
+  <li><a href="#cross-attention-hybrid-fusion-example" id="toc-cross-attention-hybrid-fusion-example" class="nav-link" data-scroll-target="#cross-attention-hybrid-fusion-example">Cross Attention &amp; Hybrid Fusion Example</a></li>
+  <li><a href="#unified-transformer-example" id="toc-unified-transformer-example" class="nav-link" data-scroll-target="#unified-transformer-example">Unified Transformer Example</a></li>
+  <li><a href="#training-paradigms" id="toc-training-paradigms" class="nav-link" data-scroll-target="#training-paradigms">Training Paradigms</a></li>
+  <li><a href="#evaluation" id="toc-evaluation" class="nav-link" data-scroll-target="#evaluation">Evaluation</a></li>
+  <li><a href="#practical-priorities-for-agentic-multimodal-systems" id="toc-practical-priorities-for-agentic-multimodal-systems" class="nav-link" data-scroll-target="#practical-priorities-for-agentic-multimodal-systems">Practical Priorities for Agentic Multimodal Systems</a></li>
+  <li><a href="#future-directions" id="toc-future-directions" class="nav-link" data-scroll-target="#future-directions">Future Directions</a></li>
+  </ul></li>
+  <li><a href="#clip-contrastive-language-image-pre-training" id="toc-clip-contrastive-language-image-pre-training" class="nav-link" data-scroll-target="#clip-contrastive-language-image-pre-training">CLIP (Contrastive Language-Image Pre-training)</a>
+  <ul class="collapse">
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
+  <li><a href="#overview-of-the-clip-architecture" id="toc-overview-of-the-clip-architecture" class="nav-link" data-scroll-target="#overview-of-the-clip-architecture">Overview of the CLIP Architecture</a></li>
+  <li><a href="#clip-diagram" id="toc-clip-diagram" class="nav-link" data-scroll-target="#clip-diagram">CLIP Diagram</a></li>
+  <li><a href="#training-procedure" id="toc-training-procedure" class="nav-link" data-scroll-target="#training-procedure">Training Procedure</a></li>
+  <li><a href="#loss-function" id="toc-loss-function" class="nav-link" data-scroll-target="#loss-function">Loss Function</a></li>
+  <li><a href="#zero-shot-prediction-with-clip" id="toc-zero-shot-prediction-with-clip" class="nav-link" data-scroll-target="#zero-shot-prediction-with-clip">Zero-Shot Prediction with CLIP</a></li>
+  <li><a href="#encoders-in-detail" id="toc-encoders-in-detail" class="nav-link" data-scroll-target="#encoders-in-detail">Encoders in Detail</a></li>
+  <li><a href="#understanding-the-latent-space" id="toc-understanding-the-latent-space" class="nav-link" data-scroll-target="#understanding-the-latent-space">Understanding the Latent Space</a></li>
+  <li><a href="#comparison-with-other-multimodal-models" id="toc-comparison-with-other-multimodal-models" class="nav-link" data-scroll-target="#comparison-with-other-multimodal-models">Comparison with Other Multimodal Models</a></li>
+  <li><a href="#limitations-of-clip" id="toc-limitations-of-clip" class="nav-link" data-scroll-target="#limitations-of-clip">Limitations of CLIP</a></li>
+  <li><a href="#extensions-and-successors" id="toc-extensions-and-successors" class="nav-link" data-scroll-target="#extensions-and-successors">Extensions and Successors</a></li>
+  <li><a href="#key-takeaways" id="toc-key-takeaways" class="nav-link" data-scroll-target="#key-takeaways">Key Takeaways</a></li>
+  <li><a href="#suggested-readings" id="toc-suggested-readings" class="nav-link" data-scroll-target="#suggested-readings">Suggested Readings</a></li>
+  </ul></li>
+  <li><a href="#flamingo" id="toc-flamingo" class="nav-link" data-scroll-target="#flamingo">Flamingo</a>
+  <ul class="collapse">
+  <li><a href="#introduction-1" id="toc-introduction-1" class="nav-link" data-scroll-target="#introduction-1">Introduction</a></li>
+  <li><a href="#motivation-1" id="toc-motivation-1" class="nav-link" data-scroll-target="#motivation-1">Motivation</a></li>
+  <li><a href="#architecture-overview" id="toc-architecture-overview" class="nav-link" data-scroll-target="#architecture-overview">Architecture Overview</a></li>
+  <li><a href="#data-flow-in-flamingo" id="toc-data-flow-in-flamingo" class="nav-link" data-scroll-target="#data-flow-in-flamingo">Data Flow in Flamingo</a></li>
+  <li><a href="#perceiver-resampler" id="toc-perceiver-resampler" class="nav-link" data-scroll-target="#perceiver-resampler">Perceiver Resampler</a></li>
+  <li><a href="#cross-attention-for-modality-fusion" id="toc-cross-attention-for-modality-fusion" class="nav-link" data-scroll-target="#cross-attention-for-modality-fusion">Cross-Attention for Modality Fusion</a></li>
+  <li><a href="#few-shot-prompting" id="toc-few-shot-prompting" class="nav-link" data-scroll-target="#few-shot-prompting">Few-Shot Prompting</a></li>
+  <li><a href="#training-paradigm" id="toc-training-paradigm" class="nav-link" data-scroll-target="#training-paradigm">Training Paradigm</a></li>
+  <li><a href="#evaluation-benchmarks" id="toc-evaluation-benchmarks" class="nav-link" data-scroll-target="#evaluation-benchmarks">Evaluation Benchmarks</a></li>
+  <li><a href="#comparison-with-clip" id="toc-comparison-with-clip" class="nav-link" data-scroll-target="#comparison-with-clip">Comparison with CLIP</a></li>
+  <li><a href="#strengths" id="toc-strengths" class="nav-link" data-scroll-target="#strengths">Strengths</a></li>
+  <li><a href="#limitations" id="toc-limitations" class="nav-link" data-scroll-target="#limitations">Limitations</a></li>
+  <li><a href="#extensions-and-derivatives" id="toc-extensions-and-derivatives" class="nav-link" data-scroll-target="#extensions-and-derivatives">Extensions and Derivatives</a></li>
+  <li><a href="#key-takeaways-1" id="toc-key-takeaways-1" class="nav-link" data-scroll-target="#key-takeaways-1">Key Takeaways</a></li>
+  <li><a href="#suggested-reading" id="toc-suggested-reading" class="nav-link" data-scroll-target="#suggested-reading">Suggested Reading</a></li>
+  </ul></li>
+  <li><a href="#pali" id="toc-pali" class="nav-link" data-scroll-target="#pali">PaLI</a>
+  <ul class="collapse">
+  <li><a href="#what-it-is" id="toc-what-it-is" class="nav-link" data-scroll-target="#what-it-is">What It Is</a></li>
+  <li><a href="#why-it-matters" id="toc-why-it-matters" class="nav-link" data-scroll-target="#why-it-matters">Why It Matters</a></li>
+  <li><a href="#core-architecture-simple-view" id="toc-core-architecture-simple-view" class="nav-link" data-scroll-target="#core-architecture-simple-view">Core Architecture (Simple View)</a></li>
+  <li><a href="#training-and-task-framing" id="toc-training-and-task-framing" class="nav-link" data-scroll-target="#training-and-task-framing">Training and Task Framing</a></li>
+  <li><a href="#pali-vs-flamingo-quick-contrast" id="toc-pali-vs-flamingo-quick-contrast" class="nav-link" data-scroll-target="#pali-vs-flamingo-quick-contrast">PaLI vs Flamingo (Quick Contrast)</a></li>
+  <li><a href="#strengths-and-limits" id="toc-strengths-and-limits" class="nav-link" data-scroll-target="#strengths-and-limits">Strengths and Limits</a></li>
+  <li><a href="#key-takeaways-2" id="toc-key-takeaways-2" class="nav-link" data-scroll-target="#key-takeaways-2">Key Takeaways</a></li>
+  </ul></li>
+  <li><a href="#llava" id="toc-llava" class="nav-link" data-scroll-target="#llava">LLaVA</a>
+  <ul class="collapse">
+  <li><a href="#instruction-tuned-open-multimodal-assistant" id="toc-instruction-tuned-open-multimodal-assistant" class="nav-link" data-scroll-target="#instruction-tuned-open-multimodal-assistant">Instruction-Tuned Open Multimodal Assistant</a></li>
+  <li><a href="#how-llava-works-data-flow" id="toc-how-llava-works-data-flow" class="nav-link" data-scroll-target="#how-llava-works-data-flow">How LLaVA Works (Data Flow)</a></li>
+  <li><a href="#why-llava-connects-the-whole-lecture" id="toc-why-llava-connects-the-whole-lecture" class="nav-link" data-scroll-target="#why-llava-connects-the-whole-lecture">Why LLaVA Connects the Whole Lecture</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="presentation.html"><i class="bi bi-file-slides"></i>RevealJS</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Multimodal Vision Systems</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Prof.&nbsp;Ben Houghton </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">April 7, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="overview" class="level1">
+<h1>Overview</h1>
+<p>Multimodal AI is a field of AI that deals with the interaction of multiple modalities (e.g.&nbsp;text, image, audio, video, etc.)</p>
+<div class="columns">
+<div class="column" style="width:65%;">
+<ul>
+<li><p>🖼️ <strong>Visual data:</strong> Images, videos, 3D models</p></li>
+<li><p>💬 <strong>Textual data:</strong> Natural language, documents</p></li>
+<li><p>🎵 <strong>Audio data:</strong> Speech, music, environmental sounds</p></li>
+<li><p>📍 <strong>Sensor data:</strong> Temperature, motion, location</p></li>
+</ul>
+</div><div class="column" style="width:35%;">
+<p><img src="./img/multimodal.png" class="img-fluid"></p>
+</div>
+</div>
+<p>The goal is to create systems that can understand and reason across these different modalities, similar to how humans process multiple senses simultaneously.</p>
+<!-- ## Why Multimodal AI Matters
+
+1. **More Natural Interaction**
+    - Humans communicate using multiple modalities simultaneously
+2. **Richer Understanding**
+    - Each modality provides complementary information
+3. **Robustness**
+    - Systems can still function if one modality is unclear or missing
+4. **New Applications**
+    - Enables novel AI applications that weren't possible with single-modality systems -->
+<section id="why-multimodal-is-central-to-agentic-ai" class="level2">
+<h2 class="anchored" data-anchor-id="why-multimodal-is-central-to-agentic-ai">Why Multimodal Is Central to Agentic AI</h2>
+<p>Multimodal capability turns LLMs from chat systems into <strong>grounded agents</strong> that can perceive, reason, and act.</p>
+<ul>
+<li><strong>Perceive real environments</strong>
+<ul>
+<li>Read screens, documents, charts, photos, and video frames instead of text-only descriptions.</li>
+</ul></li>
+<li><strong>Ground decisions in evidence</strong>
+<ul>
+<li>Use visual + language context to choose actions based on what is actually present.</li>
+</ul></li>
+<li><strong>Act through tools and interfaces</strong>
+<ul>
+<li>Navigate apps/web UIs, call APIs, and execute workflows from multimodal observations.</li>
+</ul></li>
+<li><strong>Operate in feedback loops</strong>
+<ul>
+<li>Plan -&gt; observe -&gt; act -&gt; verify over many steps for long-horizon tasks.</li>
+</ul></li>
+<li><strong>Collaborate naturally with humans</strong>
+<ul>
+<li>Accept instructions and corrections via text, voice, and visual references.</li>
+</ul></li>
+</ul>
+<p><strong>Takeaway:</strong> Classic tasks like captioning and VQA are useful benchmarks, but the high-impact application is building reliable multimodal agents.</p>
+</section>
+<section id="vision-language-models" class="level2">
+<h2 class="anchored" data-anchor-id="vision-language-models">Vision-Language Models</h2>
+<p>Vision-Language models combine computer vision and natural language processing.</p>
+<p><strong>Key Components:</strong></p>
+<ol type="1">
+<li><strong>Image Encoder</strong>: Typically a CNN or Vision Transformer</li>
+<li><strong>Text Encoder</strong>: Typically a transformer-based language model</li>
+<li><strong>Cross-Modal Fusion</strong>: Mechanisms to align and combine visual and textual features</li>
+<li><strong>Task-Specific Head</strong>: Output layer for the specific task (classification, generation, etc.)</li>
+</ol>
+<p><strong>Popular Vision-Language Models:</strong></p>
+<ul>
+<li><a href="https://arxiv.org/pdf/2103.00020">CLIP</a>: Contrastive Language-Image Pre-training</li>
+<li><a href="https://arxiv.org/pdf/2102.12092">DALL-E</a>: Text-to-image generation</li>
+<li><a href="https://arxiv.org/pdf/2204.14198">Flamingo</a>: Few-shot learning across vision and language tasks</li>
+<li><a href="https://arxiv.org/pdf/2209.06794">PaLI</a>: Scaling multilingual language-image learning</li>
+</ul>
+<p><em>Large scale models trained on massive datasets are often refereed to as Foundation Models</em></p>
+</section>
+<section id="model-taxonomy-at-a-glance" class="level2">
+<h2 class="anchored" data-anchor-id="model-taxonomy-at-a-glance">Model Taxonomy at a Glance</h2>
+<table class="table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Family</th>
+<th>Typical Input -&gt; Output</th>
+<th>Training Signal</th>
+<th>Fusion Style</th>
+<th>Example</th>
+<th>Best For</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Contrastive Alignment</td>
+<td>image + text -&gt; embeddings</td>
+<td>contrastive (match/non-match)</td>
+<td>late or weak hybrid</td>
+<td>CLIP</td>
+<td>retrieval, zero-shot classification</td>
+</tr>
+<tr class="even">
+<td>Discriminative Multimodal</td>
+<td>image + text -&gt; label/span/answer</td>
+<td>supervised task loss</td>
+<td>early/hybrid</td>
+<td>LayoutLMv3, VQA models</td>
+<td>classification, structured prediction</td>
+</tr>
+<tr class="odd">
+<td>Generative VLM (text output)</td>
+<td>image + text -&gt; text</td>
+<td>autoregressive LM</td>
+<td>hybrid cross-attention</td>
+<td>Flamingo, PaLI</td>
+<td>captioning, VQA, dialog</td>
+</tr>
+<tr class="even">
+<td>Generative T2I</td>
+<td>text -&gt; image</td>
+<td>diffusion/AR image loss</td>
+<td>n/a (text-conditioned generator)</td>
+<td>DALL-E, SDXL</td>
+<td>image synthesis</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="representation-alignment" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="representation-alignment">Representation Alignment</h2>
+<p>How the modalities connect.</p>
+<p>This is the core technical problem: aligning different signal spaces.</p>
+<p><strong>Contrastive Alignment</strong></p>
+<ul>
+<li>Learn a shared embedding space</li>
+<li>Pull matched pairs together, push mismatched apart</li>
+<li>Example: CLIP</li>
+</ul>
+<p>Key idea: “Do these belong together?”</p>
+<p><strong>Generative Modeling</strong></p>
+<ul>
+<li>Model joint distribution across modalities</li>
+<li>Can generate one modality from another</li>
+<li>Examples:
+<ul>
+<li>Image → text (captioning)</li>
+<li>Text → image (diffusion models)</li>
+<li>Multimodal LLMs like GPT-4V</li>
+</ul></li>
+</ul>
+<p>Key idea: “Given X, generate Y”</p>
+<p><strong>Token Unification</strong></p>
+<ul>
+<li>Convert all modalities into a common token space</li>
+<li>Feed into a single transformer</li>
+<li>Example: PaLI</li>
+</ul>
+<p>Key idea: “All inputs are just tokens”</p>
+</section>
+<section id="fusion-strategies" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="fusion-strategies">Fusion Strategies</h2>
+<p>Where modalities interact</p>
+<p><strong>Early Fusion</strong></p>
+<ul>
+<li>Combine raw inputs early</li>
+<li>Example: concatenating embeddings</li>
+</ul>
+<p>Pros: strong interaction Cons: hard to scale across modalities</p>
+<p><strong>Late Fusion</strong></p>
+<ul>
+<li>Process each modality independently</li>
+<li>Combine only at decision layer</li>
+</ul>
+<p>Pros: modular Cons: weak cross-modal reasoning</p>
+<p><strong>Cross-Attention (dominant paradigm)</strong></p>
+<ul>
+<li>One modality attends to another</li>
+<li>Example: Flamingo</li>
+</ul>
+<p>Key idea: “Language queries the image”</p>
+<p><strong>Unified Transformer</strong></p>
+<ul>
+<li>All tokens processed jointly</li>
+<li>No explicit separation</li>
+</ul>
+<p>Trend: increasingly popular in large-scale systems</p>
+</section>
+<section id="early-fusion" class="level2">
+<h2 class="anchored" data-anchor-id="early-fusion">Early Fusion</h2>
+<p><img src="./img/early-fusion.png" class="img-fluid" style="width:80.0%"></p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>How it Works</strong></p>
+<ul>
+<li>Combines raw data before processing</li>
+<li>Single unified representation</li>
+<li>End-to-end training</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Pros &amp; Cons</strong></p>
+<ul>
+<li>✅ Simple implementation</li>
+<li>✅ End-to-end training</li>
+<li>❌ May miss complex relationships</li>
+<li>❌ Less flexible</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="layoutlmv3-early-fusion-example" class="level2 nostretch">
+<h2 class="nostretch anchored" data-anchor-id="layoutlmv3-early-fusion-example">LayoutLMv3: Early Fusion Example</h2>
+<p><a href="https://arxiv.org/pdf/2204.08387">LayoutLMv3</a> was proposed by Microsoft in 2023</p>
+<ul>
+<li>Combines text and image features before processing</li>
+<li>Uses a transformer-based architecture</li>
+<li>Achieves state-of-the-art performance on document understanding tasks</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2204.08387#page=3"><img src="./img/layoutlmv3.png" class="img-fluid" style="width:55.0%"></a></p>
+</section>
+<section id="late-fusion-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="late-fusion-architecture">Late Fusion Architecture</h2>
+<p><img src="./img/late-fusion.png" class="img-fluid" style="width:80.0%"></p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>How it Works</strong></p>
+<ul>
+<li>Processes each modality separately</li>
+<li>Combines final outputs</li>
+<li>Modular approach</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Pros &amp; Cons</strong></p>
+<ul>
+<li>✅ Modular design</li>
+<li>✅ Can use pre-trained models</li>
+<li>❌ Misses low-level interactions</li>
+<li>❌ Less end-to-end learning</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="late-fusion-example-clip" class="level2 nostretch">
+<h2 class="nostretch anchored" data-anchor-id="late-fusion-example-clip">Late Fusion Example (CLIP)</h2>
+<p><a href="https://arxiv.org/pdf/2103.00020#page=1">CLIP</a> was proposed by OpenAI in 2021</p>
+<ul>
+<li>Processes vision and language separately</li>
+<li>Compares features with similarity metrics</li>
+<li>Achieves state-of-the-art performance on various vision-language tasks</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2103.00020#page=1"><img src="./img/clip.png" class="img-fluid"></a></p>
+</section>
+<section id="cross-attention-hybrid-fusion-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="cross-attention-hybrid-fusion-architecture">Cross Attention &amp; Hybrid Fusion Architecture</h2>
+<p><img src="./img/hybrid.png" class="img-fluid"></p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>How it Works</strong></p>
+<ul>
+<li>Combines early and late fusion</li>
+<li>Multiple fusion points</li>
+<li>Cross-attention mechanisms</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Pros &amp; Cons</strong></p>
+<ul>
+<li>✅ More flexible</li>
+<li>✅ Better feature interaction</li>
+<li>❌ More complex</li>
+<li>❌ Harder to train</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="cross-attention-hybrid-fusion-example" class="level2 nostretch">
+<h2 class="nostretch anchored" data-anchor-id="cross-attention-hybrid-fusion-example">Cross Attention &amp; Hybrid Fusion Example</h2>
+<p><a href="https://arxiv.org/pdf/2204.14198#page=1">Flamingo (DeepMind)</a> was proposed by DeepMind in 2022</p>
+<ul>
+<li>Processes vision and language separately</li>
+<li>Combines features through cross-attention</li>
+<li>Excels at few-shot learning</li>
+<li>Can handle multiple images and text inputs</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2204.14198#page=1"><img src="./img/flamingo.png" class="img-fluid" style="width:70.0%"></a></p>
+</section>
+<section id="unified-transformer-example" class="level2 nostretch">
+<h2 class="nostretch anchored" data-anchor-id="unified-transformer-example">Unified Transformer Example</h2>
+<p><a href="https://arxiv.org/pdf/2209.06794">Pathways Language and Image (PaLI)</a> was proposed by Google in 2023</p>
+<ul>
+<li>Combines early and late fusion strategies</li>
+<li>Uses multiple fusion points</li>
+<li>Scales well with model size</li>
+<li>Strong performance on various vision-language tasks</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2209.06794#page=4"><img src="./img/pali.png" class="img-fluid"></a></p>
+</section>
+<section id="training-paradigms" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="training-paradigms">Training Paradigms</h2>
+<p>How modern multimodal systems are trained.</p>
+<p><strong>Paired Supervision</strong></p>
+<ul>
+<li>Image-text pairs (alt-text, captions)</li>
+<li>Foundation of CLIP-style alignment</li>
+</ul>
+<p><strong>Web-Scale Weak Supervision</strong></p>
+<ul>
+<li>Noisy internet data with broad coverage</li>
+<li>Scale improves transfer despite label noise</li>
+</ul>
+<p><strong>Instruction Tuning</strong></p>
+<ul>
+<li>Aligns models to task intent and user preferences</li>
+<li>Enables assistant-style multimodal behavior</li>
+</ul>
+<p><strong>In-Context Learning</strong></p>
+<ul>
+<li>Few-shot adaptation at inference time</li>
+<li>Example: Flamingo-style prompted reasoning</li>
+</ul>
+<hr>
+</section>
+<section id="evaluation" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="evaluation">Evaluation</h2>
+<p>How we determine whether a system is useful and reliable.</p>
+<p><strong>Task Performance</strong></p>
+<ul>
+<li>Task-specific metrics (retrieval, VQA, captioning, generation)</li>
+<li>Report metrics by task, not as a single score</li>
+</ul>
+<p><strong>Grounding and Faithfulness</strong></p>
+<ul>
+<li>Verify outputs are supported by visual/context evidence</li>
+<li>Detect hallucinations and modality neglect</li>
+</ul>
+<p><strong>Robustness</strong></p>
+<ul>
+<li>Missing/noisy modality stress tests</li>
+<li>Shift, ambiguity, and adversarial prompt evaluations</li>
+</ul>
+<p><strong>Human-Centered Assessment</strong></p>
+<ul>
+<li>Usefulness, factuality, and instruction-following</li>
+<li>Essential for open-ended agentic workflows</li>
+</ul>
+<hr>
+</section>
+<section id="practical-priorities-for-agentic-multimodal-systems" class="level2">
+<h2 class="anchored" data-anchor-id="practical-priorities-for-agentic-multimodal-systems">Practical Priorities for Agentic Multimodal Systems</h2>
+<ul>
+<li><strong>Data quality over raw scale</strong>: grounded, diverse, and instruction-relevant examples</li>
+<li><strong>Latency/compute trade-offs</strong>: balance model size, context length, and response speed</li>
+<li><strong>Safety and monitoring</strong>: detect hallucinations, failures, and unsafe actions in loops</li>
+<li><strong>Tool reliability</strong>: evaluate full observe -&gt; reason -&gt; act -&gt; verify pipelines</li>
+</ul>
+<hr>
+</section>
+<section id="future-directions" class="level2">
+<h2 class="anchored" data-anchor-id="future-directions">Future Directions</h2>
+<ul>
+<li>Unified token-based architectures across more modalities</li>
+<li>More efficient adaptation (parameter-efficient tuning and distillation)</li>
+<li>Better interpretability of cross-modal reasoning paths</li>
+<li>Stronger reliability under distribution shift and long-horizon tasks</li>
+</ul>
+</section>
+</section>
+<section id="clip-contrastive-language-image-pre-training" class="level1">
+<h1>CLIP (Contrastive Language-Image Pre-training)</h1>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<ul>
+<li><a href="%22https://arxiv.org/pdf/2103.00020%22">CLIP</a> was introduced by OpenAI in 2021</li>
+<li>A foundational multimodal model that learns visual concepts from natural language supervision.</li>
+<li>It enables tasks like zero-shot image classification, image search, and more, without needing task-specific finetuning.</li>
+</ul>
+<hr>
+</section>
+<section id="motivation" class="level2">
+<h2 class="anchored" data-anchor-id="motivation">Motivation</h2>
+<p>Traditional vision models are often trained with manually labeled datasets and specific tasks (e.g., ImageNet classification). CLIP challenges this paradigm by:</p>
+<ul>
+<li>Learning directly from raw text-image pairs.</li>
+<li>Scaling to large internet-scale data.</li>
+<li>Enabling open-vocabulary classification and generalization.</li>
+</ul>
+</section>
+<section id="overview-of-the-clip-architecture" class="level2">
+<h2 class="anchored" data-anchor-id="overview-of-the-clip-architecture">Overview of the CLIP Architecture</h2>
+<p>CLIP consists of two main components:</p>
+<ul>
+<li><strong>Image Encoder</strong>: Typically a ViT (Vision Transformer) or ResNet.</li>
+<li><strong>Text Encoder</strong>: A Transformer-based model similar to GPT/BERT.</li>
+</ul>
+<p>These encoders are trained to map images and their paired captions to a <strong>shared latent embedding space</strong>.</p>
+<section id="key-concept" class="level3">
+<h3 class="anchored" data-anchor-id="key-concept">Key Concept:</h3>
+<ul>
+<li><strong>Contrastive Loss</strong> is used to bring matching image-text pairs closer in the embedding space, and push non-matching pairs apart.</li>
+</ul>
+</section>
+</section>
+<section id="clip-diagram" class="level2">
+<h2 class="anchored" data-anchor-id="clip-diagram">CLIP Diagram</h2>
+<p><a href="https://arxiv.org/pdf/2103.00020#page=2"><img src="./img/clip.png" class="img-fluid"></a></p>
+<hr>
+</section>
+<section id="training-procedure" class="level2">
+<h2 class="anchored" data-anchor-id="training-procedure">Training Procedure</h2>
+<section id="contrastive-pretraining" class="level3">
+<h3 class="anchored" data-anchor-id="contrastive-pretraining">(1) Contrastive Pretraining</h3>
+<ul>
+<li>Each image-caption pair is encoded separately into vectors <span class="math inline">I_i</span> and <span class="math inline">T_i</span>.</li>
+<li>A batch of N image-text pairs produces N image embeddings and N text embeddings.</li>
+<li>The similarity scores are computed via dot product.</li>
+<li>Cross-entropy loss is used over the similarity matrix, encouraging <span class="math inline">I_i \cdot T_i</span> to be larger than all <span class="math inline">I_i \cdot T_j</span> for <span class="math inline">j \ne i</span>.</li>
+</ul>
+</section>
+<section id="embedding-normalization" class="level3">
+<h3 class="anchored" data-anchor-id="embedding-normalization">(2) Embedding Normalization</h3>
+<ul>
+<li>Embeddings are L2 normalized to lie on the unit hypersphere, ensuring cosine similarity.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="loss-function" class="level2 scrollable">
+<h2 class="scrollable anchored" data-anchor-id="loss-function">Loss Function</h2>
+<p>Let:</p>
+<ul>
+<li><span class="math inline">N</span> = batch size<br>
+</li>
+<li><span class="math inline">I_i</span> = image embedding for the <span class="math inline">i</span>-th image<br>
+</li>
+<li><span class="math inline">T_i</span> = text embedding for the <span class="math inline">i</span>-th caption<br>
+</li>
+<li><span class="math inline">\text{sim}(I, T) = \frac{I \cdot T}{\|I\|\|T\|}</span> = cosine similarity between embeddings<br>
+</li>
+<li><span class="math inline">\tau</span> = learned temperature parameter (scalar)</li>
+</ul>
+<p>Then, the <strong>CLIP loss</strong> is the average of two cross-entropy losses:</p>
+<p><span class="math display">
+\mathcal{L}_{\text{CLIP}} = \frac{1}{2N} \sum_{i=1}^N \left[
+    -\log \frac{\exp(\text{sim}(I_i, T_i)/\tau)}{\sum_{j=1}^N \exp(\text{sim}(I_i, T_j)/\tau)}
+    -\log \frac{\exp(\text{sim}(T_i, I_i)/\tau)}{\sum_{j=1}^N \exp(\text{sim}(T_i, I_j)/\tau)}
+\right]
+</span></p>
+<section id="whats-happening" class="level3">
+<h3 class="anchored" data-anchor-id="whats-happening">🔍 What’s Happening?</h3>
+<ul>
+<li>The <strong>first term</strong> encourages each image to match its correct caption over all other captions.</li>
+<li>The <strong>second term</strong> does the same for captions matching their correct image.</li>
+<li>The <strong>temperature</strong> <span class="math inline">\tau</span> controls the sharpness of the distribution; it’s learned during training.</li>
+</ul>
+<hr>
+</section>
+</section>
+<section id="zero-shot-prediction-with-clip" class="level2">
+<h2 class="anchored" data-anchor-id="zero-shot-prediction-with-clip">Zero-Shot Prediction with CLIP</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p>After pretraining:</p>
+<ol type="1">
+<li>Define a set of class prompts (e.g., “a photo of a {object}”).</li>
+<li>Encode each prompt to get text embeddings.</li>
+<li>Encode the input image.</li>
+<li>Compute cosine similarities and pick the closest match.</li>
+</ol>
+<p>This allows classification on <strong>unseen datasets</strong> without retraining.</p>
+</div><div class="column" style="width:50%;">
+<p><a href="https://arxiv.org/pdf/2103.00020#page=2"><img src="./img/clip-classifier.png" class="img-fluid"></a></p>
+</div>
+</div>
+</section>
+<section id="encoders-in-detail" class="level2">
+<h2 class="anchored" data-anchor-id="encoders-in-detail">Encoders in Detail</h2>
+<section id="image-encoder" class="level3">
+<h3 class="anchored" data-anchor-id="image-encoder">Image Encoder:</h3>
+<ul>
+<li>ResNet or Vision Transformer (ViT).</li>
+<li>Outputs a single vector representing the whole image.</li>
+</ul>
+</section>
+<section id="text-encoder" class="level3">
+<h3 class="anchored" data-anchor-id="text-encoder">Text Encoder:</h3>
+<ul>
+<li>Transformer (like GPT or BERT).</li>
+<li>Uses a special token (e.g., [EOS]) to summarize the entire text.</li>
+<li>Only the final token’s embedding is used as the text representation.</li>
+</ul>
+</section>
+</section>
+<section id="understanding-the-latent-space" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-the-latent-space">Understanding the Latent Space</h2>
+<p>CLIP learns a <strong>joint latent space</strong> where:</p>
+<ul>
+<li>Semantically similar images and text lie near each other.</li>
+<li>This space can be used for retrieval, clustering, or manipulation.</li>
+</ul>
+<p>The model is trained to create a <strong>modality-invariant space</strong> with strong semantic structure.</p>
+</section>
+<section id="comparison-with-other-multimodal-models" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-with-other-multimodal-models">Comparison with Other Multimodal Models</h2>
+<table class="table">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 44%">
+<col style="width: 27%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Goal</th>
+<th>Input Alignment</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>CLIP</td>
+<td>Image-text retrieval, zero-shot</td>
+<td>Separate encoders</td>
+<td>Embeddings</td>
+</tr>
+<tr class="even">
+<td>Flamingo</td>
+<td>Vision-language generation</td>
+<td>Interleaved inputs</td>
+<td>Text</td>
+</tr>
+<tr class="odd">
+<td>DALL-E</td>
+<td>Text-to-image generation</td>
+<td>Text only</td>
+<td>Image</td>
+</tr>
+<tr class="even">
+<td>PaLM-E</td>
+<td>Multimodal generation/control</td>
+<td>Perceiver + LM</td>
+<td>Text</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="limitations-of-clip" class="level2">
+<h2 class="anchored" data-anchor-id="limitations-of-clip">Limitations of CLIP</h2>
+<ul>
+<li>Cannot generate text or images (not generative).</li>
+<li>Sensitive to prompt formulation.</li>
+<li>Struggles with tasks requiring fine-grained reasoning.</li>
+<li>No cross-attention between modalities (unlike Flamingo, etc.).</li>
+</ul>
+</section>
+<section id="extensions-and-successors" class="level2">
+<h2 class="anchored" data-anchor-id="extensions-and-successors">Extensions and Successors</h2>
+<ul>
+<li><strong>CLIPCap</strong>: Caption generation using CLIP embeddings.</li>
+<li><strong>ALIGN (Google)</strong>: Similar method with larger data.</li>
+<li><strong>BLIP, BLIP-2</strong>: Unified vision-language pretraining and generation.</li>
+<li><strong>GIT, Flamingo</strong>: Interleaved multimodal Transformers for generation.</li>
+</ul>
+</section>
+<section id="key-takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways">Key Takeaways</h2>
+<ul>
+<li>CLIP is a <strong>contrastive, non-generative</strong> model.</li>
+<li>Enables <strong>open-vocabulary, zero-shot vision tasks</strong>.</li>
+<li>Uses <strong>frozen encoders</strong> post-training for many applications.</li>
+<li>Inspires many generative multimodal models by showing the power of large-scale vision-language alignment.</li>
+</ul>
+<hr>
+</section>
+<section id="suggested-readings" class="level2">
+<h2 class="anchored" data-anchor-id="suggested-readings">Suggested Readings</h2>
+<ul>
+<li><a href="https://arxiv.org/abs/2103.00020">CLIP paper</a></li>
+<li><a href="https://openai.com/research/clip">OpenAI blog post</a></li>
+</ul>
+<section id="discussion-questions" class="level3">
+<h3 class="anchored" data-anchor-id="discussion-questions">Discussion Questions</h3>
+<ul>
+<li>What types of biases might CLIP inherit from internet-scale data?</li>
+<li>How does CLIP handle ambiguity or polysemy in language?</li>
+<li>Can you think of a scenario where contrastive pretraining would fail?</li>
+</ul>
+<!-- ## 14. Next Lecture Preview
+> Multimodal Generative Models: BLIP, Flamingo, and GIT
+
+We will explore models that fuse modalities during generation using attention mechanisms, and dive deeper into multimodal transformers.
+
+--- -->
+</section>
+</section>
+</section>
+<section id="flamingo" class="level1">
+<h1>Flamingo</h1>
+<p>Interleaved Vision-Language Modeling</p>
+<section id="introduction-1" class="level2">
+<h2 class="anchored" data-anchor-id="introduction-1">Introduction</h2>
+<ul>
+<li><a href="https://arxiv.org/pdf/2204.14198">Flamingo</a> is a family of <strong>multimodal few-shot learners</strong></li>
+<li>Developed by DeepMind</li>
+<li>Flamingo is a <strong>generative model</strong> that processes interleaved image-text inputs and generates text outputs
+<ul>
+<li>This differs from CLIP, which performs retrieval or classification in latent space.</li>
+</ul></li>
+</ul>
+<p>In practice:</p>
+<ul>
+<li>Flamingo is built for in-context few-shot reasoning over mixed image-text sequences.</li>
+<li>CLIP is built for similarity scoring (“which text matches this image?”), often used as an encoder or zero-shot classifier.</li>
+</ul>
+</section>
+<section id="motivation-1" class="level2">
+<h2 class="anchored" data-anchor-id="motivation-1">Motivation</h2>
+<p>Prior models either:</p>
+<ul>
+<li>Handled unimodal sequences well (e.g., GPT-3 for text).</li>
+<li>Or required task-specific training to incorporate images (e.g., VL transformers).</li>
+</ul>
+<p><strong>Flamingo’s goal</strong>: Build a <strong>general-purpose multimodal model</strong> that can:</p>
+<ul>
+<li>Take interleaved visual and textual inputs.</li>
+<li>Perform few-shot and zero-shot tasks.</li>
+<li>Work well on open-ended vision-language tasks (e.g., VQA, captioning, dialog).</li>
+</ul>
+</section>
+<section id="architecture-overview" class="level2">
+<h2 class="anchored" data-anchor-id="architecture-overview">Architecture Overview</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p>Flamingo builds on a <strong>frozen pretrained LLM (like Chinchilla)</strong> and adds:</p>
+<ul>
+<li><strong>Frozen Vision Encoder</strong> (e.g., CLIP ViT).</li>
+<li><strong>Perceiver Resamplers</strong> to downsample image features into a fixed number of latent tokens.</li>
+<li><strong>Gated Cross-Attention Layers</strong> inserted between blocks of the language model to fuse image features with text tokens.</li>
+</ul>
+<section id="component-summary" class="level3">
+<h3 class="anchored" data-anchor-id="component-summary">Component Summary:</h3>
+<ul>
+<li>🔷 Frozen: Vision encoder + most LM layers.</li>
+<li>🟣 Trained: Perceiver resampler + cross-attention modules.</li>
+</ul>
+</section>
+</div><div class="column" style="width:50%;">
+<p><a href="https://arxiv.org/pdf/2204.14198#page=4"><img src="./img/flamingo.png" class="img-fluid"></a></p>
+</div>
+</div>
+</section>
+<section id="data-flow-in-flamingo" class="level2">
+<h2 class="anchored" data-anchor-id="data-flow-in-flamingo">Data Flow in Flamingo</h2>
+<ol type="1">
+<li><p><strong>Image Input</strong> → Vision encoder → Perceiver resampler → Latent visual tokens.</p></li>
+<li><p><strong>Text Input</strong> → Tokenized and embedded.</p></li>
+<li><p><strong>Interleaving</strong>: Model receives input sequences like:</p>
+<pre><code>&lt;image&gt; This is a dog. &lt;image&gt; It is playing fetch.</code></pre></li>
+<li><p><strong>Fusion</strong>: At cross-attention layers, visual tokens are injected and gated.</p></li>
+<li><p><strong>Output</strong>: Generated text (caption, answer, etc.)</p></li>
+</ol>
+</section>
+<section id="perceiver-resampler" class="level2">
+<h2 class="anchored" data-anchor-id="perceiver-resampler">Perceiver Resampler</h2>
+<ul>
+<li>Converts variable-length visual tokens to a fixed-length set of latent embeddings.</li>
+<li>Uses learnable latent queries and cross-attends over image features.</li>
+<li>Enables scalability and composability across images.</li>
+</ul>
+</section>
+<section id="cross-attention-for-modality-fusion" class="level2">
+<h2 class="anchored" data-anchor-id="cross-attention-for-modality-fusion">Cross-Attention for Modality Fusion</h2>
+<ul>
+<li>Injected periodically between LLM blocks.</li>
+<li>Gated mechanism allows the model to decide <em>when</em> to attend to visual tokens.</li>
+<li>Supports <strong>dynamic multimodal reasoning</strong> (e.g., “look” at the image only when needed).</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/2204.14198#page=5"><img src="./img/flamingo-cross-attention.png" class="img-fluid"></a></p>
+</section>
+<section id="few-shot-prompting" class="level2">
+<h2 class="anchored" data-anchor-id="few-shot-prompting">Few-Shot Prompting</h2>
+<p>Like GPT-3, Flamingo can do <strong>few-shot learning</strong> via in-context examples:</p>
+<pre><code>&lt;image&gt; What is in the image?
+A dog.
+&lt;image&gt; What is in the image?
+A cat.
+&lt;image&gt; What is in the image?</code></pre>
+<p>→ Model predicts: “A horse.”</p>
+<p>No finetuning required — just clever prompting.</p>
+</section>
+<section id="training-paradigm" class="level2">
+<h2 class="anchored" data-anchor-id="training-paradigm">Training Paradigm</h2>
+<ul>
+<li><strong>Frozen backbone</strong>: Vision encoder + LLM.</li>
+<li><strong>Trainable modules</strong>: Perceiver resampler + cross-attn.</li>
+<li>Trained on large-scale multimodal data (e.g., LAION, CC, HowTo100M).</li>
+<li><strong>Multitask objective</strong>: generative language modeling conditioned on multimodal context.</li>
+</ul>
+</section>
+<section id="evaluation-benchmarks" class="level2">
+<h2 class="anchored" data-anchor-id="evaluation-benchmarks">Evaluation Benchmarks</h2>
+<p>Flamingo achieves SOTA on a wide range of vision-language tasks:</p>
+<ul>
+<li>VQAv2, OKVQA (Visual QA)</li>
+<li>Image captioning (COCO)</li>
+<li>Science QA (text and diagrams)</li>
+<li>Video QA (with frame sequences)</li>
+</ul>
+</section>
+<section id="comparison-with-clip" class="level2">
+<h2 class="anchored" data-anchor-id="comparison-with-clip">Comparison with CLIP</h2>
+<table class="table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 35%">
+<col style="width: 37%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Feature</th>
+<th>CLIP</th>
+<th>Flamingo</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Modality Fusion</td>
+<td>No (contrastive)</td>
+<td>Yes (cross-attention)</td>
+</tr>
+<tr class="even">
+<td>Generation</td>
+<td>No</td>
+<td>Yes (text generation)</td>
+</tr>
+<tr class="odd">
+<td>Visual Encoding</td>
+<td>Single image</td>
+<td>Multiple, interleaved images</td>
+</tr>
+<tr class="even">
+<td>Training Objective</td>
+<td>Contrastive loss</td>
+<td>Autoregressive LM</td>
+</tr>
+<tr class="odd">
+<td>Usage</td>
+<td>Retrieval, zero-shot class.</td>
+<td>Captioning, VQA, QA, dialog</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="strengths" class="level2">
+<h2 class="anchored" data-anchor-id="strengths">Strengths</h2>
+<ul>
+<li>Interleaved multimodal reasoning.</li>
+<li>Strong few-shot generalization.</li>
+<li>Frozen pretrained components make it modular.</li>
+<li>Minimal tuning — new tasks need only a prompt.</li>
+</ul>
+</section>
+<section id="limitations" class="level2">
+<h2 class="anchored" data-anchor-id="limitations">Limitations</h2>
+<ul>
+<li>Large memory footprint.</li>
+<li>Cannot handle non-image modalities (e.g., audio) natively.</li>
+<li>Text-conditioned generation only (cannot generate images).</li>
+<li>Dependency on prompt quality.</li>
+</ul>
+</section>
+<section id="extensions-and-derivatives" class="level2">
+<h2 class="anchored" data-anchor-id="extensions-and-derivatives">Extensions and Derivatives</h2>
+<ul>
+<li><strong>PaLI, PaLM-E</strong>: Incorporate structured perception + control.</li>
+<li><strong>GIT</strong>: Combines image encoder + LM with decoder-only modeling.</li>
+<li><strong>BLIP-2</strong>: Adds pretraining objectives for question answering and captioning.</li>
+</ul>
+</section>
+<section id="key-takeaways-1" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways-1">Key Takeaways</h2>
+<ul>
+<li>Flamingo is a <strong>multimodal decoder</strong> architecture with flexible interleaving.</li>
+<li>Uses <strong>frozen vision + language backbones</strong> for scalability.</li>
+<li>Learns to attend to visual content via gated attention.</li>
+<li>Sets a new standard for <strong>few-shot multimodal learning</strong>.</li>
+</ul>
+</section>
+<section id="suggested-reading" class="level2">
+<h2 class="anchored" data-anchor-id="suggested-reading">Suggested Reading</h2>
+<ul>
+<li>Flamingo paper: “A Multimodal Few-Shot Learner”</li>
+<li>DeepMind blog: https://www.deepmind.com/blog/tackling-multiple-tasks-with-a-single-visual-language-model</li>
+<li>Perceiver: https://arxiv.org/abs/2103.03206</li>
+</ul>
+<!-- ## Discussion Questions
+
+- How does Flamingo's modularity affect its transfer to new domains?
+- Would it make sense to finetune the LLM too? When?
+- How might this architecture extend to real-time agents or robotics? -->
+<!-- ## 17. Next Lecture Preview
+> BLIP and BLIP-2: Unified Pretraining and Generation for Multimodal Tasks
+
+We will examine how BLIP integrates contrastive learning and captioning/generation into a single model family.
+
+--- -->
+</section>
+</section>
+<section id="pali" class="level1">
+<h1>PaLI</h1>
+<section id="what-it-is" class="level2">
+<h2 class="anchored" data-anchor-id="what-it-is">What It Is</h2>
+<p><a href="https://arxiv.org/pdf/2209.06794"><strong>PaLI (Pathways Language and Image)</strong></a> is a Google vision-language model family that reframes many image tasks as one interface: <strong>text generation from image + prompt</strong>.</p>
+<p><a href="https://arxiv.org/pdf/2209.06794#page=4"><img src="./img/pali.png" class="img-fluid"></a></p>
+</section>
+<section id="why-it-matters" class="level2">
+<h2 class="anchored" data-anchor-id="why-it-matters">Why It Matters</h2>
+<ul>
+<li><strong>Unified task format</strong>: captioning, VQA, OCR, and localization all use prompted text output.</li>
+<li><strong>Multilingual by design</strong>: supports 100+ languages with cross-lingual transfer.</li>
+<li><strong>Scales effectively</strong>: larger variants improve performance across benchmarks.</li>
+</ul>
+</section>
+<section id="core-architecture-simple-view" class="level2">
+<h2 class="anchored" data-anchor-id="core-architecture-simple-view">Core Architecture (Simple View)</h2>
+<ul>
+<li><strong>ViT image encoder</strong> -&gt; visual tokens</li>
+<li><strong>Text decoder</strong> -&gt; autoregressive output</li>
+<li><strong>Optional prefix prompt</strong> specifies task and language</li>
+</ul>
+<p>Example:</p>
+<pre><code>&lt;image&gt; caption in Spanish:</code></pre>
+</section>
+<section id="training-and-task-framing" class="level2">
+<h2 class="anchored" data-anchor-id="training-and-task-framing">Training and Task Framing</h2>
+<ul>
+<li>Trained on large multimodal + multilingual corpora.</li>
+<li>Uses standard next-token language modeling.</li>
+<li>Main idea: convert many task types into one generation pipeline.</li>
+</ul>
+</section>
+<section id="pali-vs-flamingo-quick-contrast" class="level2">
+<h2 class="anchored" data-anchor-id="pali-vs-flamingo-quick-contrast">PaLI vs Flamingo (Quick Contrast)</h2>
+<ul>
+<li><strong>Flamingo</strong>: interleaved image-text context with cross-attention adapters.</li>
+<li><strong>PaLI</strong>: single-image + prefix prompt with a unified generation path.</li>
+<li><strong>Both</strong>: generate text; <strong>PaLI</strong> is especially strong on multilingual scaling.</li>
+</ul>
+</section>
+<section id="strengths-and-limits" class="level2">
+<h2 class="anchored" data-anchor-id="strengths-and-limits">Strengths and Limits</h2>
+<p><strong>Strengths</strong></p>
+<ul>
+<li>One model interface for many vision-language tasks</li>
+<li>Strong multilingual capability</li>
+<li>Flexible prompting and structured text outputs</li>
+</ul>
+<p><strong>Limits</strong></p>
+<ul>
+<li>Large models are compute-heavy</li>
+<li>Performance is prompt-sensitive</li>
+<li>Primarily image-focused (not full temporal multimodal)</li>
+</ul>
+</section>
+<section id="key-takeaways-2" class="level2">
+<h2 class="anchored" data-anchor-id="key-takeaways-2">Key Takeaways</h2>
+<ul>
+<li>PaLI demonstrates <strong>unified, prompt-based multimodal generation at scale</strong>.</li>
+<li>It is a strong bridge from task-specific systems to general multilingual VLMs.</li>
+</ul>
+</section>
+</section>
+<section id="llava" class="level1">
+<h1>LLaVA</h1>
+<section id="instruction-tuned-open-multimodal-assistant" class="level2">
+<h2 class="anchored" data-anchor-id="instruction-tuned-open-multimodal-assistant">Instruction-Tuned Open Multimodal Assistant</h2>
+<p><a href="https://arxiv.org/pdf/2304.08485">LLaVA</a> is an open recipe for building multimodal assistants that can <strong>see + follow instructions + respond in natural language</strong>.</p>
+<ul>
+<li><strong>What it does</strong>: image-grounded conversation (VQA, explanation, visual tutoring)</li>
+<li><strong>Core components</strong>: vision encoder + projector + LLM</li>
+<li><strong>Training recipe</strong>: visual instruction tuning for assistant-style behavior</li>
+<li><strong>Why it matters</strong>: practical, reproducible, and widely used in open-source systems</li>
+</ul>
+<p><strong>Use cases</strong></p>
+<ul>
+<li>UI understanding and workflow assistance</li>
+<li>Document/image question answering</li>
+<li>Educational and accessibility assistants</li>
+</ul>
+<p><strong>Caveat</strong></p>
+<ul>
+<li>Can hallucinate visual details; grounding checks remain essential</li>
+</ul>
+</section>
+<section id="how-llava-works-data-flow" class="level2">
+<h2 class="anchored" data-anchor-id="how-llava-works-data-flow">How LLaVA Works (Data Flow)</h2>
+<ol type="1">
+<li><strong>Image -&gt; Vision Encoder</strong>
+<ul>
+<li>A ViT-style encoder (often CLIP ViT) converts pixels into visual embeddings.</li>
+</ul></li>
+<li><strong>Projector -&gt; Language Space</strong>
+<ul>
+<li>A learned projector maps visual embeddings into tokens the LLM can consume.</li>
+</ul></li>
+<li><strong>Instruction + Visual Tokens -&gt; LLM</strong>
+<ul>
+<li>The LLM receives both the user prompt and projected visual tokens.</li>
+</ul></li>
+<li><strong>Autoregressive Text Generation</strong>
+<ul>
+<li>The model generates grounded responses (answers, explanations, step guidance).</li>
+</ul></li>
+</ol>
+<p>Key intuition:</p>
+<ul>
+<li>CLIP-like features provide visual perception.</li>
+<li>Instruction tuning teaches the model how to respond as an assistant.</li>
+</ul>
+</section>
+<section id="why-llava-connects-the-whole-lecture" class="level2">
+<h2 class="anchored" data-anchor-id="why-llava-connects-the-whole-lecture">Why LLaVA Connects the Whole Lecture</h2>
+<p><strong>From taxonomy to practice</strong></p>
+<ul>
+<li><strong>CLIP side</strong>: strong visual representation and alignment priors</li>
+<li><strong>Flamingo side</strong>: multimodal conditioned text generation</li>
+<li><strong>LLaVA contribution</strong>: instruction-tuned behavior for real assistant workflows</li>
+</ul>
+<p><strong>Agentic relevance</strong></p>
+<ul>
+<li>Enables observe -&gt; reason -&gt; respond loops over images and interfaces</li>
+<li>Useful in UI agents, document assistants, and multimodal copilots</li>
+</ul>
+<p><strong>Important limitation</strong></p>
+<ul>
+<li>Good fluency does not guarantee faithful grounding</li>
+<li>Add retrieval checks, tool verification, or human oversight for high-stakes tasks</li>
+</ul>
+<!-- ## Practical Considerations
+
+### 1. Data Collection and Preparation
+
+- Ensuring aligned multimodal data
+- Handling missing modalities
+- Balancing data across modalities
+
+### 2. Model Selection
+
+- Choosing appropriate architectures for each modality
+- Deciding on fusion strategies
+- Considering computational resources
+
+### 3. Deployment Challenges
+
+- Handling real-time processing requirements
+- Managing model size and latency
+- Ensuring robustness in production environments -->
+<!-- ## Conclusion
+
+Multimodal AI represents a significant advancement in artificial intelligence, enabling systems to process and integrate information from multiple modalities. By combining computer vision with other modalities like text and audio, we can create more powerful, versatile, and human-like AI systems.
+
+As the field continues to evolve, we can expect to see more sophisticated multimodal models that better capture the richness and complexity of human perception and communication. -->
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
