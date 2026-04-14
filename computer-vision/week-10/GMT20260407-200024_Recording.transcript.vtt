@@ -1,0 +1,2222 @@
+WEBVTT
+
+1
+00:00:03.230 --> 00:00:05.580
+Benjamin Houghton: Yeah, oh, did you have one or your… no, okay.
+
+2
+00:00:07.070 --> 00:00:09.180
+Benjamin Houghton: Just thinking about questions.
+
+3
+00:00:09.860 --> 00:00:17.130
+Benjamin Houghton: Alright, so we'll move on to motor, which we briefly talked about last week, but I wanted to go over it one more time.
+
+4
+00:00:17.190 --> 00:00:30.180
+Benjamin Houghton: Because I think it's a pretty cool idea. I don't… you know, I don't know if this architecture will ever become mainstream, or if it will replace our current pipelines, but it's… it's still interesting to think about. You know, I think that
+
+5
+00:00:32.110 --> 00:00:41.740
+Benjamin Houghton: it's… it's still worth a… definitely still worth a closer look, right? But this isn't something that you would necessarily employ, in, like, a production environment, per se.
+
+6
+00:00:41.910 --> 00:00:43.720
+Benjamin Houghton: So,
+
+7
+00:00:45.020 --> 00:00:59.810
+Benjamin Houghton: it's an end-to-end transformer, right? So, it does everything. So, end-to-end transformer means… remember I said before, you know, we have an object detector, and then we have an association module, right? So,
+
+8
+00:01:00.060 --> 00:01:05.110
+Benjamin Houghton: And we… well, we have multiple things, right? More than just that. Like, BiteTrack is composed of
+
+9
+00:01:05.260 --> 00:01:07.880
+Benjamin Houghton: In DeepSort, they have the…
+
+10
+00:01:08.200 --> 00:01:17.100
+Benjamin Houghton: They have some way to detect objects, they have some way to track, to create tracks of where things are going. They have some way to,
+
+11
+00:01:17.330 --> 00:01:21.979
+Benjamin Houghton: associate tracks and objects together, right? So, the most
+
+12
+00:01:22.070 --> 00:01:38.000
+Benjamin Houghton: is all kind of under one roof, right? So it does… the transformer does the object detection, it does the track management, and it does the track management and the association. So it's all one big pipeline, right? So that's what you need to kind of
+
+13
+00:01:38.150 --> 00:01:45.290
+Benjamin Houghton: of understand here. And… Basically, this is what,
+
+14
+00:01:45.780 --> 00:01:48.530
+Benjamin Houghton: At first, it kind of starts off a lot like…
+
+15
+00:01:48.590 --> 00:02:06.630
+Benjamin Houghton: DETR. Remember, DETR is a detection transformer, where you had those object queries, right? So remember back, a couple weeks back, we had, like, a set number of queries. Those were learned… those were learned vectors that became the input into the model, and they would basically
+
+16
+00:02:06.820 --> 00:02:11.079
+Benjamin Houghton: Represent a particular object to be detected, okay?
+
+17
+00:02:13.720 --> 00:02:15.109
+Benjamin Houghton: So that's the first step.
+
+18
+00:02:15.220 --> 00:02:16.030
+Benjamin Houghton: Right.
+
+19
+00:02:16.330 --> 00:02:24.150
+Benjamin Houghton: is to learn… is detect… first frame, you detect stuff. That's what you do. Wear the stuff? Like, that's all you have to do in the first frame.
+
+20
+00:02:24.530 --> 00:02:35.690
+Benjamin Houghton: Then you have the next frame. The next frame is going to be… now you have tracks, okay? So, on the second frame, you have… you have two… you have two jobs now, right? You need to determine
+
+21
+00:02:35.690 --> 00:02:49.519
+Benjamin Houghton: what… what a track is, and you determine what, like… so you need to determine if there's new objects, and where they are, and if you have a track, like, where it's going. Like, where was it previously? Like, where is… so track 1,
+
+22
+00:02:49.960 --> 00:03:01.710
+Benjamin Houghton: you know, yet Object 1 is going to become track 1 or whatever, right? So, where has it moved to? So, in this first diagram here they have from their paper,
+
+23
+00:03:01.800 --> 00:03:17.940
+Benjamin Houghton: you see that it says this iterative update. Basically, the track queries are the output of this DETR decoder, and they also become the input again, right? So basically, they maintain a state of information about where the object is going.
+
+24
+00:03:18.060 --> 00:03:25.369
+Benjamin Houghton: That's what the, the decoder, or I'm sorry, the track clearings do. Alright, so…
+
+25
+00:03:26.470 --> 00:03:41.250
+Benjamin Houghton: Let's look at the… this next slide, detect and track queries in a little bit more detail. So the detection queries discover the new objects, right, like entering the scene, we just kind of talked about that. And the track queries carry identity state from previous frames. So.
+
+26
+00:03:41.330 --> 00:03:51.080
+Benjamin Houghton: The idea here is that, like, on every single iteration, every forward pass of this model, the track queries are basically just a copy of the output.
+
+27
+00:03:51.540 --> 00:04:08.749
+Benjamin Houghton: And they get updated every time. And the object queries, they're new, they're the same, they're static, meaning just like… just like DETR, just like the detection transformer, they're… they were a learned vector, and they're… they're identical every single forward pass, okay? So they don't change.
+
+28
+00:04:09.070 --> 00:04:27.780
+Benjamin Houghton: And their job is to detect new things, and the track queries, they do change, they get updated with new state information, and their job is to kind of keep track of where things are going, alright? And so that's what this is… this is what this is showing here, too, is that when something gets, you know, at first gets detected.
+
+29
+00:04:27.890 --> 00:04:34.029
+Benjamin Houghton: And I know these are orbital boxes, but these are actual vectors, right? These are… these are vectors,
+
+30
+00:04:34.390 --> 00:04:52.579
+Benjamin Houghton: basically, you know, think of it like, instead of… you know where we took a, we took a word, right? Remember we took words, and we, we vectorized, or we… we vectorized them, aka we turned into a bunch of features? Like, this is, like, basically a vector of features, like, each one of these little boxes. And so you, you have these…
+
+31
+00:04:52.830 --> 00:05:06.740
+Benjamin Houghton: two objects that detected in frame 1, T1, so the orange person and the blue person, right? And then they become… they basically become track queries, okay? That's what this is the same, right?
+
+32
+00:05:10.360 --> 00:05:21.559
+Benjamin Houghton: And that's done through Hungarian matching, by the way, which we'll talk about here in a second. So, maybe it'll make more sense, and this is how they kind of present their paper, right?
+
+33
+00:05:21.960 --> 00:05:25.990
+Benjamin Houghton: Alright, so the full workflow, right? Did I miss anything up here, though?
+
+34
+00:05:26.730 --> 00:05:34.299
+Benjamin Houghton: The decoder jointly updates both the query types using the current frame features, right? This helps split motor… okay, so…
+
+35
+00:05:39.300 --> 00:05:44.889
+Benjamin Houghton: Oh, I should mention here, I should… we should go back and talk about this a little bit more, though. So, remember, look in frame 1,
+
+36
+00:05:45.120 --> 00:05:50.729
+Benjamin Houghton: We detect the orange person and the blue person. They become tracks, and then in frame 2,
+
+37
+00:05:50.930 --> 00:06:08.900
+Benjamin Houghton: In frame 2, like, they've moved from the detection queries to the track queries, and now we have a new person that's coming to the scene, the green person, who gets detected in frame 2, and then they become a track, okay? Right, so now in frame three, we don't detect any new objects.
+
+38
+00:06:08.940 --> 00:06:12.769
+Benjamin Houghton: We have these 3 track queries, and we noticed that,
+
+39
+00:06:12.840 --> 00:06:29.680
+Benjamin Houghton: you know, going into frame 4, maybe the blue person leaves the scene, and so they're no longer detected. That person is gone, and we also don't detect any new objects. So that's the overall high level, like, of how that works, and so now we just need to understand, like, how they do this, right?
+
+40
+00:06:30.320 --> 00:06:31.950
+Benjamin Houghton: It's not super…
+
+41
+00:06:34.240 --> 00:06:43.979
+Benjamin Houghton: complicated, I don't think, but it kind of can be at first, right? So, let's look at the full… the full diagram here, right? So, they have this full workflow.
+
+42
+00:06:44.750 --> 00:06:51.349
+Benjamin Houghton: Let's start in the top left. So at T1, we have some image, right? That's gonna go into some encoder.
+
+43
+00:06:51.700 --> 00:07:00.719
+Benjamin Houghton: Okay, so you have some vision encoder. That's just like DETR, right? DETR also had a vision encoder. The image goes into here, gets encoded.
+
+44
+00:07:00.820 --> 00:07:15.929
+Benjamin Houghton: figures out whatever it needs to figure out, and then the output goes into the decoder, just like a typical transformer workflow. You have the encoder first, the outputs of the encoder go into the decoder. Now, typically in a decoder, what would go in? The previous token or the prompt.
+
+45
+00:07:15.980 --> 00:07:24.769
+Benjamin Houghton: Right? It would be a transformer, an initial… when we're going back to Transformers 101, it would be something along the lines of.
+
+46
+00:07:25.040 --> 00:07:31.380
+Benjamin Houghton: you know, here's the tokens that have been generated so far, generate the next token. But that's not the case here.
+
+47
+00:07:31.500 --> 00:07:48.349
+Benjamin Houghton: With the detection transformer, it's a… it's a query, it's the query tokens, or the detect… I'm sorry, the detection query, or the… the tech… they call it detect query here, or detection queries, okay? So those are those learned vectors, just like DETR, just like the detection transformer.
+
+48
+00:07:48.810 --> 00:07:49.700
+Benjamin Houghton: Alright?
+
+49
+00:07:49.830 --> 00:07:51.800
+Benjamin Houghton: So, you know, if you had, like.
+
+50
+00:07:51.900 --> 00:08:04.030
+Benjamin Houghton: 10 queries in… and remember, like, when you do a transformer, you give it the previous tokens, and it predicts the next token, okay? So, in detection queries, like, you know, you have
+
+51
+00:08:04.090 --> 00:08:16.410
+Benjamin Houghton: this one query, and it's, like, gonna correspond one-to-one with, like, the same row as the output, right? So row 1… so query one is gonna be kind of… it doesn't really matter that much, but…
+
+52
+00:08:16.500 --> 00:08:27.940
+Benjamin Houghton: query one would map to, like, output row 1, like, object 1 in the detection query. That doesn't really matter that much, okay? So those goes through the detector, I'm sorry, the decoder.
+
+53
+00:08:28.610 --> 00:08:40.150
+Benjamin Houghton: not detector. It is, overall, this is a detector, right? So, together, Just to clarify, this…
+
+54
+00:08:40.539 --> 00:08:52.549
+Benjamin Houghton: thing right here, this is DETR, right? Okay, what I've circled. The detection queries, the encoder, and the decoder. Alright, that is DETR. All we've done so far is recreate it.
+
+55
+00:08:52.950 --> 00:08:57.529
+Benjamin Houghton: But now, out comes the other side, we see we have our predictions, okay?
+
+56
+00:08:59.230 --> 00:09:08.630
+Benjamin Houghton: And our… basically, in the first time frame, they're just gonna be whatever the model detected. That was the… what Y hat is, or Y hat 1, alright?
+
+57
+00:09:09.180 --> 00:09:11.669
+Benjamin Houghton: We also see this thing called the QIM.
+
+58
+00:09:12.090 --> 00:09:18.150
+Benjamin Houghton: which is the query interaction module. And that's the part that manages the tracks
+
+59
+00:09:18.150 --> 00:09:35.900
+Benjamin Houghton: and the objects, and kind of merges them together, okay? So what it does is it filters out… it brings in new objects, assigns them to tracks, filters out old tracks, all that kind of stuff. It even has its own multi-headed attention module connected to it, right? And we'll talk about that here in a second.
+
+60
+00:09:36.630 --> 00:09:38.909
+Benjamin Houghton: So… Huh, the…
+
+61
+00:09:40.210 --> 00:09:51.369
+Benjamin Houghton: All we need to understand right now, before we talk about the details of the QIM, is that what it's going to output is the new track queries. So we see what comes out of it is the track queries, alright? And so now…
+
+62
+00:09:51.590 --> 00:09:54.560
+Benjamin Houghton: We can take our track queries and our…
+
+63
+00:09:55.090 --> 00:10:10.839
+Benjamin Houghton: In frame 2, right, we do the same thing, okay? So we have the same image, or the next image, frame 2, it goes into the encoder, does its feature extraction, all that stuff, it comes out, and it goes into the decoder, right? And so, you know, basically.
+
+64
+00:10:11.620 --> 00:10:15.810
+Benjamin Houghton: This is the key and the value, okay? And this is the query.
+
+65
+00:10:16.400 --> 00:10:23.469
+Benjamin Houghton: the detection queries here, and the track queries here, okay? So we concatenate them together.
+
+66
+00:10:25.630 --> 00:10:39.430
+Benjamin Houghton: Okay? And that's just a fancy… and, like, that's just like adding more tokens in the list, right? Remember when we… when we run a… we run a transformer, you know, it's just like adding a new token. Like, it's like… like a string… remember the… the translation?
+
+67
+00:10:39.430 --> 00:10:52.889
+Benjamin Houghton: we did, alright, the translation example, we did for deep learning, where we're translating from English to Spanish. It would just clearly, it's like adding more tokens, okay? So now it's not just detection queries, it's also track queries. So we just take the same
+
+68
+00:10:52.890 --> 00:11:07.510
+Benjamin Houghton: standard… and this is usually, like, 100, or whatever it is. We take the same 100 detection queries, and on the bottom, let's say we have 3 tracks, 3 objects. In this example, there's 2 people, so let's say we have 2. So now, instead of 100 queries, we just have 102.
+
+69
+00:11:07.620 --> 00:11:15.120
+Benjamin Houghton: Okay, so the matrix is just changed by… by adding two more rows on it, okay? And so, those go through the decoder.
+
+70
+00:11:15.540 --> 00:11:34.789
+Benjamin Houghton: right, they query the, the, they… those are… they're gonna query the encoded image, and out comes the other side is… is Y2, right? So, Y2 is going to be, again, it's just going to be our… it's going to be our tracks, right? So, it's going to be basically,
+
+71
+00:11:34.990 --> 00:11:42.640
+Benjamin Houghton: It's gonna be the tracks that continued on, and it's gonna be the new objects, right? So that's gonna be our output for Y2.
+
+72
+00:11:42.790 --> 00:11:43.750
+Benjamin Houghton: All right.
+
+73
+00:11:43.850 --> 00:11:48.270
+Benjamin Houghton: And then the same thing again, we'll take the outputs, run them through the QIM,
+
+74
+00:11:48.830 --> 00:11:57.579
+Benjamin Houghton: And figure out what tracks go forward and which ones do not. Alright, so let's look at the QIM, and that'll kind of help you kind of put this all together, I think.
+
+75
+00:11:58.250 --> 00:12:04.720
+Benjamin Houghton: Right, so the query interaction module. So, remember, our decoder, right, is gonna come
+
+76
+00:12:04.880 --> 00:12:07.800
+Benjamin Houghton: It's gonna come out like a row, basically, like.
+
+77
+00:12:07.910 --> 00:12:21.309
+Benjamin Houghton: of queries… you know, we have the queries come in, and out from the other side comes their output, right? So here, they have three detection queries. Now, normally, this might be, like, a number… you have the yellow boxes, or the detection queries.
+
+78
+00:12:21.470 --> 00:12:36.689
+Benjamin Houghton: Now, they only have 3 here, but normally this would be, like, 100, right? And they had, you know, this kind of makes sense. There was 2 people, so they have 2 track queries, okay? So that's the first part to understand. Like, these are just output vectors from the transformer.
+
+79
+00:12:36.890 --> 00:12:37.980
+Benjamin Houghton: And…
+
+80
+00:12:38.370 --> 00:12:48.859
+Benjamin Houghton: these values kind of have, like, these… they have these scores associated with them, right? So we see that the detection queries, if they have a high score, that means it's a new object.
+
+81
+00:12:49.370 --> 00:13:04.160
+Benjamin Houghton: Okay? So, we literally just filter them, determine which ones have high scores, which ones do not. If it's a high score, we keep that query, and we say, we can take that, vector, we can take its information and determine where in the image it is, and that's the new object.
+
+82
+00:13:04.260 --> 00:13:08.649
+Benjamin Houghton: Okay, for the track queries.
+
+83
+00:13:09.580 --> 00:13:27.630
+Benjamin Houghton: You also have a score, but they don't mean exactly the same thing. So a low score means that object has… that track is gone, it should be erased, like, that person or object has left the scene. And a 1, or a high score means that that object has continued on to the next frame, so you keep that track.
+
+84
+00:13:27.630 --> 00:13:32.420
+Benjamin Houghton: just filtering it, like, just pure Python logic, like, is the score high or low?
+
+85
+00:13:32.500 --> 00:13:41.960
+Benjamin Houghton: That's it. Okay? After that, they… after that, they take the track queries, and they run them through this little multi-headed attention module.
+
+86
+00:13:42.120 --> 00:13:46.459
+Benjamin Houghton: And I'm not a hun… you know, I'm not sure…
+
+87
+00:13:46.570 --> 00:13:57.439
+Benjamin Houghton: Yeah, I thought this was kind of weird myself at first. I mean, I think the idea here is that the reason why they do the multi-headed attention again is to kind of… it's to kind of keep… to make sure all the…
+
+88
+00:13:57.580 --> 00:14:07.959
+Benjamin Houghton: you know, you're running multi-headed attention here, and you're doing self-attention amongst the track queries themselves. So the queries are attending to themselves.
+
+89
+00:14:08.390 --> 00:14:10.509
+Benjamin Houghton: Okay? The track queries are.
+
+90
+00:14:10.690 --> 00:14:25.490
+Benjamin Houghton: Which isn't super foreign. You know, remember that when we do, like, a traditional encoder-decoder style architecture, you know, you'll have the query, you'll have the, you know, the key and the value will come from the encoder, and the query will come from the decoder.
+
+91
+00:14:25.630 --> 00:14:36.620
+Benjamin Houghton: Right? The queries will attend to the values and the keys and the values, and then they'll attend to themselves afterwards. So it's not super foreign in that sense, but…
+
+92
+00:14:36.740 --> 00:14:47.839
+Benjamin Houghton: Whatever, it is what it is. I think the main idea here is that, like, it helps alignment, so that different tracks kind of all know, like, what other tracks are doing, I guess, sort of. So they attend to themselves.
+
+93
+00:14:48.190 --> 00:14:53.730
+Benjamin Houghton: And then they come out the other side, and now what we do is we concatenate
+
+94
+00:14:54.420 --> 00:15:00.340
+Benjamin Houghton: The detection queries that didn't… that didn't get filtered, with, the…
+
+95
+00:15:00.430 --> 00:15:15.559
+Benjamin Houghton: with the track queries that have been through this multi-headed attention, they get catenated together, and they become the new track queries. And so that's the output of the QIM, is these new track queries. And if you go back to the earlier diagram.
+
+96
+00:15:15.560 --> 00:15:29.250
+Benjamin Houghton: you know, what happens next? Well, these track queries are here, right? This is the output of the QIM, okay? And they get concatenated again with these static detection queries, and the process repeats itself.
+
+97
+00:15:30.700 --> 00:15:35.289
+Benjamin Houghton: Hopefully that all makes sense. It's super high level, I know, and, I know that, like.
+
+98
+00:15:35.930 --> 00:15:40.220
+Benjamin Houghton: you have to really… I mean, this is, like, 4 or 5 lectures worth of, like.
+
+99
+00:15:40.350 --> 00:15:57.809
+Benjamin Houghton: you know, we talked about transformers for weeks, we talked about, in deep learning, and we talked about them again here in this course. And so you kind of have to, like, understand all that just to make total sense, but, I mean, even if you don't, like, hopefully the high-level stuff kind of makes sense, right? Any questions on that?
+
+100
+00:15:58.870 --> 00:16:01.890
+Benjamin Houghton: Yes.
+
+101
+00:16:06.760 --> 00:16:10.590
+Benjamin Houghton: Correct.
+
+102
+00:16:10.960 --> 00:16:13.480
+Benjamin Houghton: It's what it's going to be tried to fill in the crowd.
+
+103
+00:16:16.270 --> 00:16:20.520
+Benjamin Houghton: Correct, yeah. That's exactly right, right? So,
+
+104
+00:16:20.990 --> 00:16:23.269
+Benjamin Houghton: Another way to think about it is, like…
+
+105
+00:16:26.030 --> 00:16:44.329
+Benjamin Houghton: I mean, I can make it, like, even simpler than their diagrams here, and I think that this is, like, useful to think about. Like, we talked about a lot of, like, the details of how this exactly works, but I always like to think about, like, inputs and outputs myself, right? And, like, I think that's the first step, really, to understand the model. And so.
+
+106
+00:16:44.820 --> 00:16:50.019
+Benjamin Houghton: Like, first, you have, like, these detection queries, like, I'll call them Q1,
+
+107
+00:16:50.530 --> 00:16:55.440
+Benjamin Houghton: Q2… I think they had, they had 3 in their example, so I'll just do 3, too, okay?
+
+108
+00:16:55.780 --> 00:17:06.579
+Benjamin Houghton: And this is it. These are the… this is the full input to the model, and I'm just going to draw it as a black box. We'll call it, you know, MOTR. And so… so what comes out of this, right?
+
+109
+00:17:07.020 --> 00:17:13.229
+Benjamin Houghton: three vectors come out. You know, it's just like a traditional transformer. Imagine this is, like.
+
+110
+00:17:14.060 --> 00:17:17.809
+Benjamin Houghton: This is the… this is, like, start a sequence, this is the word duh.
+
+111
+00:17:18.210 --> 00:17:30.199
+Benjamin Houghton: sun, right? Or the weather, right? Sun is sequenced the weather, right? That's, like, just like another transformer, and its job is to predict the next token, but instead, its job is to predict whether or not these
+
+112
+00:17:30.450 --> 00:17:34.900
+Benjamin Houghton: abstractions represent an object. Okay, so out comes the other side.
+
+113
+00:17:35.930 --> 00:17:38.990
+Benjamin Houghton: Q1, Q2…
+
+114
+00:17:40.120 --> 00:17:53.179
+Benjamin Houghton: in Q3. And so we calculate some score with them, right? And that means, like, there's some threshold. Let's say this one detected an object, okay? So, this will become a track.
+
+115
+00:17:53.380 --> 00:18:04.410
+Benjamin Houghton: And this will become T1, track 1, or whatever, okay? And so now, on the next frame, this is T1, frame 1, and so now we go to frame 2. And so now what's the input to this model?
+
+116
+00:18:04.910 --> 00:18:13.210
+Benjamin Houghton: It's gonna be Q1, Q2, these never change, but now we have this new one, T1, Track 1.
+
+117
+00:18:13.860 --> 00:18:22.399
+Benjamin Houghton: Okay? They got concatenated together with the queries, like they show here in this slide. And so then, this goes through the model.
+
+118
+00:18:25.530 --> 00:18:27.569
+Benjamin Houghton: And out comes the other side. What?
+
+119
+00:18:28.240 --> 00:18:33.790
+Benjamin Houghton: four vectors, because we put four in. And so these will tell us whether or not… the outputs will tell us
+
+120
+00:18:34.560 --> 00:18:35.660
+Benjamin Houghton: Q1.
+
+121
+00:18:36.030 --> 00:18:42.610
+Benjamin Houghton: Q2, Q3, Q1, and that will tell us, did we detect a new object?
+
+122
+00:18:43.930 --> 00:18:53.009
+Benjamin Houghton: And did T1 continue? Did it leave the… did it leave the image or not? So this will have some score associated with it. It was a high value.
+
+123
+00:18:53.270 --> 00:19:01.400
+Benjamin Houghton: then we keep it. If not, we discard it, right? And so then, we do the same thing with these. Do we detect new objects? That's what this…
+
+124
+00:19:01.570 --> 00:19:07.589
+Benjamin Houghton: That's what this diagram is supposed to illustrate, right? That process, okay?
+
+125
+00:19:08.480 --> 00:19:10.400
+Benjamin Houghton: So, it's really not horrible.
+
+126
+00:19:11.700 --> 00:19:17.159
+Benjamin Houghton: That's… that's kind of, like, broad level how it works, though, right? Does that make… does that answer your question?
+
+127
+00:19:17.510 --> 00:19:18.290
+Benjamin Houghton: Great.
+
+128
+00:19:18.460 --> 00:19:20.250
+Benjamin Houghton: Hopefully that makes sense.
+
+129
+00:19:20.460 --> 00:19:21.990
+Benjamin Houghton: Any other questions on this?
+
+130
+00:19:27.070 --> 00:19:28.740
+Benjamin Houghton: Guess I could leave that up there, bud.
+
+131
+00:19:34.650 --> 00:19:36.670
+Benjamin Houghton: Yeah, and so, you know.
+
+132
+00:19:37.610 --> 00:19:46.500
+Benjamin Houghton: if T1, you know, these are static. These vectors never change, right? But these do, these track ones, right? The output
+
+133
+00:19:46.510 --> 00:20:02.790
+Benjamin Houghton: you know, remember we detected something, if we say we detected here something here, this literally becomes the input. It just gets concatenated together with the other queries, right? And so that's how it maintains, like, that state of that object, of that traffic, okay?
+
+134
+00:20:10.470 --> 00:20:11.130
+Benjamin Houghton: Okay.
+
+135
+00:20:11.890 --> 00:20:19.609
+Benjamin Houghton: Alright, cool. That's a really interesting… Hopefully this becomes more mainstream. I mean, not hopefully, but it's a really cool…
+
+136
+00:20:19.930 --> 00:20:36.859
+Benjamin Houghton: concept, and I think that the idea of, you know, it's quite novel, I'll say that, right? All right, so the last thing, this is kind of, kind of minimal here, but I just wanted to give you, like, just wanted to present some evaluation metrics, right? So we have
+
+137
+00:20:37.120 --> 00:20:40.080
+Benjamin Houghton: Multiple object tracking accuracy, alright?
+
+138
+00:20:40.760 --> 00:20:46.189
+Benjamin Houghton: I'm just gonna… you guys can read about these more, but,
+
+139
+00:20:46.650 --> 00:21:00.659
+Benjamin Houghton: This is the… this is kind of the big one. You'll see that if you see a paper, comparing models, they'll always… they'll always present this metric, this metric, MOTA, multi-trap… multi-object tracking accuracy.
+
+140
+00:21:01.050 --> 00:21:04.570
+Benjamin Houghton: So we can look at it, penalizes missed detections.
+
+141
+00:21:04.810 --> 00:21:11.680
+Benjamin Houghton: false alarms and identity switches, right? So, false negatives, false positives, and identity switches, right?
+
+142
+00:21:14.810 --> 00:21:23.520
+Benjamin Houghton: Multi-object precision is the IOU between the matched objects and the ground truth, so that would be, like, the intersection of union over the bounding boxes, right?
+
+143
+00:21:23.970 --> 00:21:33.659
+Benjamin Houghton: So then we have IDF1, harmonic mean, okay, identification, precision, and recall.
+
+144
+00:21:34.780 --> 00:21:47.420
+Benjamin Houghton: And then ID switches, right, which is… which is pretty intuitive, right? So the number of times a tract assignment identity changes mid-sequence. So if you have a person that, you know, is, you know, because…
+
+145
+00:21:47.590 --> 00:21:52.580
+Benjamin Houghton: You also have to… You know, remember that…
+
+146
+00:21:53.840 --> 00:22:13.539
+Benjamin Houghton: it's not just good enough to say, like, where everything is. Like, if we didn't do… without the identity, we're just doing object detection, right? Because, like, we're just saying, like, oh, there's a person here, oh, there's a person here, we need to say person 1, person 1, person 1, person 2, person 2, person 2, right? So that's why the ID switch is important.
+
+147
+00:22:14.600 --> 00:22:15.450
+Benjamin Houghton: Alright.
+
+148
+00:22:16.140 --> 00:22:18.300
+Benjamin Houghton: Cool. That's it, Provy.
+
+149
+00:22:18.440 --> 00:22:19.520
+Benjamin Houghton: Tracking?
+
+150
+00:22:20.430 --> 00:22:22.400
+Benjamin Houghton: So I don't, you know…
+
+151
+00:22:23.660 --> 00:22:26.529
+Benjamin Houghton: We'll move on now to,
+
+152
+00:22:28.530 --> 00:22:38.659
+Benjamin Houghton: little systems, that took a lot longer than I anticipated, so I don't know. We probably won't get through all this today. We'll see.
+
+153
+00:22:39.250 --> 00:22:45.579
+Benjamin Houghton: but we'll just go as far as we can, alright? And let's see, so…
+
+154
+00:22:45.900 --> 00:22:48.260
+Benjamin Houghton: We'll probably take a break in about…
+
+155
+00:22:48.440 --> 00:22:51.220
+Benjamin Houghton: Yeah, we'll take a break in about 10-20 minutes or so.
+
+156
+00:22:52.850 --> 00:22:58.889
+Benjamin Houghton: And… so, that'll put us at around, say, like, 440, $4.50.
+
+157
+00:22:59.020 --> 00:23:04.909
+Benjamin Houghton: And then we'll go probably until, like, 5.15, 5.20, we'll do our presentation and our quiz. Alright.
+
+158
+00:23:06.930 --> 00:23:11.520
+Benjamin Houghton: Alright, so multimodal vision system. Does everybody know what multimodal means?
+
+159
+00:23:12.310 --> 00:23:14.230
+Benjamin Houghton: Who doesn't? It's okay if you don't.
+
+160
+00:23:15.620 --> 00:23:22.299
+Benjamin Houghton: Alright, good. Alright, so, I can tell you that when I graduated, I didn't know what multimodal meant.
+
+161
+00:23:22.520 --> 00:23:24.559
+Benjamin Houghton: That's how much, like, stuff has changed.
+
+162
+00:23:24.680 --> 00:23:29.929
+Benjamin Houghton: Right? In, like, a short period. Like, it hasn't been that long since I graduated from Georgetown.
+
+163
+00:23:31.850 --> 00:23:46.660
+Benjamin Houghton: Word is becoming, like, a household name, right? I think, okay? So, you know, everybody knows how to… even your grandmother and your… well, maybe not your grandmother, but definitely your parents know how to use ChatGPT, right? And Gemini and all that stuff, so…
+
+164
+00:23:48.670 --> 00:23:54.039
+Benjamin Houghton: I guess I don't really need to tell you what it means, then. So, multimodal, obviously, is a combination of various
+
+165
+00:23:54.220 --> 00:24:06.210
+Benjamin Houghton: forms of data. So, the big one is going to be text data and images, especially for us, like, this is a computer vision class, so our primary focus will be on visions, like.
+
+166
+00:24:06.540 --> 00:24:11.990
+Benjamin Houghton: But, you can have other stuff too, right? Text data, audio data, sensor data, okay?
+
+167
+00:24:13.930 --> 00:24:21.770
+Benjamin Houghton: Right, and so create some system that can understand all these and reason across these different modalities, alright? So…
+
+168
+00:24:22.340 --> 00:24:35.819
+Benjamin Houghton: You know, the first time I gave this lecture, it really had… it really shifted, right? Like, I think… I mean, this was just a year ago, probably the first time I did a multimodal lecture on… for this course.
+
+169
+00:24:35.920 --> 00:24:41.169
+Benjamin Houghton: And… Even then, Things were, like, about, like.
+
+170
+00:24:41.260 --> 00:24:56.089
+Benjamin Houghton: well, what if I want to extract information from documents? Or what if I want to, like, generate a silly image with a diffusion model that can understand text? Whatever it may be. Right? They were kind of, like, almost like one-off, like, corner cases.
+
+171
+00:24:56.090 --> 00:25:04.369
+Benjamin Houghton: it's not really the case anymore. Now it's, like, all about, like, multimodal and logicentic are becoming somewhat synonymous, right? Like.
+
+172
+00:25:04.370 --> 00:25:15.459
+Benjamin Houghton: they're becoming, like, entire systems, so to speak, right? And so, you know, that's why, you know, a few years ago, and I'll go back even one step, like, you know.
+
+173
+00:25:15.460 --> 00:25:24.939
+Benjamin Houghton: 4 or 5, like, even when you guys… when… when a lot of you, some of you took deep learning, not all of you, some of you took it maybe a year ago, and, like.
+
+174
+00:25:24.960 --> 00:25:32.580
+Benjamin Houghton: when we were talking about transformers, like, we were talking about LLMs and ChatGPT, like, we weren't even talking about agent to AI even then, right? And so.
+
+175
+00:25:33.060 --> 00:25:36.209
+Benjamin Houghton: The two have kind of, like, merged together, like, these multimodal.
+
+176
+00:25:36.500 --> 00:25:50.519
+Benjamin Houghton: agentic large language model systems. They're all kind of the same thing, and hopefully I'm going to give you some insight today into kind of, like, the core components of how these systems work, right? Like, how they're able to digest different forms of information.
+
+177
+00:25:50.580 --> 00:26:11.850
+Benjamin Houghton: there's a lot more to it than this, like, the engineering aspect, of how you create a large language model, or how you… and I shouldn't even call them that. I don't like… like, people who don't… who call it… like, that's not even a technically accurate term, like, they're not large language models anymore, they're full-on agentic systems. They have large language model components, but that's one piece of a larger system.
+
+178
+00:26:11.850 --> 00:26:13.529
+Benjamin Houghton: Right? So,
+
+179
+00:26:15.020 --> 00:26:28.829
+Benjamin Houghton: hopefully I can give you some understanding of how they kind of digest all the information. You know, we're not going to get into, like, how an agentic framework works, per se, nor, you know, it's kind of outside the scope of this class. We do talk about that a little bit in deep learning.
+
+180
+00:26:29.050 --> 00:26:31.199
+Benjamin Houghton: And, you know.
+
+181
+00:26:31.820 --> 00:26:37.659
+Benjamin Houghton: At least recently, we have. And, so some of you have seen that lecture, some of you have not.
+
+182
+00:26:39.620 --> 00:26:50.529
+Benjamin Houghton: Yeah, this is more gonna be focused on the multimodal aspect, like, the different forms of data and how it's ingested. Okay, so, yeah, so some of the reasons… I don't… this is kind of like…
+
+183
+00:26:50.880 --> 00:26:55.169
+Benjamin Houghton: pretty… I think it's kind of bland, what it says here, like, obviously this is why it's important.
+
+184
+00:26:55.170 --> 00:27:11.039
+Benjamin Houghton: perceived real environments, ground decisions and evidence, active tools and interfaces. So yeah, this is a… this is a pretty big one, I thought, that is, you know, so it can navigate… navigate apps, webs, UIs, call APIs, execute workflows, and multimodal observations.
+
+185
+00:27:11.040 --> 00:27:15.989
+Benjamin Houghton: Right? You know, operating feedback loops.
+
+186
+00:27:16.160 --> 00:27:20.309
+Benjamin Houghton: Alright, so, yeah, I mean, obviously, like, you know.
+
+187
+00:27:20.820 --> 00:27:28.020
+Benjamin Houghton: a good agent… a good agent AI system needs to be able to digest, especially images, right?
+
+188
+00:27:28.020 --> 00:27:41.700
+Benjamin Houghton: And I have a feeling that it won't be long before they can digest audio as well as they can digest textual and vision data, right? So, I've not experimented a whole lot with audio, as far as agentic workflows, but
+
+189
+00:27:41.910 --> 00:27:48.990
+Benjamin Houghton: You know, I think that would be… that would be kind of cool. You know, next we'll be talking to them, right? We won't be necessarily having to type to them anymore.
+
+190
+00:27:49.180 --> 00:27:50.950
+Benjamin Houghton: Right, or show them images.
+
+191
+00:27:51.140 --> 00:27:55.790
+Benjamin Houghton: Yeah. The machines. Okay, so…
+
+192
+00:27:59.840 --> 00:28:11.939
+Benjamin Houghton: Classic tasks like captioning, video, question answering are useful benchmarks, but the high-impact application is building reliable multimodal agents, right? So, right, but like, you know, we can use…
+
+193
+00:28:12.100 --> 00:28:16.970
+Benjamin Houghton: Essentially, that's the way these systems work, is they have a bunch of, like.
+
+194
+00:28:17.820 --> 00:28:20.720
+Benjamin Houghton: I won't say them, like, one-off models, but, like.
+
+195
+00:28:21.760 --> 00:28:39.709
+Benjamin Houghton: The model that specializes in ingesting, like, massive amounts of textual information in this massive context windows is not the same model that's processing your image, right? It's different models, like, and that's where the agentic part comes in. They have specialized models for specialized things. They might have a model
+
+196
+00:28:40.240 --> 00:28:43.180
+Benjamin Houghton: For example, without giving away too much information.
+
+197
+00:28:43.180 --> 00:29:05.450
+Benjamin Houghton: You have something as simple as an image that just… you have something like a vision encoder, right? Just something that encodes it, and its only job is to take an image and create… and turn it into tokens that a larger, large language model can ingest. Like, that's how these systems really operate today, right? You just transfer the knowledge or the information, you take a CNN,
+
+198
+00:29:05.450 --> 00:29:22.339
+Benjamin Houghton: you know, you take an image, you run it through a backbone, a CNN, you do your feature extraction, you take that, maybe, you run it through a vision model, a vision transformer, and it converts the images, the features into tokens, and those tokens then go into a large language model, right?
+
+199
+00:29:22.410 --> 00:29:27.850
+Benjamin Houghton: very… Not very far from the way these systems operate, alright?
+
+200
+00:29:28.960 --> 00:29:41.599
+Benjamin Houghton: So, vision language models, right, that's what I was just kind of getting at, right? So that's… you have some type… you'll typically have, like, a vision encoder, which is going to be a CNN or a vision transformer, or maybe they're even chained together, one on top of another.
+
+201
+00:29:41.600 --> 00:29:51.099
+Benjamin Houghton: You have a text encoder, typically a transformer-based language model, so this is just gonna be… not typically, it's gonna be always gonna be a transformer-based language model.
+
+202
+00:29:51.100 --> 00:29:54.099
+Benjamin Houghton: It's just gonna be, you know, that is gonna…
+
+203
+00:29:54.120 --> 00:30:07.179
+Benjamin Houghton: process the text. You might have some cross-modal fusion mechanisms to align and combine visual and textual features, and then you have, like, some task-specific head, right? So, these are some examples of some popular vision models.
+
+204
+00:30:07.180 --> 00:30:14.450
+Benjamin Houghton: We're gonna talk about CLIP today. Dale Dolly is… has anybody ever heard of Dahl E?
+
+205
+00:30:15.060 --> 00:30:31.460
+Benjamin Houghton: You have? Okay, good. So, it's a pretty powerful, model, it was developed by OpenAI, but it's a… it's a combination of a transformer and diffusion model, right? It's kind of like state-of-the-art for image generation.
+
+206
+00:30:31.570 --> 00:30:37.050
+Benjamin Houghton: Flamingo, and Poly. So, like, none of these models themselves are, like.
+
+207
+00:30:39.130 --> 00:30:50.739
+Benjamin Houghton: agentic systems themselves, but they kind of show, like, the different ways you can combine the features together, right? So, I guess what I'm trying to tell you guys, like, my messaging is, is that
+
+208
+00:30:50.950 --> 00:30:55.140
+Benjamin Houghton: You have these various techniques for combining data.
+
+209
+00:30:55.290 --> 00:30:59.510
+Benjamin Houghton: Understanding it, processing it, doing attention, right?
+
+210
+00:30:59.740 --> 00:31:15.329
+Benjamin Houghton: all these different ways of doing it, and that's kind of the way you can build, like, a complete system, right? So, if you want to go from text to image, you might use something like an encoder.
+
+211
+00:31:15.340 --> 00:31:23.609
+Benjamin Houghton: you might use something like Dolly, right? Text-to-image generation. If you want to do some, like, retrieval task, you might use Clip.
+
+212
+00:31:23.650 --> 00:31:34.870
+Benjamin Houghton: To do contract… you'll see what that… about… with how that works in a minute, to try to match text to images, right? So you have, like, these different methodologies that are for different things, and…
+
+213
+00:31:35.040 --> 00:31:43.399
+Benjamin Houghton: each one of these kind of, like, tells us a piece of the picture, right? And I want you to think of this as, like, a holistic system, meaning that
+
+214
+00:31:43.800 --> 00:31:54.159
+Benjamin Houghton: you know, they're not just, like, over here in isolation, right? Like, you can kind of chain them together, combine them in different ways, do different tasks, right? Or you can do…
+
+215
+00:31:54.270 --> 00:32:06.840
+Benjamin Houghton: what a lot of people do, what OpenAI does, is they stick a large language model in the middle of all of them, right, and build an agent, and they use something akin… I'm sure they don't use Langraph.
+
+216
+00:32:06.840 --> 00:32:21.949
+Benjamin Houghton: I'm sure they have their own source code. They have something akin to Langraph that directs the large language model, and how to use all these various components, and kind of chain them together to do, like, the really amazing things that we see it doing. Okay?
+
+217
+00:32:22.260 --> 00:32:24.460
+Benjamin Houghton: Alright,
+
+218
+00:32:26.260 --> 00:32:44.920
+Benjamin Houghton: model taxonomy at a glance. Alright, so yeah, these are, like, the different types of models. So this is a good, like, high-level overview. We're going to talk about a lot of these in more detail. So the family, the first one is contrastive alignment. So we have image plus text, and we generate some embeddings.
+
+219
+00:32:45.010 --> 00:32:51.689
+Benjamin Houghton: Okay? So, contrastive means just basically match or not matching, like, Oh, do this…
+
+220
+00:32:51.690 --> 00:33:11.289
+Benjamin Houghton: Basically, it's matching images and text. So, what's an example of that? An example of that is, like, if I had an image of a person riding a horse, and my caption was, a person riding a horse. That text matches that image. If I say, you know, a clown at a circus, it doesn't match, right? That's what we mean by contrasted match and non-matching, alright?
+
+221
+00:33:11.590 --> 00:33:32.549
+Benjamin Houghton: Fusion style, late, week, or hybrid, we'll talk about what fusion style means in a second, but that means, at some point, you basically need to see how the words and images, connect, right? That's what the fusion means, is combining them. An example of this is CLIP, which is a very important model. It gets used a lot, even, you know, gets used today, because, you know.
+
+222
+00:33:32.550 --> 00:33:36.589
+Benjamin Houghton: Or, or some… some variation of clip, right? It's just a way…
+
+223
+00:33:36.590 --> 00:33:44.510
+Benjamin Houghton: to compare, right, images and text, right? The same way… I mean, it's very similar to, like, how our brains work, in a sense, like.
+
+224
+00:33:44.710 --> 00:33:59.689
+Benjamin Houghton: does this image match this sentence, right? Can I describe… I can describe an image in words, right? Person riding a horse, and I can picture it in my mind. Like, that's what a contrastive model is meant to do. Like, do these things match?
+
+225
+00:34:00.490 --> 00:34:04.539
+Benjamin Houghton: Discriminative multimodal is the next one, so image plus text.
+
+226
+00:34:04.540 --> 00:34:20.550
+Benjamin Houghton: And we have some label, some span, or some answer, right? So, what, you know, this is very akin to, like, giving it some, you know, giving an image and some text to a model, and saying, you know, asking it a question, or telling it to do some type of
+
+227
+00:34:21.389 --> 00:34:25.300
+Benjamin Houghton: some type of labeling for us, right? So…
+
+228
+00:34:25.330 --> 00:34:36.979
+Benjamin Houghton: the Fusion style, early hybrid, again, don't worry about that, we'll talk about that in a little bit. But some examples, Layout LMD3, Vision Question and Answering Model. So, Layout LMD3 was designed
+
+229
+00:34:36.980 --> 00:34:47.069
+Benjamin Houghton: to extract information from documents. Bqa, vision question, is a… it's like you give it a video, or you give a model an image, and you ask it a question about it.
+
+230
+00:34:47.070 --> 00:34:49.800
+Benjamin Houghton: Right, which is actually what you'll do in your lab, which is pretty cool.
+
+231
+00:34:49.800 --> 00:34:57.430
+Benjamin Houghton: show you, it's, like, really simple, it's, like, really easy to do in 2026. And so that's what you do in the lab, right? You basically,
+
+232
+00:34:57.430 --> 00:35:16.209
+Benjamin Houghton: you take, you're gonna ask a large language model. Well, really, it's a multimodal model, system. It's really… it's not a model, it's really a system. You're gonna ask a multimodal system, questions about your images, right? I'll show you how to do that. So it's best for, yeah, classification, stuff like that.
+
+233
+00:35:16.460 --> 00:35:25.420
+Benjamin Houghton: Then we have generative, right? So image plus text to text, right? So we want to, like, you know, that's… that's something like, you know.
+
+234
+00:35:25.420 --> 00:35:43.960
+Benjamin Houghton: hey, hey, multimodal system or agentic system, here's a screenshot of the output of my model, it didn't make any sense, right? Fix it for me, right? And so then it generates new code, new text, that it can… that's where the, like, a generative part comes in, right? So this is
+
+235
+00:35:43.960 --> 00:35:55.339
+Benjamin Houghton: probably what we think of when we think of, like, a… when we think of large language models and chat GPT, we think a lot about this, right? Like, this is kind of like what I think of, right? You know, something that can ingest
+
+236
+00:35:55.910 --> 00:36:03.320
+Benjamin Houghton: text and images, and then autoregressively generate more text, okay? Autoregressive language modeling.
+
+237
+00:36:03.520 --> 00:36:07.749
+Benjamin Houghton: Alright, so Flamingo, which we'll talk about, and Poly.
+
+238
+00:36:07.810 --> 00:36:24.890
+Benjamin Houghton: are some examples here. And then the last one is, we won't talk about much today, we'll… we're gonna really save this for… for next week, is, degenerative part, and that's text-to-image. So diffu… that's gonna be a diffusion model, with… with some type of auto
+
+239
+00:36:24.890 --> 00:36:28.560
+Benjamin Houghton: progressive image loss, okay? So,
+
+240
+00:36:29.200 --> 00:36:39.950
+Benjamin Houghton: Basically, you have an image generator that's been conditioned on some text, right? That's, you know, it's not just generate an image, it's generate an image like this, okay?
+
+241
+00:36:41.660 --> 00:36:45.039
+Benjamin Houghton: All right, so that's kind of the space.
+
+242
+00:36:50.760 --> 00:37:05.100
+Benjamin Houghton: Representation alignment. Alright, so, so these are kind of, like, all the components that make up a multimodal system. We have representation alignment, and we have fusion strategies, right, and then we have…
+
+243
+00:37:05.570 --> 00:37:18.109
+Benjamin Houghton: Right, so that's… those are basically the… these are the basically main two that are going to define it there, right? So, let's talk about representation alignment, and then fusion strategies. So, representation alignment is how the modalities connect.
+
+244
+00:37:18.750 --> 00:37:21.610
+Benjamin Houghton: So this is the core technical problem.
+
+245
+00:37:21.920 --> 00:37:27.960
+Benjamin Houghton: Aligning different signal spaces, right? So, contrastive alignment, and these are all the different types, right?
+
+246
+00:37:28.090 --> 00:37:33.549
+Benjamin Houghton: So, we talked a little bit about contrastive alignment, but we're in a shared embedding space.
+
+247
+00:37:34.750 --> 00:37:36.010
+Benjamin Houghton: So…
+
+248
+00:37:36.390 --> 00:37:52.280
+Benjamin Houghton: match feature pairs together and push mismatched ones apart. So examples clip, like, do these items belong together? All right? So that's one representation alignment. Generative modeling is the next one. So, model joint distribution across modalities.
+
+249
+00:37:52.280 --> 00:38:07.069
+Benjamin Houghton: And this can… so this can generate one modality from another, so images to text, text images, and then you have multiple LLMs, like GPT and stuff, right? So, given some text, generate something else, right? And then,
+
+250
+00:38:07.170 --> 00:38:21.850
+Benjamin Houghton: The final one is going to be token unification, where we convert all… everything into the same token space, right? So you need a way, basically, of basically vectorizing images and text and putting them all into the same, like, latent space, so to speak.
+
+251
+00:38:23.560 --> 00:38:26.850
+Benjamin Houghton: And those get fed into a single transformer, okay?
+
+252
+00:38:27.980 --> 00:38:30.269
+Benjamin Houghton: And I'll give you examples of all these, alright?
+
+253
+00:38:30.920 --> 00:38:37.030
+Benjamin Houghton: Alright, so the next is Fusion Shad, and this is a high-level overview. Again, we'll talk about this stuff in detail.
+
+254
+00:38:37.270 --> 00:38:41.559
+Benjamin Houghton: Fusion Strategies, at early fusion.
+
+255
+00:38:41.650 --> 00:38:57.610
+Benjamin Houghton: combining inputs early, so basically, like, that's concatenating embeddings. Remember, when we do a tran… when we run a transformer, typically, we have some embedding layer, right, that just converts, like, words and the tokens before we do… before we do, like, our… any of our attention.
+
+256
+00:38:57.610 --> 00:39:13.360
+Benjamin Houghton: Right, so early fusion would be, like, before multi-headed attention, right? We have some embedding layer that combines features of an image and combines features of some text, combines them, and then they might go through, like, a multi-headed attention layer, whatever it may be, okay?
+
+257
+00:39:13.360 --> 00:39:20.700
+Benjamin Houghton: Okay, late fusion is you process each modality independently, and then you combine later.
+
+258
+00:39:20.700 --> 00:39:31.140
+Benjamin Houghton: Okay, so what's an example of that, where you might run, images… you might run text through an encoder, and then you might run images through a decoder.
+
+259
+00:39:31.140 --> 00:39:45.589
+Benjamin Houghton: And then maybe you have later, the images will attend to the text, right? So that would be, like, after they've been processed, via self-attention, then you would do cross-attention later on. So that would be the example of late fusion.
+
+260
+00:39:46.700 --> 00:39:47.510
+Benjamin Houghton: or…
+
+261
+00:39:47.540 --> 00:39:56.030
+Benjamin Houghton: Maybe at… or it could be… CLIP is probably a better example of late fusion, right, which we'll talk about here in a second, where you process them both
+
+262
+00:39:56.030 --> 00:40:13.150
+Benjamin Houghton: both independently, and then maybe you just compare them together, like, via cosine similarity later on. That's probably a better example of late fusion, because cross-attention is really, like, the dominant paradigm today, is what it says here. So typically, one modality attends to another. Like, that's what I was just saying.
+
+263
+00:40:13.150 --> 00:40:16.850
+Benjamin Houghton: Where, you know, if you had a… if you had an auto-aggressive
+
+264
+00:40:17.550 --> 00:40:30.100
+Benjamin Houghton: that it was conditioned on generating new text based upon some text and image input, like what Flamingo does, you could… you would have… you could encode both an image
+
+265
+00:40:30.320 --> 00:40:32.429
+Benjamin Houghton: And you can encode the text.
+
+266
+00:40:32.720 --> 00:40:40.300
+Benjamin Houghton: So basically, you might have some image that goes in. They'd be basically interleaved, so to speak, right? And you would have…
+
+267
+00:40:40.830 --> 00:40:44.009
+Benjamin Houghton: You know, you would have basically,
+
+268
+00:40:45.360 --> 00:41:02.529
+Benjamin Houghton: some prompt querying the images and or text. So, we'll talk about that in some detail here in a little bit. Finally, the unified transformer. All tokens are processed jointly, there's no, like, explicit separation, okay? So,
+
+269
+00:41:02.700 --> 00:41:09.490
+Benjamin Houghton: Yeah… What's, you know, it says here, increasingly popular in large-scale systems.
+
+270
+00:41:09.760 --> 00:41:24.459
+Benjamin Houghton: But, I'm not entirely sure I can point to, like, you know, there's one, I think, there is one example in this lecture where that… probably this one, probably, yeah, the unified transformer example. Okay. All right, so…
+
+271
+00:41:25.440 --> 00:41:30.959
+Benjamin Houghton: And so, just so you guys know, this paper, Pathways Language, this was…
+
+272
+00:41:31.930 --> 00:41:42.180
+Benjamin Houghton: in 2023, so I can almost guarantee you they're using some of the techniques and their learnings from this paper when they created Gemini, okay? So…
+
+273
+00:41:42.300 --> 00:41:46.220
+Benjamin Houghton: I think, you know, I don't really know Gemini's full architecture, but…
+
+274
+00:41:46.550 --> 00:41:50.250
+Benjamin Houghton: You have something like this where you, you know, you have
+
+275
+00:41:50.790 --> 00:42:00.999
+Benjamin Houghton: You can look at… it's a pretty simple idea here that they presented. I'm sure it's more complicated than this, but overall, it makes sense, right? You have a vision, and I'm getting ahead of myself right now, but…
+
+276
+00:42:01.000 --> 00:42:10.879
+Benjamin Houghton: You have images processed by the vision transformer, you have text that goes into a transformer encoder, so the output of the vision transformer and the text both
+
+277
+00:42:10.880 --> 00:42:21.090
+Benjamin Houghton: into a transformer encoder, and then they go into some decoder that auto-regressively generates new text. Okay, so this would be, like, a unified approach, alright?
+
+278
+00:42:21.310 --> 00:42:29.989
+Benjamin Houghton: Let's back up, though, and talk, you know, because we got ahead of ourselves, and let's talk about some of these, these, some examples of these fusion methods, okay?
+
+279
+00:42:30.940 --> 00:42:32.610
+Benjamin Houghton: So, early fusion.
+
+280
+00:42:38.650 --> 00:42:42.609
+Benjamin Houghton: We'll take a break in, like, just a few minutes, guys. So,
+
+281
+00:42:43.100 --> 00:42:52.230
+Benjamin Houghton: Actually, you know, let's just go ahead and take a break now, and we'll resume at 450, because it's getting late, so… I want to give you guys a chance to stretch your legs, so…
+
+282
+00:43:06.010 --> 00:43:09.420
+Benjamin Houghton: Okay, so…
+
+283
+00:43:10.580 --> 00:43:17.820
+Benjamin Houghton: We'll pick up where we left off at early fusion, alright? So, like I said before, it's kind of like what it sounds.
+
+284
+00:43:18.030 --> 00:43:19.990
+Benjamin Houghton: Where…
+
+285
+00:43:21.000 --> 00:43:34.960
+Benjamin Houghton: you might have some embedding layer, but you're processing… you're combining it either via concatenation or maybe just straight addition before you ever process it through a transformer. So in this little diagram here.
+
+286
+00:43:35.140 --> 00:43:37.009
+Benjamin Houghton: We see that we have…
+
+287
+00:43:37.280 --> 00:43:40.209
+Benjamin Houghton: Some tax tokens, a cat.
+
+288
+00:43:40.340 --> 00:43:42.910
+Benjamin Houghton: Walks through a gravel parking lot.
+
+289
+00:43:43.470 --> 00:43:59.920
+Benjamin Houghton: And we have the image of the cat walking through the parking lot, and they both get, they both get maybe embedded in some embedding layer, turned into features, and then those features get concatenated together into some unified set.
+
+290
+00:43:59.920 --> 00:44:09.640
+Benjamin Houghton: and then processed through a transformer, right? So, there's a lot of examples of this, and, we'll talk, we'll see some,
+
+291
+00:44:09.740 --> 00:44:25.300
+Benjamin Houghton: some examples of these early fusion techniques. A big one is going to be layout LMV3, which I actually have a little bit of a story to tell you guys a little bit about, here in a second, that kind of connects to, like, real-world stuff.
+
+292
+00:44:27.020 --> 00:44:41.570
+Benjamin Houghton: Right, so, yeah, it just combines it before you process it, essentially. So it's very simple, right? You can do end-to-end training, so it might miss some complex relationships, right? Less flexible, alright. So…
+
+293
+00:44:42.210 --> 00:44:49.849
+Benjamin Houghton: We'll sit at the layout LMD3. You know, we don't really have a lot of time to, like, talk about this model in detail. I don't…
+
+294
+00:44:50.750 --> 00:44:56.819
+Benjamin Houghton: I always… But, it's, it's still, it's still good to know about it, right? So,
+
+295
+00:44:57.650 --> 00:45:08.519
+Benjamin Houghton: Layla LMB3, it's a relatively new model, so you can see it was published in 2023. And essentially, what it does is it takes images and text
+
+296
+00:45:08.870 --> 00:45:23.580
+Benjamin Houghton: embeds them, and then concatenates them together, and then they all get processed by a transformer. And so what does LayRMB3 does is it takes documents and extracts information from them. So things like,
+
+297
+00:45:24.440 --> 00:45:30.629
+Benjamin Houghton: basically, if you wanted to determine where certain
+
+298
+00:45:31.180 --> 00:45:43.069
+Benjamin Houghton: What I gotta say is the document, it says, I don't know, maybe it's a tax document, and you wanted to get somebody's income off of it, I don't know, whatever it may be, or it's an invoice, and you wanted to get the invoice number, or…
+
+299
+00:45:44.170 --> 00:45:53.990
+Benjamin Houghton: the recipient, or whatever it was, or the item. So, whatever it is, whatever's on the document, right? That's what it was designed to do. This is a massive problem in business. I swear, everywhere I've worked.
+
+300
+00:45:54.510 --> 00:46:07.980
+Benjamin Houghton: For the last 5 years, I've done some type of document processing. And so that's what I mean. Actually, as you guys know, I told you last week, I'm actually starting a new job on Monday with a company called Dell Tech.
+
+301
+00:46:07.980 --> 00:46:17.259
+Benjamin Houghton: And they asked me, the very first thing they said, they were like, you know, all of our different product lines are all using, like.
+
+302
+00:46:17.260 --> 00:46:32.059
+Benjamin Houghton: third-party document processing software. We want you to… we're creating a project to where we want to be able to do it in-house, right? So, I found out today that a lot of the documents are the same. When I learned that, that pushed me towards, like, a supervised approach.
+
+303
+00:46:32.160 --> 00:46:36.809
+Benjamin Houghton: AKA layout LMB3. So you can label a bunch of documents.
+
+304
+00:46:36.900 --> 00:46:45.520
+Benjamin Houghton: train a multimodal transformer to kind of find… You know, it works really well if the documents are similar, and you have a good batch training set.
+
+305
+00:46:45.600 --> 00:46:57.709
+Benjamin Houghton: But what I can't do is just, like, give it some off-the-wall document and just process it like a large language, multiple… I shouldn't say large language model, I should say a gigantic AI system could, like something like ChatGBT.
+
+306
+00:46:58.400 --> 00:47:05.590
+Benjamin Houghton: So, at first I was envisioning, like, an agentic workflow that kind of matched their documents to, like, like, did some type of…
+
+307
+00:47:05.620 --> 00:47:11.170
+Benjamin Houghton: RAG system, or, like, some type of vision RAG system that, like, would match their documents.
+
+308
+00:47:11.170 --> 00:47:29.169
+Benjamin Houghton: To other documents we had in the training set, and if it didn't have… it didn't do a match, we would use, like, a full-on language vision model, to do, like, a one-shot approach, but if it did match, maybe we would do, like, like a specialized LMB3 model. I don't know, I'm just starting… I'm just kind of brainstorming
+
+309
+00:47:29.170 --> 00:47:40.049
+Benjamin Houghton: today, but I thought it was a cool, example to share with you guys, right? I did use LayoutLMv3 at my previous job. Works pretty well, as long as you have training data.
+
+310
+00:47:40.370 --> 00:47:53.389
+Benjamin Houghton: So, but I have also seen, like, full-on, like, one-shot, like, I've seen vision language models, so some type of unified approach, some type of model that can ingest both text and images.
+
+311
+00:47:53.390 --> 00:48:01.639
+Benjamin Houghton: that weren't necessarily designed for document extraction do pretty well with the task, right? If you just give them a document and say, hey, what's on this document?
+
+312
+00:48:02.000 --> 00:48:16.910
+Benjamin Houghton: One of the things that LayoutLMB3 can do better is, like, it does much better with, like, structured data, like, if there's, like, a chart, or if there's, like, a table, like, layout LMB3 is typically gonna, like, give you, like, really, like, a lot better performance, especially if you have, like, training data and stuff. So…
+
+313
+00:48:17.330 --> 00:48:31.780
+Benjamin Houghton: This is a big thing in, in business today, because, like, every single business in the world has, like, these old documents that, for whatever reason, are disliked images, and aren't, you know, they're not, like, the data's not encoded anymore.
+
+314
+00:48:33.060 --> 00:48:36.370
+Benjamin Houghton: So this is an example of early fusion.
+
+315
+00:48:36.850 --> 00:49:00.979
+Benjamin Houghton: encourage you guys, if you're interested in this, to read more about this paper, or at least question ChatGPT about the paper, right? There's other… there's other models, like, there's other, multimodal transformers out there, like, there's a thing called Donut, which is real… I think you and I spoke about that, like, there's a model called Donut as well. So, actually, you're giving your, final
+
+316
+00:49:00.980 --> 00:49:21.980
+Benjamin Houghton: presentation on this, so whatever you determine is what I'm totally gonna… I'm totally gonna steal your research, and be like, this is what I think is gonna work, because you've done all the hard leg work for us in determining what's gonna work for your particular scenario, right? And I think you have some more, like, generic data, right? So that's perfect. That's exactly what my data is. It's, like, some more generic data, so…
+
+317
+00:49:22.030 --> 00:49:26.690
+Benjamin Houghton: we'll be able to collaborate a little bit. So I'm looking forward to your presentation.
+
+318
+00:49:27.100 --> 00:49:31.260
+Benjamin Houghton: projects. Alright, yeah, so this is the multimodal transformer.
+
+319
+00:49:33.720 --> 00:49:52.249
+Benjamin Houghton: That's why I showed this diagram, too, because this is… I didn't put this in the lecture, but it just gives you, like, a nice little high-level overview here of, like, what it's doing. So it has, like, word embeddings, text, right? And so, how does it come up with this? So it's going to use some type of OCR technology, something simple like,
+
+320
+00:49:52.250 --> 00:50:05.859
+Benjamin Houghton: Ezocr is one of them, like, I think there's another one, like, Pi, I don't remember, there's a bunch of them. Basically, they're just Python engines that go through and they pull all the text information off the document. When you… it's kind of like
+
+321
+00:50:05.860 --> 00:50:09.000
+Benjamin Houghton: Like, object detection for number… for letters.
+
+322
+00:50:09.000 --> 00:50:30.150
+Benjamin Houghton: Right? You just detect where all the letters are, and when you do that, you get the… you can… you can… not only can you detect what character is, but you know where it is. So you can get a bunch of information, basically, for free, basically, right? So you get the position… you get the positional information, and, like, what character is, right? But anyways, you can do word embedding, and then you, of course, have the image.
+
+323
+00:50:30.150 --> 00:50:47.560
+Benjamin Houghton: right, that you can… it says they have these optional steps, right? You can do faster RCNN, right? You have some CNN that extracts the features, and you have faster RCNN that detects objects, whatever those objects may be. Like, maybe, like, you're trying to detect a table, because you have to treat tables differently.
+
+324
+00:50:47.560 --> 00:50:59.950
+Benjamin Houghton: There's a whole, like, science to this, right? And so then, you have all these features that can combine, they concatenated together, and instead of just, like, raw tokens, right, you have these…
+
+325
+00:51:00.220 --> 00:51:15.179
+Benjamin Houghton: basically tokens, or you can think of them as… you can think of them as tokens or features that concatenate together from these different modalities, and then those become the input to the transformer, right? Without getting into the details of kind of how this system works.
+
+326
+00:51:15.690 --> 00:51:21.500
+Benjamin Houghton: Here's the other diagram, which is kind of… gives you some, like, understanding of… of how they, like, what…
+
+327
+00:51:21.500 --> 00:51:32.999
+Benjamin Houghton: what does the… what do these modalities look like? How are they concatenated together, right? So you have the 2D… 2D transitional embedding. Remember, when… even with the text information.
+
+328
+00:51:33.000 --> 00:51:42.720
+Benjamin Houghton: when we run an OCR engine, we determine, like, where the text is, so we have that 2D information. We also have the 1D information, like, what order the words were on, you know.
+
+329
+00:51:43.220 --> 00:51:49.680
+Benjamin Houghton: the right, up to down, I don't know exactly. But you have, like, the order of the characters.
+
+330
+00:51:49.900 --> 00:51:56.610
+Benjamin Houghton: And then the same thing for the images, like, you cut the image into patches, right? So you have, these different little
+
+331
+00:51:56.940 --> 00:52:10.830
+Benjamin Houghton: Remember when we do a vision transformer, we typically patch out the image, whether it's by little patches or even pixel by pixel, and each one of those patches becomes a token, remember? Or either the patch or the pixel becomes a token.
+
+332
+00:52:11.070 --> 00:52:28.069
+Benjamin Houghton: So you have the patches, and then you also have their… you know their location, and you know their order, and then you have the images themselves and the words themselves, and they all kind of get added together, they all get added together, so you have the 2D, the 1D, and then the actual word or image.
+
+333
+00:52:28.210 --> 00:52:44.040
+Benjamin Houghton: features get added together, and then the words and the images get concatenated together, and those finally become the input layer, the input into the model, right? So, super high level, I know they're hand-wavy, without giving you any real details, but again, like.
+
+334
+00:52:44.340 --> 00:52:51.520
+Benjamin Houghton: We could spend an entire, probably, 45… we could probably spend, like, an hour talking just about who I are, which I don't think is…
+
+335
+00:52:51.760 --> 00:53:00.669
+Benjamin Houghton: Probably worth our Unless we're… Okay, so that's the early infusion example, okay?
+
+336
+00:53:02.510 --> 00:53:04.730
+Benjamin Houghton: And then,
+
+337
+00:53:05.590 --> 00:53:15.760
+Benjamin Houghton: Yeah, the late fusion architecture. This is probably more interesting to most of you, right? I think that the late fusion is… this is kind of like the dominant
+
+338
+00:53:17.670 --> 00:53:24.480
+Benjamin Houghton: I'm sorry, not… I'm sorry, not… not this one. Cross-attention's the dominant one, not late fusion. I always kind of, like.
+
+339
+00:53:25.440 --> 00:53:43.000
+Benjamin Houghton: Get them a little bit mixed up. Let's look at this, right? So, in late fusion, and this is… this is not a great diagram, it's a little bit mislabeled, and I'll explain why here in a second. But, we have the same thing. We have the catwalk through the gravel parking lot, and we have the images again. They both go into an embedding layer.
+
+340
+00:53:43.390 --> 00:54:01.330
+Benjamin Houghton: Right, but now we see that we have an encoder, right, that processes the text, so it's gonna… an encoder's gonna do multi-headed, it's gonna do multi-headed self-attention. And then we also have the image that goes into a decoder. It also does self-attention, so the image does attention… the image patches
+
+341
+00:54:01.330 --> 00:54:05.630
+Benjamin Houghton: Attend to themselves, and then finally, we do cross-attention. Right, so this is…
+
+342
+00:54:06.200 --> 00:54:20.430
+Benjamin Houghton: this is kind of almost like a hybrid approach, right, which I'll show you here in a minute, because you have one modality attending to another. So, I apologize, I should really clarify that on this slide, I just wanted to let you guys know that, but…
+
+343
+00:54:20.440 --> 00:54:31.499
+Benjamin Houghton: this is both late and a hybrid example. It's kind of all wrapped into one, because we're combining features after the fact, but we're also doing cross-attention.
+
+344
+00:54:31.530 --> 00:54:45.599
+Benjamin Houghton: Another example of late fusion is going to be CLIP. Alright, so don't worry too much about this diagram. Really focus more on clip. This is a much better, more traditional example of what late fusion is. So, in late fusion.
+
+345
+00:54:46.170 --> 00:54:49.239
+Benjamin Houghton: we have, Clip, so Clip was…
+
+346
+00:54:49.970 --> 00:55:01.759
+Benjamin Houghton: OpenAI in 2021, super important idea, gets used all the time, right? Like, once you kind of understand what it does. But it processes the images and the language separately.
+
+347
+00:55:01.780 --> 00:55:14.679
+Benjamin Houghton: And then it compares them with some type of similarity matrix, some type of similarity metric. So you can do a ton of tasks with this, right? You can do, like, retrieval is the big one, probably.
+
+348
+00:55:15.400 --> 00:55:26.929
+Benjamin Houghton: one of the biggest ones. If I say, like, find… I can do things like, I can query a model and say something like, find me an image of, you know, Pinocchio.
+
+349
+00:55:27.140 --> 00:55:40.230
+Benjamin Houghton: sitting on the wall with Humpty Dumpty. I don't know, something crazy like that, right? And it can literally go through, and it can put all of its images and the text, my prompt, into the same space.
+
+350
+00:55:40.230 --> 00:55:54.699
+Benjamin Houghton: into the same latent space, and compare them and find where the text matches those images. So you can do things like that. You can do things like create captions, and you can do things like classification, like, does this…
+
+351
+00:55:54.810 --> 00:55:57.510
+Benjamin Houghton: you know, all sorts of stuff, right? Actually.
+
+352
+00:55:57.560 --> 00:56:17.090
+Benjamin Houghton: You'll use Clip, anyways, yeah, so in the lab, you'll use Clip even, right? So anyways, CLIP is a super important, super important idea, and so… and it's a relatively straightforward idea, I think. So you have some images, they go through a text encoder, aka an transformer, an encoder transformer.
+
+353
+00:56:17.100 --> 00:56:19.740
+Benjamin Houghton: Words attempt to themselves.
+
+354
+00:56:20.100 --> 00:56:32.509
+Benjamin Houghton: out comes the other side, your feature tokens, right? So now you have some generated set of tokens, and you do the same thing with the image, right? You split it into patches, or you split it into pixel by pixel.
+
+355
+00:56:32.510 --> 00:56:53.349
+Benjamin Houghton: they all attend to themselves in the image encoder, and out the other side comes your feature… your tokens, your new features that have all been, you know, that have all done the self-attention mechanism, and notice they're the same dimensionality, right? And so now, we can compare them together, right? What might not be super obvious.
+
+356
+00:56:53.350 --> 00:57:03.419
+Benjamin Houghton: in this diagram is that each one of these boxes, right, there's a 1, 2, 3, dot dot dot T to the T, lowercase, or t sub n.
+
+357
+00:57:03.550 --> 00:57:06.919
+Benjamin Houghton: boxes. Each one of those represents a… a…
+
+358
+00:57:07.060 --> 00:57:09.430
+Benjamin Houghton: A query, or some set of words.
+
+359
+00:57:10.570 --> 00:57:16.830
+Benjamin Houghton: the RSE pup, that's one… that's T1, right? That's one set of words, or one,
+
+360
+00:57:17.410 --> 00:57:23.530
+Benjamin Houghton: prompt, or one set of tokens, essentially. And so then we do this matrix, and we compare every single
+
+361
+00:57:23.610 --> 00:57:34.770
+Benjamin Houghton: captioned against every single image, essentially. So the way they trained this, right, was really, really simple. They had, like, unlimited amounts of data, because they just took a bunch of images that were captioned.
+
+362
+00:57:34.770 --> 00:57:44.470
+Benjamin Houghton: Right? So if you had the captioned image, you basically had a human describe the image for you, and so then you can basically create this, this matrix where,
+
+363
+00:57:45.170 --> 00:57:57.030
+Benjamin Houghton: basically, you want the images that match the captions to have high similarity. So both of these encoders were conditioned upon they wanted to make their image
+
+364
+00:57:57.470 --> 00:58:03.110
+Benjamin Houghton: They wanted to make the images that had a… they wanted the image captioned
+
+365
+00:58:03.150 --> 00:58:18.270
+Benjamin Houghton: pairs to have a high similarity, and then other ones to have low similarities. So that's… that's all this does. You run it through the encoder, you run the image, and you run the text for the encoders, and then you compute this cosine similarity matrix, alright?
+
+366
+00:58:18.400 --> 00:58:32.859
+Benjamin Houghton: And so that's the first… that's what happens in the contrasted, pre-training. And then you can use it to do other things, like create a dataset classifier from label text. So what they did here is that they have a classifier now, right?
+
+367
+00:58:32.960 --> 00:58:43.529
+Benjamin Houghton: basically, you can do things like this, and this is what you can do, like, you'll do something very similar in your lab. It says, a photo of an object, right? So,
+
+368
+00:58:44.070 --> 00:58:53.299
+Benjamin Houghton: I'll talk about this in more detail, but essentially, you can create a classifier from CLIP, alright? So it's just… we'll talk about it when we talk about CLIP in more detail.
+
+369
+00:58:54.830 --> 00:59:03.999
+Benjamin Houghton: The last, and probably, like I said, this is the most exciting, the newest, is the cross-attention and hybrid fusion architecture, right?
+
+370
+00:59:04.550 --> 00:59:09.539
+Benjamin Houghton: Let's look at this one, right? So we have,
+
+371
+00:59:10.100 --> 00:59:21.550
+Benjamin Houghton: In this diagram, quite a bit of… quite a bit going on. We see we have the image and the text, they both get embedded, they get concatenated together, so we have early fusion, right? So that's what I mean by hybrid.
+
+372
+00:59:21.770 --> 00:59:37.499
+Benjamin Houghton: And then we have late fusion, right? So, well, let's see. Then we say, we say, so we have the word tokens here, a cat walks into the parking lot, we have the image, those features get concatenated together, then we have a new, we have a new string.
+
+373
+00:59:37.820 --> 00:59:43.809
+Benjamin Houghton: Where is the… where is the cat going? That also goes through our text embedding layer.
+
+374
+00:59:45.120 --> 00:59:50.640
+Benjamin Houghton: And that goes into the decoder, like, that's the prompt, right? And so then we have the output.
+
+375
+00:59:51.410 --> 00:59:53.959
+Benjamin Houghton: Right, the output here…
+
+376
+00:59:56.930 --> 01:00:13.459
+Benjamin Houghton: we have this portion's output, it goes into the encoder, and then, basically, this query is going to attend to the encoder's output, right? So, you know, then this transformer will, like, this is going to be, like, some autoregressive, some autoregressive
+
+377
+01:00:13.540 --> 01:00:27.109
+Benjamin Houghton: decoder, and it can, like, it's gonna say, well, the cat is walking, I don't know, down to the right, whatever, right? So, the idea here is that the big thing to take away here is that,
+
+378
+01:00:27.220 --> 01:00:39.189
+Benjamin Houghton: it's not so much the hybrid, it's… what's important here is the cross attention, right? This is what's exciting, right? And this is kind of, like, where the area is kind of exploding, so to speak.
+
+379
+01:00:39.410 --> 01:00:45.920
+Benjamin Houghton: Having text attend to images, or having images attend to text, or whatever combination you can possibly think of.
+
+380
+01:00:46.240 --> 01:00:53.369
+Benjamin Houghton: Hybrid here just means that we're doing both late and… we're doing cross-attention, and we're doing… we're doing,
+
+381
+01:00:54.010 --> 01:01:02.829
+Benjamin Houghton: early fusion, as well as, like, cross-attention fusion. So we're doing, like, various different types, remember? But the three, again, just to…
+
+382
+01:01:03.400 --> 01:01:11.630
+Benjamin Houghton: just always keep in the back of your mind, like, there's kind of 3 ways to do this. You can combine them early, combine the modalities early.
+
+383
+01:01:12.080 --> 01:01:30.449
+Benjamin Houghton: Right? Like in layout LMV3 before they go through the transformer, just combine all the tokens together before the transformer, and that's early fusion, layout LMV3. You can do it late, like in clip, like, you can run them through a transformer, and then compare them together later, combine them later.
+
+384
+01:01:31.190 --> 01:01:34.349
+Benjamin Houghton: You can do the cross attention, right? You can have
+
+385
+01:01:34.600 --> 01:01:45.290
+Benjamin Houghton: modality attend to the other inside the transformer for the attention mechanism itself. And so that's, like, all the different types. Like, those are the three main ways to combine your features.
+
+386
+01:01:47.340 --> 01:01:48.100
+Benjamin Houghton: Okay.
+
+387
+01:01:50.010 --> 01:01:53.039
+Benjamin Houghton: Let's look at this cross-attention hybrid fusion example.
+
+388
+01:01:53.190 --> 01:01:55.839
+Benjamin Houghton: So, Flamingo,
+
+389
+01:01:56.510 --> 01:02:03.209
+Benjamin Houghton: This is kind of, like, the paper that, is very influential and very important paper that kind of
+
+390
+01:02:03.340 --> 01:02:04.740
+Benjamin Houghton: Started to help…
+
+391
+01:02:05.260 --> 01:02:11.089
+Benjamin Houghton: I don't know if it was the first one, but it's an important one. It kind of helps pioneer how we…
+
+392
+01:02:11.090 --> 01:02:25.810
+Benjamin Houghton: how we have text and images attend to one another, right? So, in this paper, they process both vision and, processes vision and language separately, and then it combines the features through cross-attention, alright? So, if you look at this.
+
+393
+01:02:28.580 --> 01:02:33.519
+Benjamin Houghton: You can see that, in this example, they have…
+
+394
+01:02:33.820 --> 01:02:37.630
+Benjamin Houghton: A pre-trained and frozen vision encoder.
+
+395
+01:02:38.050 --> 01:02:38.960
+Benjamin Houghton: Okay?
+
+396
+01:02:40.020 --> 01:02:45.639
+Benjamin Houghton: And that is going to process and encode the images. And then we have…
+
+397
+01:02:46.410 --> 01:02:52.540
+Benjamin Houghton: Essentially, we have this processed text, and…
+
+398
+01:02:53.080 --> 01:03:11.150
+Benjamin Houghton: we have these images, right? We have image, this is a very cute dog image, this is whatever, right? And we just have… basically, we have these images replaced by these image tags, okay? And so those will go into the decoder as the query, and then those tokens, that text will attend
+
+399
+01:03:11.260 --> 01:03:19.539
+Benjamin Houghton: via cross-attention to these encoded images. Okay, so that's how the transformer gets some understanding of what it's looking at, right?
+
+400
+01:03:20.380 --> 01:03:40.460
+Benjamin Houghton: So, I mean, it's basically what we talked about here, right? It's the same idea, it's just that this is my diagram, and this is Google's diagram, right? And they do a thing called gated attention. Gated attention just means, like, you're putting, like, certain weights. There's a learnable parameter that can control, like, how much weight to put on
+
+401
+01:03:40.460 --> 01:03:43.360
+Benjamin Houghton: The things that it's attending to. Alright?
+
+402
+01:03:43.410 --> 01:03:53.900
+Benjamin Houghton: So, you can read more about it if you'd like, but, definitely important to understand, like, this type of architecture and what it's capable of, right?
+
+403
+01:03:54.830 --> 01:04:00.940
+Benjamin Houghton: And then finally, the unified transformer example, Right, so…
+
+404
+01:04:01.580 --> 01:04:08.909
+Benjamin Houghton: Yeah, this is, instead of having, like, one modality attend to the other, Well, I mean, it's…
+
+405
+01:04:09.320 --> 01:04:15.819
+Benjamin Houghton: It's kind of almost like semantics, right? So this kind of combines all the strategies together, I guess, sort of.
+
+406
+01:04:16.000 --> 01:04:22.100
+Benjamin Houghton: So, it says combines early and late. I would argue that it also kind of combines like, cross attention.
+
+407
+01:04:22.370 --> 01:04:37.490
+Benjamin Houghton: And it uses multiple fusion points, right? So, what do we have here? We have an image that goes into a vision transformer, becomes encoded. We have text that also goes into a different transformer encoder, but we see that
+
+408
+01:04:38.020 --> 01:04:43.309
+Benjamin Houghton: When the images and the, when we see the images and the text.
+
+409
+01:04:43.460 --> 01:04:49.360
+Benjamin Houghton: both go into the same transformer encoder, alright? So that's a little bit different than this.
+
+410
+01:04:49.820 --> 01:04:57.209
+Benjamin Houghton: Where we, like, replaced the images with these image tags, and the text got encoded, or the text did its own
+
+411
+01:04:57.450 --> 01:05:08.830
+Benjamin Houghton: did its own self-attention in the decoder and then attended to the images, as opposed to this is a little bit different, where they're both going into an encoder together, right? And then you have some transformer decoder.
+
+412
+01:05:09.170 --> 01:05:19.010
+Benjamin Houghton: And you could imagine a lot of different scenarios. What would you do with this decoder? You could prompt it to generate… you could do it… have it generate more text, or whatever you wanted to do, right?
+
+413
+01:05:19.220 --> 01:05:25.680
+Benjamin Houghton: Okay, alright, so I think we'll…
+
+414
+01:05:26.250 --> 01:05:31.670
+Benjamin Houghton: So, I have some, like, more in-depth, I wanted to talk about CLIP.
+
+415
+01:05:32.480 --> 01:05:33.740
+Benjamin Houghton: Mingo!
+
+416
+01:05:35.770 --> 01:05:45.889
+Benjamin Houghton: Polly and Lava in a little bit more detail, but we're probably not gonna get to that today, right? So what we'll do…
+
+417
+01:05:46.410 --> 01:05:51.089
+Benjamin Houghton: We'll kind of talk about these training, like, just some, like, more high-level stuff.
+
+418
+01:05:51.300 --> 01:05:58.400
+Benjamin Houghton: And honestly, this is the majority of what you need to know from this lecture, right, is gonna be…
+
+419
+01:05:59.550 --> 01:06:03.460
+Benjamin Houghton: Kind of this… really, this over… so we have this overview section.
+
+420
+01:06:03.740 --> 01:06:10.190
+Benjamin Houghton: Right, which we've been talking about, basically, this whole time. And this is really, like, really good, like, I think, broad…
+
+421
+01:06:10.510 --> 01:06:12.590
+Benjamin Houghton: Introduction to the space.
+
+422
+01:06:13.780 --> 01:06:32.469
+Benjamin Houghton: So, but the last part of that is kind of like this last little part, talking a little bit about training paradigms and how you might… and how you might train these models and evaluate them. This is going to be kind of high level, because each model is going to have its own separate training system, or…
+
+423
+01:06:33.410 --> 01:06:38.079
+Benjamin Houghton: criteria or whatever, to train it. So,
+
+424
+01:06:38.280 --> 01:06:46.690
+Benjamin Houghton: pair supervision, so I already, already kind of hinted at this, so you have image and text pairs, right? So that's… that's how CLIP was… was trained.
+
+425
+01:06:46.750 --> 01:06:50.730
+Benjamin Houghton: You had pairs of images and text, and you need to match
+
+426
+01:06:50.780 --> 01:07:08.900
+Benjamin Houghton: Basically, once they've been embedded into some, into some latent space, some feature space, they need to match, right? So that's how you would… that's what the paired supervision is. Web-scale weak supervision, so you have noisy internet data with broad coverage, you know.
+
+427
+01:07:09.490 --> 01:07:17.900
+Benjamin Houghton: bad. It's gonna be, like, kind of… Similar to…
+
+428
+01:07:18.060 --> 01:07:32.690
+Benjamin Houghton: like, a technique, like, you might use for an auto-aggressive model, like, you just collect tons of data and, like, try to predict, like, the next token. You might have, like, inter… could be interleaved with images, I don't know, right? That's… that's a pretty broad, category here.
+
+429
+01:07:32.840 --> 01:07:42.070
+Benjamin Houghton: Instruction tuning, so in lines with task, intent, user preferences, enables assistant multimodal behavior. So, instruction tuning,
+
+430
+01:07:42.460 --> 01:07:50.140
+Benjamin Houghton: You know, this might be something like, you give it a thumbs up, a thumbs down. We talked a little bit about this when we did the agentic,
+
+431
+01:07:50.900 --> 01:07:54.629
+Benjamin Houghton: We talk about this in RL, too, a little bit, but just basically.
+
+432
+01:07:55.480 --> 01:08:00.770
+Benjamin Houghton: You know, one of the ways to train these models is, basically, did it do…
+
+433
+01:08:00.930 --> 01:08:15.380
+Benjamin Houghton: what you wanted it to do, right? So collecting that data and having it push it towards what you want it to do. There's a whole science to this, it's probably a half a lecture, but the short answer is that, like.
+
+434
+01:08:15.510 --> 01:08:34.810
+Benjamin Houghton: you know, the reason why ChatGPT, and you guys probably understand this, but the reason why GPT, like, collects those thumbs up and collects those thumbs downs is because they can use a reinforced learning algorithm to fine-tune their model. That's what they're doing with that… with that feedback loop, okay? So just be aware that exists, like,
+
+435
+01:08:35.080 --> 01:08:50.680
+Benjamin Houghton: is there will become a day where somebody asks you, like, well, can we fine-tune this model? And, like, know that you can, and you need to know, like, what to look up and what to read up on, right? But it's… that's kind of what I'm getting at here. And then in-context learning. So this is probably your most…
+
+436
+01:08:50.760 --> 01:09:08.659
+Benjamin Houghton: This is probably what you'll use the most. This is the most powerful, in my opinion. You can do a lot with this, right? So in-context learning is, like, this is basically what makes multimodal systems really function. This is what we're… sorry, agentic systems really function.
+
+437
+01:09:09.330 --> 01:09:24.690
+Benjamin Houghton: it's just… in-context learning just means giving the model examples, right? And they're sophisticated enough and complex enough to kind of learn from a few-shot examples. So, you're not updating the parameters of the model, of the autoregressive model.
+
+438
+01:09:24.819 --> 01:09:30.349
+Benjamin Houghton: What you're doing is you're just, like, giving it in… you're giving it examples. So what do I mean by that?
+
+439
+01:09:30.810 --> 01:09:36.989
+Benjamin Houghton: Let's say I have a dog… let's say I have a model that knows… has general knowledge, but it doesn't know about breeds of dogs.
+
+440
+01:09:37.160 --> 01:09:51.260
+Benjamin Houghton: And I say, I give it 5 pictures of a Dalmatian, and I say, these are what Dalmatians look like, and then I give it another example, and then I give it… and I start quizzing it. I'm like, I give it a picture of a yellow lab, and I give it a picture of a Dalmatian. I say, which is a Dalmatian?
+
+441
+01:09:51.770 --> 01:09:54.359
+Benjamin Houghton: that's what in-context learning is. Like, it can…
+
+442
+01:09:55.290 --> 01:10:04.269
+Benjamin Houghton: look at that picture of the Dalmatian, and… and, you know, that's a perfect example, because I'm assuming, like, there's some type of,
+
+443
+01:10:04.490 --> 01:10:05.380
+Benjamin Houghton: Yo.
+
+444
+01:10:05.620 --> 01:10:16.019
+Benjamin Houghton: that would be, like, a full-on vision image, like, a full-on vision language model that had that capability. It could also just be, like, text-based, right? Like, Dalmatians are… are black and…
+
+445
+01:10:16.690 --> 01:10:36.599
+Benjamin Houghton: black spots, and here's a picture of a yellow dog. This is a Dalmatian, right? So it would be very easy for it to predict, well, no, it's not, you just said it's black, like, that's what in-context learning means. And you can do a lot with this, and 90%, if not more, the tasks you need to get done can get done usually with in-context learning, right?
+
+446
+01:10:36.860 --> 01:10:40.090
+Benjamin Houghton: Right? That's… in-context learning, also, it's… it's…
+
+447
+01:10:40.270 --> 01:10:53.859
+Benjamin Houghton: a lot deeper than that, too, especially for most… for agentic systems, where you have things like long-term and short-term memory, right? Where you're… you're literally keeping track of all your conversation and using that as in-context learning later.
+
+448
+01:10:54.410 --> 01:10:59.560
+Benjamin Houghton: Alright, so, evaluations, so,
+
+449
+01:11:00.110 --> 01:11:06.150
+Benjamin Houghton: again, like, this is very high level, because I did have some more detail on here, but I took it off, because…
+
+450
+01:11:06.310 --> 01:11:13.799
+Benjamin Houghton: It's… it's very specific to what you're doing, right? So… Pass-specific metrics, like retrieval.
+
+451
+01:11:14.100 --> 01:11:21.909
+Benjamin Houghton: for vision, vision question answering, captioning, generation, right? So,
+
+452
+01:11:22.170 --> 01:11:31.519
+Benjamin Houghton: Yeah, I don't… I don't know. I'm not gonna probably read through all these. I'll leave these guys for you. This is not… you won't get… you won't get quizzed on this… on this slide or evaluation.
+
+453
+01:11:35.270 --> 01:11:47.379
+Benjamin Houghton: Or would you get quizzed on this… this… these last two sections? But we'll… let's just take a look at this. So, practical priorities for agentix multimodal systems, data quality over raw scale, okay?
+
+454
+01:11:49.170 --> 01:12:02.670
+Benjamin Houghton: So, grounded, diverse, and instruction-relevant examples, right, so that is important, giving it instruction-relevant examples, like, you would do, like, in a system prompt. Latency, compute… latency slash compute trade-offs.
+
+455
+01:12:03.070 --> 01:12:18.429
+Benjamin Houghton: model size, context length, and response speed, right? This is all, like, kind of basic, like, this is… most of this stuff is pretty intuitive, or not intuitive, but I'll just say, like, common sense sort of thing. So safety and monitoring, detect hallucinations.
+
+456
+01:12:18.520 --> 01:12:28.769
+Benjamin Houghton: Failures, non-safe actions in loops, so there's definitely a way to detect hallucinations, failures, and that's the type of thing you want to do if you're designing one of these systems, so just be aware of that.
+
+457
+01:12:28.940 --> 01:12:53.270
+Benjamin Houghton: Tool reliability to evaluate… so tool… what is a tool? A tool in the agentic system is an outside function that the model can call, right? So, it's literally a piece of code that the agentic system can call and get some answer from. Like, if it wants to surf the web, or whatever, whatever it is, right? Surf the web. Okay. Future directions, unified token-based architectures.
+
+458
+01:12:53.270 --> 01:12:55.130
+Benjamin Houghton: Across more modalities.
+
+459
+01:12:55.530 --> 01:13:00.569
+Benjamin Houghton: More efficient, and that's… I think that, like, we're going this way quite a bit, right?
+
+460
+01:13:00.820 --> 01:13:08.819
+Benjamin Houghton: For sure. So, having that kind of unified architecture, more efficient adaptation, parameter, efficient tuning.
+
+461
+01:13:09.000 --> 01:13:20.210
+Benjamin Houghton: Better interpretability, stronger reliability. Okay, so yeah, these last little slides aren't super critical, I don't think, for sure, like, you're not gonna get, you're not gonna get quotes.
+
+462
+01:13:20.210 --> 01:13:36.039
+Benjamin Houghton: on… on really anything from training paradigms to future directions, okay? Like, what's important here is, is understanding the ways that you can combine the features, understanding, like, what these, these important… like, knowing that these important models that kind of
+
+463
+01:13:36.040 --> 01:13:41.670
+Benjamin Houghton: Set the stage for where we're at today. So, fusion strategies, and then representation alignment, right?
+
+464
+01:13:42.100 --> 01:13:45.449
+Benjamin Houghton: So, any questions on this stuff so far?
+
+465
+01:13:54.820 --> 01:13:59.970
+Benjamin Houghton: We'll talk about CLIP, And we'll talk about Flamingo.
+
+466
+01:14:01.850 --> 01:14:20.409
+Benjamin Houghton: and Holly and Lava in more detail, next week, I suppose. And then we'll also do generative models. We'll start probably generative models next week, and that'll probably run into the following week, and that'll probably conclude all of our… all of our lecture
+
+467
+01:14:20.550 --> 01:14:21.620
+Benjamin Houghton: topics.
+
+468
+01:14:22.980 --> 01:14:26.529
+Benjamin Houghton: If there's anything… Any questions at all?
+
+469
+01:14:29.540 --> 01:14:33.730
+Benjamin Houghton: I am gonna pause the… recording there.
+
+470
+01:14:34.270 --> 01:14:38.520
+Benjamin Houghton: If you want to go ahead and get set up for the spotlight, you can come down.
+
+471
+01:14:46.770 --> 01:14:49.000
+Benjamin Houghton: I wanna ask you guys, so…
+
+472
+01:14:52.030 --> 01:14:53.649
+Benjamin Houghton: This is a relatively, like.
+
+473
+01:15:23.430 --> 01:15:24.280
+Benjamin Houghton: Alright.
+
+474
+01:15:24.920 --> 01:15:26.620
+Benjamin Houghton: You're all set.
+
+475
+01:15:27.420 --> 01:15:30.359
+Benjamin Houghton: We need it. I think so.
+
+476
+01:15:42.850 --> 01:15:45.090
+zihao huang: Cool.
+
+477
+01:15:48.070 --> 01:15:53.520
+zihao huang: Alright. Hi everyone, I'm Xiao, and today I'm gonna talk about the.
+
+478
+01:15:53.770 --> 01:15:57.029
+Benjamin Houghton: ERF, which stands for Neural Radiance Space.
+
+479
+01:15:57.030 --> 01:16:01.160
+zihao huang: We show a method that can turn 2D image to.
+
+480
+01:16:01.160 --> 01:16:01.950
+Benjamin Houghton: doing these things.
+
+481
+01:16:04.570 --> 01:16:13.749
+zihao huang: So, NERF is a method that is represented by 38 students using a neural network. The key idea is that we, we take multiple
+
+482
+01:16:14.050 --> 01:16:15.140
+zihao huang: Image.
+
+483
+01:16:15.290 --> 01:16:16.690
+Benjamin Houghton: To the image.
+
+484
+01:16:16.690 --> 01:16:30.050
+zihao huang: of the same scene from different viewpoints, and the model learned the continuous 3D representation. Instead of storing the pistol directly, it learned the geometry.
+
+485
+01:16:30.550 --> 01:16:31.470
+Benjamin Houghton: Which is…
+
+486
+01:16:31.470 --> 01:16:33.739
+zihao huang: Shape of pain and, appearance.
+
+487
+01:16:37.680 --> 01:16:45.619
+zihao huang: So, NERF is interesting because it changed how we reconstruct 3D scenes.
+
+488
+01:16:45.880 --> 01:16:54.640
+zihao huang: Before NERF, this usually requires specialized hardware, like, liter or a scanner, and the process was often
+
+489
+01:16:55.320 --> 01:16:57.510
+zihao huang: Compact and expensive.
+
+490
+01:16:58.060 --> 01:17:00.030
+zihao huang: We've… any RF…
+
+491
+01:17:00.030 --> 01:17:07.649
+Benjamin Houghton: We only need image and… There's no need for Express. Express is 3D modeling.
+
+492
+01:17:07.910 --> 01:17:16.529
+zihao huang: And more importantly, any RF can generate a new viewpoint that were never captured by camera.
+
+493
+01:17:16.830 --> 01:17:19.200
+zihao huang: This means we can export.
+
+494
+01:17:19.200 --> 01:17:22.380
+Benjamin Houghton: seen from a new angle, even with limited input.
+
+495
+01:17:22.850 --> 01:17:23.880
+zihao huang: Image.
+
+496
+01:17:29.640 --> 01:17:39.759
+Benjamin Houghton: So, NERF enables many applications. It can be used to create a virtual environment for games, build immersive.
+
+497
+01:17:39.760 --> 01:17:40.140
+zihao huang: It's.
+
+498
+01:17:40.140 --> 01:17:46.150
+Benjamin Houghton: for AR and VR, and generate, digital twins for real-world locations.
+
+499
+01:17:46.650 --> 01:17:47.310
+zihao huang: It is awesome.
+
+500
+01:17:47.310 --> 01:17:48.499
+Benjamin Houghton: So useful for,
+
+501
+01:17:49.070 --> 01:17:50.459
+zihao huang: autonomous giant.
+
+502
+01:17:50.460 --> 01:17:51.540
+Benjamin Houghton: simulation.
+
+503
+01:17:51.690 --> 01:17:54.229
+zihao huang: And we show expecting movies.
+
+504
+01:18:00.030 --> 01:18:10.729
+Benjamin Houghton: Why should we care? We should care about the NERF because it connects to a core idea in computer vision. Computer vision not only focus on understanding 2D images.
+
+505
+01:18:11.700 --> 01:18:15.619
+zihao huang: But NURF moved us toward, 3D reasoning.
+
+506
+01:18:15.820 --> 01:18:16.920
+zihao huang: It combines…
+
+507
+01:18:16.920 --> 01:18:17.430
+Benjamin Houghton: learning.
+
+508
+01:18:17.610 --> 01:18:20.819
+zihao huang: Zhang Xi, and,
+
+509
+01:18:20.820 --> 01:18:23.150
+Benjamin Houghton: Into a unified framework.
+
+510
+01:18:23.330 --> 01:18:26.579
+zihao huang: It expand what vision system can do.
+
+511
+01:18:27.020 --> 01:18:28.959
+zihao huang: Instead of just recognizing.
+
+512
+01:18:28.960 --> 01:18:34.089
+Benjamin Houghton: objects, we can now model and understand fully why.
+
+513
+01:18:37.440 --> 01:18:38.439
+zihao huang: The key to…
+
+514
+01:18:38.440 --> 01:18:46.429
+Benjamin Houghton: Wait, so, any art learned of 3 is seen from image and can create a new waveforms.
+
+515
+01:18:46.540 --> 01:18:50.859
+zihao huang: It shifts computer vision from understanding the image to reconstructing.
+
+516
+01:18:50.860 --> 01:18:52.480
+Benjamin Houghton: in the world.
+
+517
+01:18:53.300 --> 01:18:53.880
+zihao huang: And…
+
+518
+01:18:54.620 --> 01:18:56.399
+Benjamin Houghton: That's it. Thank you.
+
+519
+01:19:03.280 --> 01:19:05.059
+zihao huang: Any other questions for Shapir?
+
+520
+01:19:11.390 --> 01:19:12.030
+Benjamin Houghton: Oh.
+
+521
+01:19:12.630 --> 01:19:15.850
+zihao huang: So it's… it's definitely a very interesting topic, so I…
+
+522
+01:19:16.160 --> 01:19:16.910
+Benjamin Houghton: We won't hover.
+
+523
+01:19:16.910 --> 01:19:21.089
+zihao huang: about NERF a little bit, learning We do our own.
+
+524
+01:19:21.930 --> 01:19:23.449
+zihao huang: Pivot our.
+
+525
+01:19:25.150 --> 01:19:26.429
+Benjamin Houghton: Given the generations work.
+
+526
+01:19:26.430 --> 01:19:27.459
+zihao huang: portion of.
+
+527
+01:19:27.460 --> 01:19:33.269
+Benjamin Houghton: better topics. Did you find anything, like, there's also some things that we saw a lot of golf.
+
+528
+01:19:33.270 --> 01:19:41.449
+zihao huang: Bostonian glow, or Boston 3D glow. Did you come across that when you were… it's a newer technique. I don't know if you saw anything here.
+
+529
+01:19:41.450 --> 01:19:42.020
+Benjamin Houghton: Wow.
+
+530
+01:19:42.020 --> 01:19:57.190
+zihao huang: I don't think so, because I tried some myself, too, but it can't capture the things, the objects moving. Okay. Yeah. So, that's definitely… when you say it can't take objects moving, do you mean, like, as
+
+531
+01:19:57.320 --> 01:20:01.360
+zihao huang: It's not good at modeling, like I said.
+
+532
+01:20:02.350 --> 01:20:08.539
+zihao huang: like, object moving through time? Is that what you mean? No, I was saying, why is the object say, like…
+
+533
+01:20:08.700 --> 01:20:10.590
+zihao huang: In, like, motion.
+
+534
+01:20:10.590 --> 01:20:11.360
+Benjamin Houghton: Okay.
+
+535
+01:20:11.360 --> 01:20:12.639
+zihao huang: It's hard to capture.
+
+536
+01:20:15.460 --> 01:20:18.780
+zihao huang: And, yeah, I didn't go really deep on it.
+
+537
+01:20:18.780 --> 01:20:19.400
+Benjamin Houghton: Alright.
+
+538
+01:20:19.740 --> 01:20:23.389
+Benjamin Houghton: Well, thank you, anybody else.
+
+539
+01:20:23.390 --> 01:20:24.590
+zihao huang: Reading quiz?
+
+540
+01:20:25.700 --> 01:20:26.680
+zihao huang: Okay, Senator T.
+
+541
+01:20:26.680 --> 01:20:27.880
+Benjamin Houghton: going on.
+
+542
+01:20:28.700 --> 01:20:30.689
+zihao huang: And until this…
+
+543
+01:20:30.690 --> 01:20:33.349
+Benjamin Houghton: Put it real fast, we got this guy here.
+
+544
+01:20:36.290 --> 01:20:44.490
+Benjamin Houghton: So… I'm thinking that, we have…
+
+545
+01:20:45.240 --> 01:20:47.070
+Benjamin Houghton: We wore a lecture back in the day.
+
+546
+01:20:47.070 --> 01:20:47.650
+zihao huang: Yes.
+
+547
+01:20:47.650 --> 01:20:49.860
+Benjamin Houghton: And then we have the presentations.
+
+548
+01:20:50.260 --> 01:20:52.160
+Benjamin Houghton: The three lectures total.
+
+549
+01:20:52.610 --> 01:20:54.340
+zihao huang: I think we'll do a quiz.
+
+550
+01:20:55.200 --> 01:20:58.339
+Benjamin Houghton: Next week, but that'll probably be your last quiz.
+
+551
+01:20:58.870 --> 01:20:59.600
+Benjamin Houghton: Brilliant.
+
+552
+01:21:01.090 --> 01:21:02.529
+Benjamin Houghton: So, almost none.
+
+553
+01:21:06.410 --> 01:21:11.490
+Benjamin Houghton: Oh, sorry.
+
+554
+01:21:13.030 --> 01:21:15.099
+Benjamin Houghton: I think I had just enough, wow.
+
+555
+01:21:16.150 --> 01:21:18.699
+Benjamin Houghton: We've got print 12.
+
