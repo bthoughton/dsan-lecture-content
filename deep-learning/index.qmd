@@ -1,4 +1,6 @@
 ---
+# Shared header for every DSAN 6600 page. sync.sh reuses this YAML block and
+# generates each page body, so nothing below the front matter is rendered.
 title: "DSAN 6600: Deep Learning"
 author: "Prof. Ben Houghton"
 date: today
@@ -8,12 +10,3 @@ format:
     toc: false
     embed-resources: true
 ---
-
-## Course Content
-
-| Section | Description | Link |
-|:--------|-------------|:----:|
-| Lectures | Weekly lecture notes and slides | [Lectures](lectures/) |
-| Labs | Hands-on lab notebooks | [Labs](labs/) |
-
-: {.table .table-striped .table-hover}

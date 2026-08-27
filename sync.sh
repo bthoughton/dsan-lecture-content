@@ -18,6 +18,7 @@ fi
 CV_LECTURE_SOURCE="/home/ben/dsan-6500-2026/lectures"
 DL_LECTURE_SOURCE="/home/ben/dsan-6600-2026/lectures"
 DL_LAB_SOURCE="/home/ben/dsan-6600-2026/labs"
+DL_QUIZ_SOURCE="/home/ben/dsan-6600-2026/quizzes"
 
 # Colab can only open notebooks from GitHub, so lab notebooks must be pushed to
 # this (public) repo for the "Open in Colab" links to resolve.
@@ -38,12 +39,30 @@ pull_source() {
     "$source_dir/" "$dest_dir/"
 }
 
+# The quiz directories hold answer keys and the unsat quizzes next to the study
+# guides, so copy by allowlist only. Never mirror these directories wholesale.
+pull_study_guides() {
+  local source_dir="$1" dest_dir="$2"
+  rsync -avz --checksum --delete \
+    --include='*/' \
+    --include='study-guide.html' \
+    --include='study-guide.pdf' \
+    --exclude='*' \
+    "$source_dir/" "$dest_dir/"
+}
+
 # Reuse the YAML header of a course landing page, swapping in a new title so
 # every page in a course shares the same theme and author.
 header_with_title() {
-  local header_src="$1" new_title="$2"
+  local header_src="$1" new_title="$2" subtitle="${3:-}"
   sed '/^---$/,/^---$/!d' "$header_src" \
-    | awk -v t="$new_title" '/^title:/ { print "title: \"" t "\""; next } { print }'
+    | awk -v t="$new_title" -v s="$subtitle" '
+        /^title:/ {
+          print "title: \"" t "\""
+          if (s != "") print "subtitle: \"" s "\""
+          next
+        }
+        { print }'
 }
 
 render_page() {
@@ -65,6 +84,31 @@ strip_prefix() {
   sed -E 's/^.*(Week|Lab) [0-9]+ ?[-—:] ?//'
 }
 
+lecture_topic() {
+  local html="$1" fallback="$2" topic=""
+  if [ -f "$html" ]; then
+    topic=$( { grep -oP '(?<=<title>).*?(?=</title>)' "$html" | head -1 | strip_prefix; } || true)
+  fi
+  echo "${topic:-$fallback}"
+}
+
+lab_topic() {
+  local nb="$1" fallback="$2" topic=""
+  if [ -f "$nb" ]; then
+    # First markdown heading of the notebook, e.g. "# Lab 1: ...".
+    topic=$( { grep -oP '(?<=")# [^"]*(?=\\n")' "$nb" | head -1 | sed -E 's/^# //' | strip_prefix; } || true)
+  fi
+  echo "${topic:-$fallback}"
+}
+
+week_numbers() {
+  local lectures_dir="$1" week_dir
+  for week_dir in "$lectures_dir"/week-*/; do
+    [ -d "$week_dir" ] || continue
+    basename "$week_dir" | grep -oP '\d+'
+  done | sort -n
+}
+
 build_lectures_index() {
   local content_dir="$1" out_qmd="$2" header_src="$3" title="$4"
 
@@ -78,24 +122,13 @@ build_lectures_index() {
     echo "|:----:|-------|:----:|"
   } >> "$out_qmd"
 
-  local week_dirs week_dir week_name week_num html_file page_title topic
-  mapfile -t week_dirs < <(printf '%s\n' "$content_dir"/week-*/ | sort -V)
-  for week_dir in "${week_dirs[@]}"; do
-    [ -d "$week_dir" ] || continue
-    week_name=$(basename "$week_dir")
-    week_num=$(echo "$week_name" | grep -oP '\d+')
-
-    html_file="$week_dir/${week_name}.html"
-    if [ -f "$html_file" ]; then
-      page_title=$(grep -oP '(?<=<title>).*?(?=</title>)' "$html_file" | head -1)
-      topic=$(echo "$page_title" | strip_prefix)
-    else
-      topic="$week_name"
-    fi
-
+  local num week_name topic
+  while read -r num; do
+    week_name="week-$num"
+    topic=$(lecture_topic "$content_dir/$week_name/$week_name.html" "$week_name")
     printf '| %02d | %s | [Lecture](%s/%s.html) |\n' \
-      "$week_num" "$topic" "$week_name" "$week_name" >> "$out_qmd"
-  done
+      "$num" "$topic" "$week_name" "$week_name" >> "$out_qmd"
+  done < <(week_numbers "$content_dir")
 
   echo "" >> "$out_qmd"
   echo ": {.table .table-striped .table-hover}" >> "$out_qmd"
@@ -117,7 +150,7 @@ build_labs_index() {
     echo "|:---:|-------|:-------------:|:--------:|"
   } >> "$out_qmd"
 
-  local lab_dirs lab_dir lab_name lab_num nb page_title topic
+  local lab_dirs lab_dir lab_name lab_num nb topic
   mapfile -t lab_dirs < <(printf '%s\n' "$content_dir"/lab-*/ | sort -V)
   for lab_dir in "${lab_dirs[@]}"; do
     [ -d "$lab_dir" ] || continue
@@ -126,11 +159,7 @@ build_labs_index() {
 
     nb="$lab_dir/${lab_name}.ipynb"
     [ -f "$nb" ] || continue
-
-    # First markdown heading of the notebook, e.g. "# Lab 1: ...".
-    page_title=$(grep -oP '(?<=")# [^"]*(?=\\n")' "$nb" | head -1 | sed -E 's/^# //')
-    topic="$lab_name"
-    [ -n "$page_title" ] && topic=$(echo "$page_title" | strip_prefix)
+    topic=$(lab_topic "$nb" "$lab_name")
 
     printf '| %02d | %s | [Colab](%s/%s/%s/%s.ipynb) | [Notebook](%s/%s.ipynb){download="%s.ipynb"} |\n' \
       "$lab_num" "$topic" \
@@ -140,6 +169,99 @@ build_labs_index() {
 
   echo "" >> "$out_qmd"
   echo ": {.table .table-striped .table-hover}" >> "$out_qmd"
+}
+
+# The 6600 landing page: one row per week, described by the lecture's own title.
+build_course_index() {
+  local out_qmd="$1" header_src="$2" title="$3" lectures_dir="$4"
+
+  mkdir -p "$(dirname "$out_qmd")"
+  header_with_title "$header_src" "$title" > "$out_qmd"
+  {
+    echo ""
+    echo "## Weekly Materials"
+    echo ""
+    echo "Each week has one page holding that week's lecture, lab, and quiz study"
+    echo "guide."
+    echo ""
+    echo "| Week | Topic |"
+    echo "|:-----|-------|"
+  } >> "$out_qmd"
+
+  local num topic
+  while read -r num; do
+    topic=$(lecture_topic "$lectures_dir/week-$num/week-$num.html" "week-$num")
+    printf '| [Week %02d](week-%d/) | %s |\n' "$num" "$num" "$topic" >> "$out_qmd"
+  done < <(week_numbers "$lectures_dir")
+
+  {
+    echo ""
+    echo ": {.table .table-striped .table-hover}"
+    echo ""
+    echo "## Browse by Type"
+    echo ""
+    echo "- [All lectures](lectures/)"
+    echo "- [All labs](labs/)"
+  } >> "$out_qmd"
+}
+
+# One page per week, pulling together material that lives in the per-type
+# directories. Quiz N covers week N but is taken at the start of week N+1.
+build_week_pages() {
+  local header_src="$1" course_title="$2" repo_root="$3"
+  local lectures_dir="$SCRIPT_DIR/deep-learning/lectures"
+  local labs_dir="$SCRIPT_DIR/deep-learning/labs"
+  local guides_dir="$SCRIPT_DIR/deep-learning/study-guides"
+
+  local num week_name out_qmd topic links lab_name nb quiz_name guide guide_pdf guide_note
+  while read -r num; do
+    week_name="week-$num"
+    topic=$(lecture_topic "$lectures_dir/$week_name/$week_name.html" "$week_name")
+
+    out_qmd="$BUILD_DIR/deep-learning/$week_name/index.qmd"
+    mkdir -p "$(dirname "$out_qmd")"
+    header_with_title "$header_src" "Week $num: $topic" "$course_title" > "$out_qmd"
+    {
+      echo ""
+      echo "| Material | Links |"
+      echo "|----------|-------|"
+    } >> "$out_qmd"
+
+    links="[Notes](../lectures/$week_name/$week_name.html)"
+    if [ -f "$lectures_dir/$week_name/presentation.html" ]; then
+      links="$links · [Slides](../lectures/$week_name/presentation.html)"
+    fi
+    echo "| Lecture | $links |" >> "$out_qmd"
+
+    lab_name="lab-$num"
+    nb="$labs_dir/$lab_name/$lab_name.ipynb"
+    if [ -f "$nb" ]; then
+      links="[Open in Colab]($COLAB_BASE/$repo_root/labs/$lab_name/$lab_name.ipynb)"
+      links="$links · [Download](../labs/$lab_name/$lab_name.ipynb){download=\"$lab_name.ipynb\"}"
+      echo "| Lab $num: $(lab_topic "$nb" "$lab_name") | $links |" >> "$out_qmd"
+    fi
+
+    quiz_name=$(printf 'quiz-%02d' "$num")
+    guide="$guides_dir/$quiz_name/study-guide.html"
+    guide_pdf="$guides_dir/$quiz_name/study-guide.pdf"
+    guide_note=""
+    if [ -f "$guide" ]; then
+      links="[Study guide](../study-guides/$quiz_name/study-guide.html)"
+      [ -f "$guide_pdf" ] && links="$links · [PDF](../study-guides/$quiz_name/study-guide.pdf)"
+      echo "| Quiz $num study guide | $links |" >> "$out_qmd"
+      guide_note="Quiz $num covers this week's lecture and lab, and is taken at the end of the next class."
+    fi
+
+    {
+      echo ""
+      echo ": {.table .table-striped .table-hover}"
+      echo ""
+      [ -n "$guide_note" ] && echo "$guide_note" && echo ""
+      echo "[All weeks](../)"
+    } >> "$out_qmd"
+
+    render_page "$out_qmd"
+  done < <(week_numbers "$lectures_dir")
 }
 
 # rsync on the host is too old for --mkpath, so nested targets need creating first.
@@ -197,6 +319,9 @@ pull_source "$DL_LECTURE_SOURCE" "$SCRIPT_DIR/deep-learning/lectures"
 echo "==> Pulling DSAN 6600 labs from source repo..."
 pull_source "$DL_LAB_SOURCE" "$SCRIPT_DIR/deep-learning/labs"
 
+echo "==> Pulling DSAN 6600 study guides from source repo..."
+pull_study_guides "$DL_QUIZ_SOURCE" "$SCRIPT_DIR/deep-learning/study-guides"
+
 # ---------------------------------------------------------------------------
 # Build landing pages
 # ---------------------------------------------------------------------------
@@ -212,9 +337,18 @@ build_lectures_index \
 render_page "$BUILD_DIR/computer-vision/index.qmd"
 
 echo "==> Building DSAN 6600 course landing page..."
-mkdir -p "$BUILD_DIR/deep-learning"
-cp "$SCRIPT_DIR/deep-learning/index.qmd" "$BUILD_DIR/deep-learning/index.qmd"
+build_course_index \
+  "$BUILD_DIR/deep-learning/index.qmd" \
+  "$SCRIPT_DIR/deep-learning/index.qmd" \
+  "DSAN 6600: Deep Learning" \
+  "$SCRIPT_DIR/deep-learning/lectures"
 render_page "$BUILD_DIR/deep-learning/index.qmd"
+
+echo "==> Building DSAN 6600 week pages..."
+build_week_pages \
+  "$SCRIPT_DIR/deep-learning/index.qmd" \
+  "DSAN 6600: Deep Learning" \
+  "deep-learning"
 
 echo "==> Building DSAN 6600 lectures landing page..."
 build_lectures_index \
@@ -257,10 +391,18 @@ push_file "$BUILD_DIR/computer-vision/index.html" "computer-vision/index.html"
 echo "==> Syncing DSAN 6600 content..."
 push_content "$SCRIPT_DIR/deep-learning/lectures" "deep-learning/lectures"
 push_content "$SCRIPT_DIR/deep-learning/labs" "deep-learning/labs"
+push_content "$SCRIPT_DIR/deep-learning/study-guides" "deep-learning/study-guides"
 push_file "$SCRIPT_DIR/deep-learning/.htaccess" "deep-learning/.htaccess"
 push_file "$BUILD_DIR/deep-learning/index.html" "deep-learning/index.html"
 push_file "$BUILD_DIR/deep-learning/lectures/index.html" "deep-learning/lectures/index.html"
 push_file "$BUILD_DIR/deep-learning/labs/index.html" "deep-learning/labs/index.html"
+
+echo "==> Syncing DSAN 6600 week pages..."
+for week_index in "$BUILD_DIR"/deep-learning/week-*/index.html; do
+  [ -f "$week_index" ] || continue
+  week_dir_name="$(basename "$(dirname "$week_index")")"
+  push_file "$week_index" "deep-learning/$week_dir_name/index.html"
+done
 
 echo "==> Cleaning up..."
 rm -rf "$BUILD_DIR"
