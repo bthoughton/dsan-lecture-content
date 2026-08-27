@@ -1,0 +1,230 @@
+/*-- scss:defaults --*/
+
+// Fonts
+$font-family-sans-serif: "Helvetica Neue", Helvetica, Arial, sans-serif;
+$presentation-font-size-root: 28px;
+
+// Colors
+$body-color: #2c3e50;
+$link-color: #2980b9;
+$code-color: #c7254e;
+$code-bg: #f9f2f4;
+
+// Headings
+$presentation-heading-color: #2c3e50;
+$presentation-h1-font-size: 2.0em;
+$presentation-h2-font-size: 1.5em;
+$presentation-h3-font-size: 1.2em;
+
+/*-- scss:rules --*/
+
+// Code blocks
+.reveal pre {
+  margin: 1em 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.reveal code {
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+}
+
+// Slide backgrounds
+.reveal {
+  background-color: #ffffff;
+}
+
+// Match H2 underline styling for title slides (H1)
+.reveal h1 {
+  border-bottom: 2px solid $presentation-heading-color;
+  padding-bottom: 0.2em;
+}
+
+// Ensure the title slide heading is larger than normal section H1 headings.
+.reveal .title-slide h1,
+.reveal h1.title {
+  font-size: 2.6em;
+}
+
+// Improve list spacing
+.reveal ul, .reveal ol {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.reveal li {
+  margin-bottom: 0.4em;
+}
+
+// ---------------------------------------------------------------------------
+// One long listing (the demo cell) has to fit the slide when expanded, so let
+// that slide opt into tighter line spacing without touching other code blocks.
+// ---------------------------------------------------------------------------
+
+// Quarto wraps every code line in its own span, and that span's line-height is
+// what sets the rendered height, so both selectors are needed.
+.reveal section.codetight pre code,
+.reveal section.codetight pre code span {
+  line-height: 1.15;
+}
+
+// ---------------------------------------------------------------------------
+// Ordered lists: Reveal ships these with padding-left: 0 and outside markers,
+// so "1." "2." render left of the content box and get clipped at the slide
+// edge. Trade the margin for equivalent padding so the markers sit inside.
+// ---------------------------------------------------------------------------
+
+.reveal ol {
+  margin-left: 0;
+  padding-left: 1.6em;
+}
+
+// ---------------------------------------------------------------------------
+// Contrast columns (e.g. "It is" / "It isn't", "In scope" / "Not in scope").
+//
+// Slide-only, like everything else scoped to `.reveal`. Two 48% columns leave
+// 4% of slack, and space-between pushes that slack into the gutter so the two
+// lists stop running together. The tint and left rule make the pair readable
+// at a glance from the back of the room.
+// ---------------------------------------------------------------------------
+
+.reveal .columns {
+  justify-content: space-between;
+}
+
+.reveal .col-yes,
+.reveal .col-no {
+  box-sizing: border-box;
+  padding: 0.45em 0.8em 0.55em;
+  border-radius: 6px;
+}
+
+.reveal .col-yes {
+  background: rgba(34, 139, 71, 0.08);
+  border-left: 5px solid #228b47;
+}
+
+.reveal .col-no {
+  background: rgba(190, 44, 34, 0.08);
+  border-left: 5px solid #be2c22;
+}
+
+.reveal .col-yes h3 { color: #1c7a3e; }
+.reveal .col-no  h3 { color: #a8281f; }
+
+// ---------------------------------------------------------------------------
+// Odd widths, used where a legacy screenshot has to stay at or below its own
+// native resolution so it does not get upscaled by Reveal's slide transform.
+// ---------------------------------------------------------------------------
+
+.reveal img.dw51 { width: 51%; height: auto; max-width: 100%; display: block; margin-left: auto; margin-right: auto; }
+.reveal img.dw52 { width: 52%; height: auto; max-width: 100%; display: block; margin-left: auto; margin-right: auto; }
+.reveal img.dw58 { width: 58%; height: auto; max-width: 100%; display: block; margin-left: auto; margin-right: auto; }
+.reveal img.dw68 { width: 68%; height: auto; max-width: 100%; display: block; margin-left: auto; margin-right: auto; }
+.reveal img.dw89 { width: 89%; height: auto; max-width: 100%; display: block; margin-left: auto; margin-right: auto; }
+.reveal img.dw92 { width: 92%; height: auto; max-width: 100%; display: block; margin-left: auto; margin-right: auto; }
+
+// ---------------------------------------------------------------------------
+// Slide-only image sizing.
+//
+// A slide is 1050x700 while the HTML handout's content column is ~700px wide,
+// so a single `width=N` attribute cannot be correct in both. These classes are
+// scoped to `.reveal`, so they size images in the deck ONLY and the handout
+// keeps rendering at its `width=N` attribute, untouched.
+//
+//   .dhN  cap height at N px  -- for tall/square images (height is the
+//         binding constraint on a slide, so this is the usual choice)
+//   .dwN  set width to N% of the container -- for wide, short images, and
+//         for images inside a column (N% of the column)
+// ---------------------------------------------------------------------------
+
+.reveal img.dh100,
+.reveal img.dh120,
+.reveal img.dh140,
+.reveal img.dh160,
+.reveal img.dh180,
+.reveal img.dh200,
+.reveal img.dh220,
+.reveal img.dh240,
+.reveal img.dh260,
+.reveal img.dh280,
+.reveal img.dh300,
+.reveal img.dh320,
+.reveal img.dh340,
+.reveal img.dh360,
+.reveal img.dh380,
+.reveal img.dh400,
+.reveal img.dh420,
+.reveal img.dh440,
+.reveal img.dh460,
+.reveal img.dh480,
+.reveal img.dh500,
+.reveal img.dh520,
+.reveal img.dh540,
+.reveal img.dh560 {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.reveal img.dw40,
+.reveal img.dw45,
+.reveal img.dw50,
+.reveal img.dw55,
+.reveal img.dw60,
+.reveal img.dw65,
+.reveal img.dw70,
+.reveal img.dw75,
+.reveal img.dw80,
+.reveal img.dw85,
+.reveal img.dw90,
+.reveal img.dw95,
+.reveal img.dw100 {
+  height: auto;
+  max-width: 100%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.reveal img.dh100 { max-height: 100px; }
+.reveal img.dh120 { max-height: 120px; }
+.reveal img.dh140 { max-height: 140px; }
+.reveal img.dh160 { max-height: 160px; }
+.reveal img.dh180 { max-height: 180px; }
+.reveal img.dh200 { max-height: 200px; }
+.reveal img.dh220 { max-height: 220px; }
+.reveal img.dh240 { max-height: 240px; }
+.reveal img.dh260 { max-height: 260px; }
+.reveal img.dh280 { max-height: 280px; }
+.reveal img.dh300 { max-height: 300px; }
+.reveal img.dh320 { max-height: 320px; }
+.reveal img.dh340 { max-height: 340px; }
+.reveal img.dh360 { max-height: 360px; }
+.reveal img.dh380 { max-height: 380px; }
+.reveal img.dh400 { max-height: 400px; }
+.reveal img.dh420 { max-height: 420px; }
+.reveal img.dh440 { max-height: 440px; }
+.reveal img.dh460 { max-height: 460px; }
+.reveal img.dh480 { max-height: 480px; }
+.reveal img.dh500 { max-height: 500px; }
+.reveal img.dh520 { max-height: 520px; }
+.reveal img.dh540 { max-height: 540px; }
+.reveal img.dh560 { max-height: 560px; }
+.reveal img.dw40 { width: 40%; }
+.reveal img.dw45 { width: 45%; }
+.reveal img.dw50 { width: 50%; }
+.reveal img.dw55 { width: 55%; }
+.reveal img.dw60 { width: 60%; }
+.reveal img.dw65 { width: 65%; }
+.reveal img.dw70 { width: 70%; }
+.reveal img.dw75 { width: 75%; }
+.reveal img.dw80 { width: 80%; }
+.reveal img.dw85 { width: 85%; }
+.reveal img.dw90 { width: 90%; }
+.reveal img.dw95 { width: 95%; }
+.reveal img.dw100 { width: 100%; }

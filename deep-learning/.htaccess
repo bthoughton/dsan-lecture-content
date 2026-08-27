@@ -1,0 +1,5 @@
+# Apache serves .ipynb with no Content-Type, so browsers sniff the JSON as HTML
+# and display it instead of downloading. Applies to every subdirectory.
+<FilesMatch "\.ipynb$">
+  ForceType application/octet-stream
+</FilesMatch>

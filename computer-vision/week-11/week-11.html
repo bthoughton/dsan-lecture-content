@@ -111,12 +111,16 @@ window.Quarto = {
   <li><a href="#diffusion-models" id="toc-diffusion-models" class="nav-link" data-scroll-target="#diffusion-models">Diffusion models</a>
   <ul class="collapse">
   <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation">Motivation</a></li>
-  <li><a href="#how-diffusion-models-work" id="toc-how-diffusion-models-work" class="nav-link" data-scroll-target="#how-diffusion-models-work">How diffusion models work</a></li>
   <li><a href="#big-picture" id="toc-big-picture" class="nav-link" data-scroll-target="#big-picture">Big picture</a></li>
+  <li><a href="#how-diffusion-models-work" id="toc-how-diffusion-models-work" class="nav-link" data-scroll-target="#how-diffusion-models-work">How diffusion models work</a></li>
   <li><a href="#forward-diffusion-process" id="toc-forward-diffusion-process" class="nav-link" data-scroll-target="#forward-diffusion-process">Forward Diffusion Process</a></li>
   <li><a href="#diffusion-kernel" id="toc-diffusion-kernel" class="nav-link" data-scroll-target="#diffusion-kernel">Diffusion Kernel</a></li>
-  <li><a href="#implementation" id="toc-implementation" class="nav-link" data-scroll-target="#implementation">Implementation</a></li>
+  </ul></li>
+  <li><a href="#de-nosing-step" id="toc-de-nosing-step" class="nav-link" data-scroll-target="#de-nosing-step">De-Nosing Step</a>
+  <ul class="collapse">
+  <li><a href="#text-encoder" id="toc-text-encoder" class="nav-link" data-scroll-target="#text-encoder">Text Encoder</a></li>
   <li><a href="#u-net-block" id="toc-u-net-block" class="nav-link" data-scroll-target="#u-net-block">U-Net Block</a></li>
+  <li><a href="#autoencoder-layer" id="toc-autoencoder-layer" class="nav-link" data-scroll-target="#autoencoder-layer">Autoencoder Layer</a></li>
   <li><a href="#noise-schedule" id="toc-noise-schedule" class="nav-link" data-scroll-target="#noise-schedule">Noise schedule</a></li>
   <li><a href="#aside-stochastic-differential-equation-framework" id="toc-aside-stochastic-differential-equation-framework" class="nav-link" data-scroll-target="#aside-stochastic-differential-equation-framework">Aside: Stochastic differential equation framework</a></li>
   </ul></li>
@@ -427,14 +431,19 @@ Run the following quick demonstrations
 <li>Conceptually, diffusion models simulate the gradual dispersion of pixel values over time.</li>
 </ul>
 </section>
+<section id="big-picture" class="level2">
+<h2 class="anchored" data-anchor-id="big-picture">Big picture</h2>
+<p><img src="images/2025-04-02-14-13-12.png" class="img-fluid"></p>
+</section>
 <section id="how-diffusion-models-work" class="level2">
 <h2 class="anchored" data-anchor-id="how-diffusion-models-work">How diffusion models work</h2>
+<p>:::: {.columns} ::: {.column width=“50%”}</p>
 <ul>
 <li><strong>Forward process</strong>: Gradually add noise to an image over many timesteps until it becomes pure noise<br>
 </li>
 <li><strong>Reverse process</strong>: Start from noisy image and iteratively predict and remove noise step-by-step<br>
 </li>
-<li><strong>Model architecture</strong>: Modified U-Net with attention and ResNet blocks<br>
+<li><strong>Model architecture</strong>: Modified U-Net with attention and ResNet blocks, auto<br>
 </li>
 <li><strong>Time embedding</strong>: Model receives both noisy image and its timestep as input<br>
 </li>
@@ -446,10 +455,9 @@ Run the following quick demonstrations
 </li>
 <li><strong>Noise schedule</strong>: Carefully designed curve adds minimal noise early and more at later steps for better learning of image structure</li>
 </ul>
-</section>
-<section id="big-picture" class="level2">
-<h2 class="anchored" data-anchor-id="big-picture">Big picture</h2>
-<p><img src="images/2025-04-02-14-13-12.png" class="img-fluid"></p>
+<p>::: ::: {.column width=“50%”}</p>
+<p><a href="https://deepsense.ai/wp-content/uploads/2023/03/2112.10752.pdf#page=4"><img src="images/stable-diffusion-architecture.jpeg" class="img-fluid"></a></p>
+<p>:::</p>
 </section>
 <section id="forward-diffusion-process" class="level2">
 <h2 class="anchored" data-anchor-id="forward-diffusion-process">Forward Diffusion Process</h2>
@@ -469,14 +477,49 @@ Run the following quick demonstrations
 <section id="diffusion-kernel" class="level2">
 <h2 class="anchored" data-anchor-id="diffusion-kernel">Diffusion Kernel</h2>
 <p><img src="images/2025-04-02-14-15-11.png" class="img-fluid"></p>
+<!-- ## Implementation
+
+![](images/2025-04-02-14-16-45.png) -->
 </section>
-<section id="implementation" class="level2">
-<h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<p><img src="images/2025-04-02-14-16-45.png" class="img-fluid"></p>
+</section>
+<section id="de-nosing-step" class="level1">
+<h1>De-Nosing Step</h1>
+<ul>
+<li>Modern Stable Diffusion models use a U-Net to predict the noise in the image at each step.</li>
+<li>A single de-noising step requires a noisy image, timestep, and text prompt.</li>
+<li>The output is the predicted noise conditioned on the text prompt and previous training examples from the noising process
+<ul>
+<li>By predicting the noise, we can remove it from the image</li>
+</ul></li>
+</ul>
+<p><a href="https://deepsense.ai/blog/diffusion-models-in-practice-part-1-a-primers/#training-tools"><img src="./images/u-net-with-attention.jpeg" class="img-fluid"></a></p>
+<section id="text-encoder" class="level2">
+<h2 class="anchored" data-anchor-id="text-encoder">Text Encoder</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<ul>
+<li>The choice of text encoder is important for the quality of the generated image.</li>
+<li>There are various models used for this task</li>
+<li>A popular choice is the CLIP model</li>
+<li>The text encoder reminds the diffusion model what the image should look like at each denoising step</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><a href="https://arxiv.org/pdf/2103.00020#page=2"><img src="images/clip-encoder.png" class="img-fluid"></a></p>
+</div>
+</div>
 </section>
 <section id="u-net-block" class="level2">
 <h2 class="anchored" data-anchor-id="u-net-block">U-Net Block</h2>
-<p><img src="images/diffusion.png" class="img-fluid"></p>
+<p><a href="./images/diffusion.png"><img src="images/diffusion.png" class="img-fluid"></a></p>
+</section>
+<section id="autoencoder-layer" class="level2">
+<h2 class="anchored" data-anchor-id="autoencoder-layer">Autoencoder Layer</h2>
+<ul>
+<li>Due to the time complexity of the diffusion process, the autoencoder layer is used to reduce the dimensionality of the image</li>
+<li>The autoencoder layer is a convolutional neural network that maps the image to a lower-dimensional latent space</li>
+<li>The latent space is then used to condition the diffusion model</li>
+</ul>
+<p><a href="https://deepsense.ai/blog/diffusion-models-in-practice-part-1-a-primers/#stable-diffusion-the-root-of-it-all"><img src="images/diffusion-auto-encoder.jpeg" class="img-fluid"></a></p>
 </section>
 <section id="noise-schedule" class="level2">
 <h2 class="anchored" data-anchor-id="noise-schedule">Noise schedule</h2>

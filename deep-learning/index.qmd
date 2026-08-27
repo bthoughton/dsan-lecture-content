@@ -1,0 +1,19 @@
+---
+title: "DSAN 6600: Deep Learning"
+author: "Prof. Ben Houghton"
+date: today
+format:
+  html:
+    theme: spacelab
+    toc: false
+    embed-resources: true
+---
+
+## Course Content
+
+| Section | Description | Link |
+|:--------|-------------|:----:|
+| Lectures | Weekly lecture notes and slides | [Lectures](lectures/) |
+| Labs | Hands-on lab notebooks | [Labs](labs/) |
+
+: {.table .table-striped .table-hover}
