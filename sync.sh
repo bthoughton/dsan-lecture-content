@@ -160,6 +160,24 @@ push_content() {
     "$local_dir/" "$REMOTE:$REMOTE_ROOT/$remote_path/"
 }
 
+# Colab reads labs from GitHub, so an unpushed lab edit is invisible to students
+# even after a successful deploy.
+labs_need_push() {
+  local labs="deep-learning/labs"
+  git -C "$SCRIPT_DIR" rev-parse --git-dir >/dev/null 2>&1 || return 1
+
+  if ! git -C "$SCRIPT_DIR" diff --quiet HEAD -- "$labs"; then
+    return 0
+  fi
+  if [ -n "$(git -C "$SCRIPT_DIR" ls-files --others --exclude-standard -- "$labs")" ]; then
+    return 0
+  fi
+  if [ -n "$(git -C "$SCRIPT_DIR" log --oneline '@{u}..HEAD' -- "$labs" 2>/dev/null)" ]; then
+    return 0
+  fi
+  return 1
+}
+
 push_file() {
   local local_file="$1" remote_path="$2"
   ensure_remote_dir "$(dirname "$remote_path")"
@@ -246,5 +264,12 @@ push_file "$BUILD_DIR/deep-learning/labs/index.html" "deep-learning/labs/index.h
 
 echo "==> Cleaning up..."
 rm -rf "$BUILD_DIR"
+
+if labs_need_push; then
+  echo
+  echo "!!! Lab notebooks differ from what is pushed to GitHub."
+  echo "    Colab serves labs from GitHub, not from this site, so commit and push"
+  echo "    deep-learning/labs or students will open the old notebook."
+fi
 
 echo "==> Done! Site is live at https://benjaminhoughton.georgetown.domains/"
