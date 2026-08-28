@@ -248,7 +248,7 @@ build_week_pages() {
       links="$links · [Slides](../lectures/$week_name/presentation.html)"
     fi
     if [ -n "$(week_recording "$num")" ]; then
-      links="$links · [Watch the recording](../recordings/$week_name/$week_name-recording.mp4)"
+      links="$links · [Lecture Recording](../recordings/$week_name/$week_name-recording.mp4)"
     fi
     echo "| Lecture | $links |" >> "$out_qmd"
 

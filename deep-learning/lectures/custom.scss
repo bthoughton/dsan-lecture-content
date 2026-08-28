@@ -256,3 +256,12 @@ $presentation-h3-font-size: 1.2em;
 .reveal img.dw90 { width: 90%; }
 .reveal img.dw95 { width: 95%; }
 .reveal img.dw100 { width: 100%; }
+
+// ---------------------------------------------------------------------------
+// Week 2 runs the TensorFlow Playground as a full-slide interactive background
+// iframe. The app has its own toolbar across the top of the frame, exactly
+// where a slide heading sits, so the heading would cover the play button and
+// epoch counter. Hide it in the deck only; the handout still shows it, and the
+// deck keeps the wording in speaker notes.
+// ---------------------------------------------------------------------------
+.reveal section.pgslide > h2 { display: none; }
