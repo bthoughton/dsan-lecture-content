@@ -20,6 +20,11 @@ DL_LECTURE_SOURCE="/home/ben/dsan-6600-2026/lectures"
 DL_LAB_SOURCE="/home/ben/dsan-6600-2026/labs"
 DL_QUIZ_SOURCE="/home/ben/dsan-6600-2026/quizzes"
 
+# Recordings are staged here rather than pulled from a course repo, and are
+# gitignored: they go to the server but never to GitHub. Drop each class into a
+# week-N subdirectory; the Zoom filenames only encode a date, not a week.
+DL_RECORDING_DIR="$SCRIPT_DIR/lecture-recordings/6600-fall-2026"
+
 # Colab can only open notebooks from GitHub, so lab notebooks must be pushed to
 # this (public) repo for the "Open in Colab" links to resolve.
 COLAB_BASE="https://colab.research.google.com/github/bthoughton/dsan-lecture-content/blob/main"
@@ -99,6 +104,17 @@ lab_topic() {
     topic=$( { grep -oP '(?<=")# [^"]*(?=\\n")' "$nb" | head -1 | sed -E 's/^# //' | strip_prefix; } || true)
   fi
   echo "${topic:-$fallback}"
+}
+
+# Local path of a week's recording, or empty. Takes the first mp4 in the week
+# directory so Zoom's own filenames can be left alone.
+week_recording() {
+  local num="$1" mp4
+  for mp4 in "$DL_RECORDING_DIR/week-$num"/*.mp4; do
+    [ -f "$mp4" ] || continue
+    echo "$mp4"
+    return 0
+  done
 }
 
 week_numbers() {
@@ -231,6 +247,9 @@ build_week_pages() {
     if [ -f "$lectures_dir/$week_name/presentation.html" ]; then
       links="$links · [Slides](../lectures/$week_name/presentation.html)"
     fi
+    if [ -n "$(week_recording "$num")" ]; then
+      links="$links · [Watch the recording](../recordings/$week_name/$week_name-recording.mp4)"
+    fi
     echo "| Lecture | $links |" >> "$out_qmd"
 
     lab_name="lab-$num"
@@ -304,6 +323,14 @@ push_file() {
   local local_file="$1" remote_path="$2"
   ensure_remote_dir "$(dirname "$remote_path")"
   rsync -avz -e "$SSH_CMD" "$local_file" "$REMOTE:$REMOTE_ROOT/$remote_path"
+}
+
+# Video is already compressed, so skip -z, and keep partial transfers so a
+# dropped connection does not mean re-uploading hundreds of megabytes.
+push_video() {
+  local local_file="$1" remote_path="$2"
+  ensure_remote_dir "$(dirname "$remote_path")"
+  rsync -av --partial -e "$SSH_CMD" "$local_file" "$REMOTE:$REMOTE_ROOT/$remote_path"
 }
 
 # ---------------------------------------------------------------------------
@@ -396,6 +423,14 @@ push_file "$SCRIPT_DIR/deep-learning/.htaccess" "deep-learning/.htaccess"
 push_file "$BUILD_DIR/deep-learning/index.html" "deep-learning/index.html"
 push_file "$BUILD_DIR/deep-learning/lectures/index.html" "deep-learning/lectures/index.html"
 push_file "$BUILD_DIR/deep-learning/labs/index.html" "deep-learning/labs/index.html"
+
+echo "==> Syncing DSAN 6600 lecture recordings..."
+while read -r recording_week; do
+  recording_file="$(week_recording "$recording_week")"
+  [ -n "$recording_file" ] || continue
+  push_video "$recording_file" \
+    "deep-learning/recordings/week-$recording_week/week-$recording_week-recording.mp4"
+done < <(week_numbers "$SCRIPT_DIR/deep-learning/lectures")
 
 echo "==> Syncing DSAN 6600 week pages..."
 for week_index in "$BUILD_DIR"/deep-learning/week-*/index.html; do

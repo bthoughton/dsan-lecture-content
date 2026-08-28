@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Prof.&nbsp;Ben Houghton">
+<meta name="dcterms.date" content="2026-09-03">
+
+<title>DSAN 6600 Week 02: How Neural Networks Work</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="week-2_files/libs/clipboard/clipboard.min.js"></script>
+<script src="week-2_files/libs/quarto-html/quarto.js"></script>
+<script src="week-2_files/libs/quarto-html/popper.min.js"></script>
+<script src="week-2_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="week-2_files/libs/quarto-html/anchor.min.js"></script>
+<link href="week-2_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="week-2_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="week-2_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="week-2_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="week-2_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link rel="icon" type="image/png" href="/icon.png">
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#how-neural-networks-work" id="toc-how-neural-networks-work" class="nav-link active" data-scroll-target="#how-neural-networks-work">How neural networks work</a>
+  <ul class="collapse">
+  <li><a href="#agenda" id="toc-agenda" class="nav-link" data-scroll-target="#agenda">Agenda</a></li>
+  <li><a href="#where-we-stopped-last-week" id="toc-where-we-stopped-last-week" class="nav-link" data-scroll-target="#where-we-stopped-last-week">Where we stopped last week</a></li>
+  <li><a href="#where-the-name-comes-from" id="toc-where-the-name-comes-from" class="nav-link" data-scroll-target="#where-the-name-comes-from">Where the name comes from</a></li>
+  <li><a href="#one-neuron-written-properly" id="toc-one-neuron-written-properly" class="nav-link" data-scroll-target="#one-neuron-written-properly">One neuron, written properly</a></li>
+  <li><a href="#a-layer-is-several-neurons-sharing-one-input" id="toc-a-layer-is-several-neurons-sharing-one-input" class="nav-link" data-scroll-target="#a-layer-is-several-neurons-sharing-one-input">A layer is several neurons sharing one input</a></li>
+  <li><a href="#therefore-a-layer-is-a-matrix-multiply" id="toc-therefore-a-layer-is-a-matrix-multiply" class="nav-link" data-scroll-target="#therefore-a-layer-is-a-matrix-multiply">Therefore a layer is a matrix multiply</a></li>
+  <li><a href="#reading-the-shapes" id="toc-reading-the-shapes" class="nav-link" data-scroll-target="#reading-the-shapes">Reading the shapes</a></li>
+  <li><a href="#the-architecture-drawn" id="toc-the-architecture-drawn" class="nav-link" data-scroll-target="#the-architecture-drawn">The architecture, drawn</a></li>
+  <li><a href="#counting-the-parameters" id="toc-counting-the-parameters" class="nav-link" data-scroll-target="#counting-the-parameters">Counting the parameters</a></li>
+  <li><a href="#one-example-or-many" id="toc-one-example-or-many" class="nav-link" data-scroll-target="#one-example-or-many">One example, or many</a></li>
+  <li><a href="#tensors" id="toc-tensors" class="nav-link" data-scroll-target="#tensors">Tensors</a></li>
+  </ul></li>
+  <li><a href="#the-forward-pass" id="toc-the-forward-pass" class="nav-link" data-scroll-target="#the-forward-pass">The forward pass</a>
+  <ul class="collapse">
+  <li><a href="#what-forward-pass-means" id="toc-what-forward-pass-means" class="nav-link" data-scroll-target="#what-forward-pass-means">What “forward pass” means</a></li>
+  <li><a href="#the-multi-layer-perceptron-named-properly" id="toc-the-multi-layer-perceptron-named-properly" class="nav-link" data-scroll-target="#the-multi-layer-perceptron-named-properly">The multi-layer perceptron, named properly</a></li>
+  <li><a href="#a-forward-pass-in-numpy" id="toc-a-forward-pass-in-numpy" class="nav-link" data-scroll-target="#a-forward-pass-in-numpy">A forward pass, in NumPy</a></li>
+  <li><a href="#the-same-code-on-a-batch" id="toc-the-same-code-on-a-batch" class="nav-link" data-scroll-target="#the-same-code-on-a-batch">The same code, on a batch</a></li>
+  <li><a href="#a-forward-pass-is-all-a-trained-model-ever-does" id="toc-a-forward-pass-is-all-a-trained-model-ever-does" class="nav-link" data-scroll-target="#a-forward-pass-is-all-a-trained-model-ever-does">A forward pass is all a trained model ever does</a></li>
+  </ul></li>
+  <li><a href="#activations" id="toc-activations" class="nav-link" data-scroll-target="#activations">Activations</a>
+  <ul class="collapse">
+  <li><a href="#why-a-nonlinearity-at-all" id="toc-why-a-nonlinearity-at-all" class="nav-link" data-scroll-target="#why-a-nonlinearity-at-all">Why a nonlinearity at all</a></li>
+  <li><a href="#the-collapse-in-numbers" id="toc-the-collapse-in-numbers" class="nav-link" data-scroll-target="#the-collapse-in-numbers">The collapse, in numbers</a></li>
+  <li><a href="#same-parameters-one-difference" id="toc-same-parameters-one-difference" class="nav-link" data-scroll-target="#same-parameters-one-difference">Same parameters, one difference</a></li>
+  <li><a href="#sigmoid-and-tanh" id="toc-sigmoid-and-tanh" class="nav-link" data-scroll-target="#sigmoid-and-tanh">Sigmoid and tanh</a></li>
+  <li><a href="#relu-and-why-it-took-over" id="toc-relu-and-why-it-took-over" class="nav-link" data-scroll-target="#relu-and-why-it-took-over">ReLU, and why it took over</a></li>
+  <li><a href="#relu-is-not-differentiable-at-zero" id="toc-relu-is-not-differentiable-at-zero" class="nav-link" data-scroll-target="#relu-is-not-differentiable-at-zero">ReLU is not differentiable at zero</a></li>
+  <li><a href="#softmax-for-choosing-one-of-k-classes" id="toc-softmax-for-choosing-one-of-k-classes" class="nav-link" data-scroll-target="#softmax-for-choosing-one-of-k-classes">Softmax, for choosing one of <span class="math inline">K</span> classes</a></li>
+  <li><a href="#the-output-layer-is-not-a-matter-of-taste" id="toc-the-output-layer-is-not-a-matter-of-taste" class="nav-link" data-scroll-target="#the-output-layer-is-not-a-matter-of-taste">The output layer is not a matter of taste</a></li>
+  <li><a href="#four-problems-one-body" id="toc-four-problems-one-body" class="nav-link" data-scroll-target="#four-problems-one-body">Four problems, one body</a></li>
+  <li><a href="#choosing-an-activation-in-practice" id="toc-choosing-an-activation-in-practice" class="nav-link" data-scroll-target="#choosing-an-activation-in-practice">Choosing an activation, in practice</a></li>
+  </ul></li>
+  <li><a href="#depth-and-width" id="toc-depth-and-width" class="nav-link" data-scroll-target="#depth-and-width">Depth and width</a>
+  <ul class="collapse">
+  <li><a href="#width-and-depth-are-different-knobs" id="toc-width-and-depth-are-different-knobs" class="nav-link" data-scroll-target="#width-and-depth-are-different-knobs">Width and depth are different knobs</a></li>
+  <li><a href="#what-a-layer-actually-does" id="toc-what-a-layer-actually-does" class="nav-link" data-scroll-target="#what-a-layer-actually-does">What a layer actually does</a></li>
+  <li><a href="#a-hidden-layer-moving-the-points" id="toc-a-hidden-layer-moving-the-points" class="nav-link" data-scroll-target="#a-hidden-layer-moving-the-points">A hidden layer, moving the points</a></li>
+  <li><a href="#depth-is-composition" id="toc-depth-is-composition" class="nav-link" data-scroll-target="#depth-is-composition">Depth is composition</a></li>
+  <li><a href="#the-chain-rule" id="toc-the-chain-rule" class="nav-link" data-scroll-target="#the-chain-rule">The chain rule</a></li>
+  <li><a href="#which-is-why-it-matters-here" id="toc-which-is-why-it-matters-here" class="nav-link" data-scroll-target="#which-is-why-it-matters-here">Which is why it matters here</a></li>
+  <li><a href="#universal-approximation-stated-carefully" id="toc-universal-approximation-stated-carefully" class="nav-link" data-scroll-target="#universal-approximation-stated-carefully">Universal approximation, stated carefully</a></li>
+  <li><a href="#what-it-does-not-promise" id="toc-what-it-does-not-promise" class="nav-link" data-scroll-target="#what-it-does-not-promise">What it does not promise</a></li>
+  <li><a href="#so-why-go-deep" id="toc-so-why-go-deep" class="nav-link" data-scroll-target="#so-why-go-deep">So why go deep?</a></li>
+  </ul></li>
+  <li><a href="#watching-it-learn" id="toc-watching-it-learn" class="nav-link" data-scroll-target="#watching-it-learn">Watching it learn</a>
+  <ul class="collapse">
+  <li><a href="#no-hidden-layer" id="toc-no-hidden-layer" class="nav-link" data-scroll-target="#no-hidden-layer">No hidden layer</a></li>
+  <li><a href="#one-hidden-layer-four-units" id="toc-one-hidden-layer-four-units" class="nav-link" data-scroll-target="#one-hidden-layer-four-units">One hidden layer, four units</a></li>
+  <li><a href="#what-we-cannot-do-by-hand" id="toc-what-we-cannot-do-by-hand" class="nav-link" data-scroll-target="#what-we-cannot-do-by-hand">What we cannot do by hand</a></li>
+  <li><a href="#gradients-by-brute-force" id="toc-gradients-by-brute-force" class="nav-link" data-scroll-target="#gradients-by-brute-force">Gradients by brute force</a></li>
+  <li><a href="#training-a-network-with-no-backprop" id="toc-training-a-network-with-no-backprop" class="nav-link" data-scroll-target="#training-a-network-with-no-backprop">Training a network with no backprop</a></li>
+  <li><a href="#what-that-produced" id="toc-what-that-produced" class="nav-link" data-scroll-target="#what-that-produced">What that produced</a></li>
+  <li><a href="#now-count-what-that-cost" id="toc-now-count-what-that-cost" class="nav-link" data-scroll-target="#now-count-what-that-cost">Now count what that cost</a></li>
+  <li><a href="#which-does-not-scale-at-all" id="toc-which-does-not-scale-at-all" class="nav-link" data-scroll-target="#which-does-not-scale-at-all">Which does not scale, at all</a></li>
+  <li><a href="#and-that-is-why-next-week-exists" id="toc-and-that-is-why-next-week-exists" class="nav-link" data-scroll-target="#and-that-is-why-next-week-exists">And that is why next week exists</a></li>
+  </ul></li>
+  <li><a href="#vocabulary-before-we-go" id="toc-vocabulary-before-we-go" class="nav-link" data-scroll-target="#vocabulary-before-we-go">Vocabulary before we go</a>
+  <ul class="collapse">
+  <li><a href="#how-much-data-per-step" id="toc-how-much-data-per-step" class="nav-link" data-scroll-target="#how-much-data-per-step">How much data per step?</a></li>
+  <li><a href="#epoch-iteration-batch-size" id="toc-epoch-iteration-batch-size" class="nav-link" data-scroll-target="#epoch-iteration-batch-size">Epoch, iteration, batch size</a></li>
+  <li><a href="#the-learning-rate-now-that-there-are-thousands-of-parameters" id="toc-the-learning-rate-now-that-there-are-thousands-of-parameters" class="nav-link" data-scroll-target="#the-learning-rate-now-that-there-are-thousands-of-parameters">The learning rate, now that there are thousands of parameters</a></li>
+  <li><a href="#reading-a-training-curve" id="toc-reading-a-training-curve" class="nav-link" data-scroll-target="#reading-a-training-curve">Reading a training curve</a></li>
+  <li><a href="#one-thing-about-initialization" id="toc-one-thing-about-initialization" class="nav-link" data-scroll-target="#one-thing-about-initialization">One thing about initialization</a></li>
+  </ul></li>
+  <li><a href="#before-you-go" id="toc-before-you-go" class="nav-link" data-scroll-target="#before-you-go">Before you go</a>
+  <ul class="collapse">
+  <li><a href="#lab-2-build-the-forward-pass" id="toc-lab-2-build-the-forward-pass" class="nav-link" data-scroll-target="#lab-2-build-the-forward-pass">Lab 2: build the forward pass</a></li>
+  <li><a href="#quiz-2-study-guide" id="toc-quiz-2-study-guide" class="nav-link" data-scroll-target="#quiz-2-study-guide">Quiz 2 study guide</a></li>
+  <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap-up</a></li>
+  <li><a href="#quiz-1" id="toc-quiz-1" class="nav-link" data-scroll-target="#quiz-1">Quiz 1</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="presentation.html"><i class="bi bi-file-slides"></i>RevealJS</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">DSAN 6600 Week 02: How Neural Networks Work</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Prof.&nbsp;Ben Houghton </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 3, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="how-neural-networks-work" class="level1">
+<h1>How neural networks work</h1>
+<ul>
+<li>Thursdays, 3:30–6:00 PM · ICC 103</li>
+<li>Week 2 of 14</li>
+<li><strong>Quiz 1 is at the end of class today</strong>, covering last week</li>
+</ul>
+<section id="agenda" class="level2">
+<h2 class="anchored" data-anchor-id="agenda">Agenda</h2>
+<ol type="1">
+<li><strong>From one neuron to a layer</strong>: why a layer is a matrix multiply</li>
+<li><strong>The forward pass</strong>: how a prediction actually flows through</li>
+<li><strong>Activations</strong>: which nonlinearity, and where</li>
+<li><strong>Depth and width</strong>: what each one buys you</li>
+<li><strong>Watching it learn</strong>, including one demo that is deliberately the wrong way</li>
+<li><strong>Vocabulary</strong> you need for the rest of the semester</li>
+</ol>
+<p>Last 20 minutes: Lab 2, then Quiz 1.</p>
+</section>
+<section id="where-we-stopped-last-week" class="level2">
+<h2 class="anchored" data-anchor-id="where-we-stopped-last-week">Where we stopped last week</h2>
+<p>Three claims, none of them yet explained:</p>
+<ol type="1">
+<li>An <strong>artificial neuron</strong> is a logistic regression you already know.</li>
+<li>A neural network is what you get when you <strong>stack</strong> neurons into layers and put a <strong>nonlinearity</strong> between the layers.</li>
+<li>With enough units, such a network can approximate essentially any continuous function.</li>
+</ol>
+<p>Today all three get filled in, in that order. By the end you will have written a forward pass yourself and trained a network without using the algorithm that makes training practical.</p>
+</section>
+<section id="where-the-name-comes-from" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="where-the-name-comes-from">Where the name comes from</h2>
+<div class="columns">
+<div class="column" style="width:52%;">
+<p>The vocabulary is borrowed from neuroscience: a <strong>neuron</strong> receives signals, weighs them, and fires if the total is large enough.</p>
+<p>That is a genuinely useful mnemonic for the shape of the computation, and it is where “neuron”, “activation” and “firing” come from.</p>
+</div><div class="column" style="width:48%;">
+<p><img src="images/2023-03-20-23-58-51.png" class="dw100 img-fluid" width="460"></p>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Do not lean on the analogy
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The resemblance ends almost immediately. A real neuron is a cell with timing, chemistry and structure; an artificial one is a weighted sum followed by a function. When the two disagree, trust the mathematics. Nothing in this course depends on the biology.</p>
+</div>
+</div>
+</section>
+<section id="one-neuron-written-properly" class="level2">
+<h2 class="anchored" data-anchor-id="one-neuron-written-properly">One neuron, written properly</h2>
+<p>A neuron takes an input vector, weighs each component, adds a bias, and passes the total through a function:</p>
+<p><span class="math display">z = \mathbf{w}^{\top}\mathbf{x} + b \qquad a = \sigma(z)</span></p>
+<ul>
+<li><span class="math inline">\mathbf{x}</span>: the input, one vector per example</li>
+<li><span class="math inline">\mathbf{w}</span>: one weight per input component</li>
+<li><span class="math inline">b</span>: the bias, a single number that shifts the total</li>
+<li><span class="math inline">z</span>: the <strong>pre-activation</strong>, sometimes called the logit</li>
+<li><span class="math inline">\sigma</span>: the <strong>activation</strong>, the only nonlinear step</li>
+</ul>
+<p>Set <span class="math inline">\sigma</span> to the logistic function and this is exactly the logistic regression from last week. Nothing new has happened yet.</p>
+</section>
+<section id="a-layer-is-several-neurons-sharing-one-input" class="level2">
+<h2 class="anchored" data-anchor-id="a-layer-is-several-neurons-sharing-one-input">A layer is several neurons sharing one input</h2>
+<p>Put three neurons side by side. They see the <strong>same</strong> <span class="math inline">\mathbf{x}</span>, and each has its own weights and its own bias:</p>
+<p><span class="math display">z_1 = \mathbf{w}_1^{\top}\mathbf{x} + b_1 \qquad
+  z_2 = \mathbf{w}_2^{\top}\mathbf{x} + b_2 \qquad
+  z_3 = \mathbf{w}_3^{\top}\mathbf{x} + b_3</span></p>
+<p>Writing those three lines separately is already tedious, and a real layer has hundreds. So stack the <span class="math inline">\mathbf{w}_i</span> as the <strong>rows</strong> of a matrix:</p>
+<p><span class="math display">\mathbf{W} = \begin{pmatrix}
+\text{---}\;\mathbf{w}_1^{\top}\;\text{---} \\
+\text{---}\;\mathbf{w}_2^{\top}\;\text{---} \\
+\text{---}\;\mathbf{w}_3^{\top}\;\text{---}
+\end{pmatrix}</span></p>
+</section>
+<section id="therefore-a-layer-is-a-matrix-multiply" class="level2">
+<h2 class="anchored" data-anchor-id="therefore-a-layer-is-a-matrix-multiply">Therefore a layer is a matrix multiply</h2>
+<p><span class="math display">\boxed{\;\mathbf{z} = \mathbf{W}\mathbf{x} + \mathbf{b}\;}</span></p>
+<p><img src="images/fig-layer-as-matmul.png" class="dw95 img-fluid" width="900"></p>
+<p>One line, any number of units. This is the reason deep learning runs on GPUs: the core operation is a matrix multiply, and that is the one thing a GPU does faster than anything else.</p>
+</section>
+<section id="reading-the-shapes" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="reading-the-shapes">Reading the shapes</h2>
+<p>The two rules that resolve nearly every shape error you will hit:</p>
+<ul>
+<li><strong>Rows of <span class="math inline">\mathbf{W}</span></strong> = how many units this layer has, so how many numbers come <strong>out</strong></li>
+<li><strong>Columns of <span class="math inline">\mathbf{W}</span></strong> = how many numbers come <strong>in</strong></li>
+</ul>
+<p>For a network taking 2 inputs through hidden layers of 3 and 2 units to a single output:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Layer</th>
+<th><span class="math inline">\mathbf{W}</span></th>
+<th><span class="math inline">\mathbf{b}</span></th>
+<th>In</th>
+<th>Out</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Hidden 1</td>
+<td>(3, 2)</td>
+<td>(3,)</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>Hidden 2</td>
+<td>(2, 3)</td>
+<td>(2,)</td>
+<td>3</td>
+<td>2</td>
+</tr>
+<tr class="odd">
+<td>Output</td>
+<td>(1, 2)</td>
+<td>(1,)</td>
+<td>2</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>Notice each layer’s input count is the previous layer’s output count. That chain is the whole constraint on an architecture.</p>
+</section>
+<section id="the-architecture-drawn" class="level2">
+<h2 class="anchored" data-anchor-id="the-architecture-drawn">The architecture, drawn</h2>
+<p><img src="images/fig-mlp-2321.png" class="dw95 img-fluid" width="900"></p>
+<p>Read it left to right. Two numbers go in, three come out of the first hidden layer, two out of the second, one out of the network. The activation sits between the layers, and the output layer here has none.</p>
+</section>
+<section id="counting-the-parameters" class="level2">
+<h2 class="anchored" data-anchor-id="counting-the-parameters">Counting the parameters</h2>
+<p>Every entry of every <span class="math inline">\mathbf{W}</span> and every <span class="math inline">\mathbf{b}</span> is a number training will change. So count them:</p>
+<p><span class="math display">\underbrace{(3\times2 + 3)}_{\text{hidden 1} \;=\; 9} +
+  \underbrace{(2\times3 + 2)}_{\text{hidden 2} \;=\; 8} +
+  \underbrace{(1\times2 + 1)}_{\text{output} \;=\; 3} = \mathbf{20}</span></p>
+<p>Twenty parameters for a network you can draw on a napkin. The pattern per layer is <span class="math inline">(\text{units} \times \text{inputs}) + \text{units}</span>.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Worth being able to do in your head
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>It tells you instantly whether a model is plausible for your dataset. Twenty parameters and 500 examples is reasonable; twenty <strong>million</strong> parameters and 500 examples is a memorization machine.</p>
+</div>
+</div>
+</section>
+<section id="one-example-or-many" class="level2">
+<h2 class="anchored" data-anchor-id="one-example-or-many">One example, or many</h2>
+<p>Everything so far describes a single example. In practice you push many through at once, one <strong>row</strong> per example:</p>
+<p><span class="math display">\mathbf{X} \;\text{is}\; (N,\, d) \qquad
+  \mathbf{Z} = \mathbf{X}\mathbf{W}^{\top} + \mathbf{b} \;\text{is}\; (N,\, \text{units})</span></p>
+<p>The transpose appears only because <span class="math inline">\mathbf{W}</span> stores units as rows while <span class="math inline">\mathbf{X}</span> stores examples as rows. The mathematics is unchanged.</p>
+<ul>
+<li>That first axis is the <strong>batch dimension</strong>, and it is almost always first</li>
+<li>The bias is added to every row, which NumPy and PyTorch both do silently by broadcasting</li>
+<li>Nearly every confusing shape error you meet this semester will be a batch axis in the wrong place</li>
+</ul>
+<p>PyTorch stores <code>nn.Linear</code> weights as (out_features, in_features) too, so this convention carries directly into Week 3.</p>
+</section>
+<section id="tensors" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="tensors">Tensors</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p>A <strong>tensor</strong> is just an array with any number of axes, and it is the only data structure in deep learning.</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Axes</th>
+<th>Shape</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><span class="math inline">(d)</span></td>
+<td>one feature vector</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><span class="math inline">(N, d)</span></td>
+<td>a batch of vectors</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><span class="math inline">(N, T, d)</span></td>
+<td>a batch of sequences</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><span class="math inline">(N, C, H, W)</span></td>
+<td>a batch of images</td>
+</tr>
+</tbody>
+</table>
+<p>Same layer, same matrix multiply; only the bookkeeping changes.</p>
+</div><div class="column" style="width:45%;">
+<p><img src="images/2023-03-21-12-35-56.png" class="dw100 img-fluid" width="430"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="the-forward-pass" class="level1">
+<h1>The forward pass</h1>
+<ul>
+<li>What it is</li>
+<li>Writing one from scratch</li>
+<li>Why it is all a trained model ever does</li>
+</ul>
+<section id="what-forward-pass-means" class="level2">
+<h2 class="anchored" data-anchor-id="what-forward-pass-means">What “forward pass” means</h2>
+<p>Feed an input in at the left; apply each layer in turn; read the prediction off at the right. That is the forward pass, and there is nothing more to it:</p>
+<p><span class="math display">\mathbf{a}^{(0)} = \mathbf{x} \qquad
+  \mathbf{a}^{(\ell)} = \sigma\!\left(\mathbf{W}^{(\ell)}\mathbf{a}^{(\ell-1)} + \mathbf{b}^{(\ell)}\right)
+  \qquad \hat{y} = \mathbf{a}^{(L)}</span></p>
+<p>Three things to notice:</p>
+<ul>
+<li>The <strong>only</strong> operations are a matrix multiply, an addition, and an element-wise function</li>
+<li>Each layer’s output is the next layer’s input, which is why the shapes have to chain</li>
+<li>The output layer usually gets a <strong>different</strong> activation, or none; that choice is dictated by the problem, and we get to it shortly</li>
+</ul>
+</section>
+<section id="the-multi-layer-perceptron-named-properly" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-multi-layer-perceptron-named-properly">The multi-layer perceptron, named properly</h2>
+<p>What we have just built has several names, all meaning the same thing:</p>
+<ul>
+<li><strong>Multi-layer perceptron (MLP)</strong></li>
+<li><strong>Dense</strong> network, because every unit connects to every unit in the next layer</li>
+<li><strong>Fully connected</strong> network, same reason</li>
+<li><strong>Feed-forward</strong> network, because information moves one way with no loops</li>
+</ul>
+<p>Two properties worth stating explicitly:</p>
+<ul>
+<li>Units within a layer are <strong>not</strong> connected to each other</li>
+<li>There are no backward or skip connections, which is exactly what later architectures change</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why this one first
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Every architecture in this course is a constrained MLP. A CNN is an MLP whose weights are reused across positions. A transformer is an MLP with a mechanism for deciding which inputs to look at. Learn this one properly and the rest are modifications.</p>
+</div>
+</div>
+</section>
+<section id="a-forward-pass-in-numpy" class="level2">
+<h2 class="anchored" data-anchor-id="a-forward-pass-in-numpy">A forward pass, in NumPy</h2>
+<p>Nine lines, no framework. The shapes printed below each step are the point.</p>
+<div id="81c72881" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">6600</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># The 2-3-2-1 network from earlier. Weights are (units, inputs).</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>W1, b1 <span class="op">=</span> rng.normal(<span class="dv">0</span>, <span class="fl">0.8</span>, (<span class="dv">3</span>, <span class="dv">2</span>)), np.zeros(<span class="dv">3</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>W2, b2 <span class="op">=</span> rng.normal(<span class="dv">0</span>, <span class="fl">0.8</span>, (<span class="dv">2</span>, <span class="dv">3</span>)), np.zeros(<span class="dv">2</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>W3, b3 <span class="op">=</span> rng.normal(<span class="dv">0</span>, <span class="fl">0.8</span>, (<span class="dv">1</span>, <span class="dv">2</span>)), np.zeros(<span class="dv">1</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.array([<span class="fl">0.7</span>, <span class="op">-</span><span class="fl">1.2</span>])                 <span class="co"># one example, 2 features</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>a1 <span class="op">=</span> np.tanh(W1 <span class="op">@</span> x <span class="op">+</span> b1)                 <span class="co"># hidden 1</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>a2 <span class="op">=</span> np.tanh(W2 <span class="op">@</span> a1 <span class="op">+</span> b2)                <span class="co"># hidden 2</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>y_hat <span class="op">=</span> W3 <span class="op">@</span> a2 <span class="op">+</span> b3                      <span class="co"># output, no activation</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>n_params <span class="op">=</span> <span class="bu">sum</span>(a.size <span class="cf">for</span> a <span class="kw">in</span> (W1, b1, W2, b2, W3, b3))</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"x      </span><span class="sc">{</span><span class="bu">str</span>(x.shape)<span class="sc">:&gt;7}</span><span class="ss">   </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">round</span>(x, <span class="dv">3</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"a1     </span><span class="sc">{</span><span class="bu">str</span>(a1.shape)<span class="sc">:&gt;7}</span><span class="ss">   </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">round</span>(a1, <span class="dv">3</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"a2     </span><span class="sc">{</span><span class="bu">str</span>(a2.shape)<span class="sc">:&gt;7}</span><span class="ss">   </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">round</span>(a2, <span class="dv">3</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"y_hat  </span><span class="sc">{</span><span class="bu">str</span>(y_hat.shape)<span class="sc">:&gt;7}</span><span class="ss">   </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">round</span>(y_hat, <span class="dv">3</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">parameters: </span><span class="sc">{</span>n_params<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>x         (2,)   [ 0.7 -1.2]
+a1        (3,)   [-0.241 -0.942  0.12 ]
+a2        (2,)   [ 0.688 -0.578]
+y_hat     (1,)   [0.897]
+
+parameters: 20</code></pre>
+</div>
+</div>
+</section>
+<section id="the-same-code-on-a-batch" class="level2">
+<h2 class="anchored" data-anchor-id="the-same-code-on-a-batch">The same code, on a batch</h2>
+<p>Swap the single vector for a matrix of rows and transpose the weights. The arithmetic per example is identical; you have only stopped looping.</p>
+<div id="17914caa" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.normal(<span class="dv">0</span>, <span class="dv">1</span>, (<span class="dv">5</span>, <span class="dv">2</span>))              <span class="co"># five examples, 2 features each</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>A1 <span class="op">=</span> np.tanh(X <span class="op">@</span> W1.T <span class="op">+</span> b1)               <span class="co"># (5, 3)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>A2 <span class="op">=</span> np.tanh(A1 <span class="op">@</span> W2.T <span class="op">+</span> b2)              <span class="co"># (5, 2)</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>Y <span class="op">=</span> A2 <span class="op">@</span> W3.T <span class="op">+</span> b3                        <span class="co"># (5, 1)</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"X   </span><span class="sc">{</span>X<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">  -&gt;  A1 </span><span class="sc">{</span>A1<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">  -&gt;  A2 </span><span class="sc">{</span>A2<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">  -&gt;  Y </span><span class="sc">{</span>Y<span class="sc">.</span>shape<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">predictions: </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">round</span>(Y.ravel(), <span class="dv">3</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># And it agrees with the one-at-a-time version.</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>one_at_a_time <span class="op">=</span> np.array([</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    (np.tanh(np.tanh(W2 <span class="op">@</span> np.tanh(W1 <span class="op">@</span> xi <span class="op">+</span> b1) <span class="op">+</span> b2)) <span class="op">*</span> <span class="dv">0</span> <span class="op">+</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>     W3 <span class="op">@</span> np.tanh(W2 <span class="op">@</span> np.tanh(W1 <span class="op">@</span> xi <span class="op">+</span> b1) <span class="op">+</span> b2) <span class="op">+</span> b3)[<span class="dv">0</span>]</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> xi <span class="kw">in</span> X</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"max difference vs looping: </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(one_at_a_time <span class="op">-</span> Y.ravel()))<span class="sc">:.2e}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>X   (5, 2)  -&gt;  A1 (5, 3)  -&gt;  A2 (5, 2)  -&gt;  Y (5, 1)
+
+predictions: [-0.783 -0.771  0.404  0.234  0.858]
+max difference vs looping: 1.11e-16</code></pre>
+</div>
+</div>
+</section>
+<section id="a-forward-pass-is-all-a-trained-model-ever-does" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="a-forward-pass-is-all-a-trained-model-ever-does">A forward pass is all a trained model ever does</h2>
+<p>Once training is finished, the weights are frozen numbers and using the model is just the arithmetic above.</p>
+<ul>
+<li>Every prediction served in production is a forward pass</li>
+<li>Every image classified, token generated, or fraud score returned is a forward pass</li>
+<li>The famously expensive part of deep learning is <strong>training</strong>, not this</li>
+</ul>
+<p>This is also why a model can be shipped as a file. The file is the weights; the forward pass is a few lines of code that anyone can write.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Vocabulary you will meet
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Running a trained model forward is called <strong>inference</strong>. When someone says an “inference server” or “inference cost”, they mean exactly the computation on the previous two slides, repeated at scale.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="activations" class="level1">
+<h1>Activations</h1>
+<ul>
+<li>Why any nonlinearity at all</li>
+<li>Which one, and where</li>
+<li>The one choice that is not up to you</li>
+</ul>
+<section id="why-a-nonlinearity-at-all" class="level2">
+<h2 class="anchored" data-anchor-id="why-a-nonlinearity-at-all">Why a nonlinearity at all</h2>
+<p>Last week’s claim was that without one, stacking gains you nothing. Here is why, in one line of algebra. Take two layers with no activation:</p>
+<p><span class="math display">\mathbf{z} = \mathbf{W}_2\left(\mathbf{W}_1\mathbf{x} + \mathbf{b}_1\right) + \mathbf{b}_2
+             = \underbrace{\left(\mathbf{W}_2\mathbf{W}_1\right)}_{\text{one matrix}}\mathbf{x}
+             + \underbrace{\left(\mathbf{W}_2\mathbf{b}_1 + \mathbf{b}_2\right)}_{\text{one vector}}</span></p>
+<p>The composition of two linear maps is a linear map. Add fifty more layers and it is still a linear map, just with more arithmetic done to produce the same straight line.</p>
+<p><strong>The activation is not a detail or a tuning knob. It is the thing that makes depth mean anything.</strong></p>
+</section>
+<section id="the-collapse-in-numbers" class="level2">
+<h2 class="anchored" data-anchor-id="the-collapse-in-numbers">The collapse, in numbers</h2>
+<p>97 parameters and three layers, versus the single layer they are secretly equal to. No fitting involved; we just multiply the matrices out.</p>
+<div id="2ce59a7b" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">6600</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> [<span class="dv">1</span>, <span class="dv">8</span>, <span class="dv">8</span>, <span class="dv">1</span>]</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Three layers, no activation anywhere.</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>Ws <span class="op">=</span> [rng.normal(<span class="dv">0</span>, <span class="dv">1</span> <span class="op">/</span> np.sqrt(n_in), (n_out, n_in))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> n_in, n_out <span class="kw">in</span> <span class="bu">zip</span>(sizes[:<span class="op">-</span><span class="dv">1</span>], sizes[<span class="dv">1</span>:])]</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>bs <span class="op">=</span> [np.zeros(n_out) <span class="cf">for</span> n_out <span class="kw">in</span> sizes[<span class="dv">1</span>:]]</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.linspace(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">200</span>).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>a <span class="op">=</span> x                                        <span class="co"># the honest forward pass</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> W, b <span class="kw">in</span> <span class="bu">zip</span>(Ws, bs):</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    a <span class="op">=</span> a <span class="op">@</span> W.T <span class="op">+</span> b</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>deep <span class="op">=</span> a.ravel()</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>W_eff, b_eff <span class="op">=</span> np.eye(<span class="dv">1</span>), np.zeros(<span class="dv">1</span>)        <span class="co"># collapse it by hand</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> W, b <span class="kw">in</span> <span class="bu">zip</span>(Ws, bs):</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    W_eff <span class="op">=</span> W <span class="op">@</span> W_eff</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    b_eff <span class="op">=</span> W <span class="op">@</span> b_eff <span class="op">+</span> b</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>shallow <span class="op">=</span> (x <span class="op">@</span> W_eff.T <span class="op">+</span> b_eff).ravel()</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"three linear layers : </span><span class="sc">{</span><span class="bu">sum</span>(w.size <span class="cf">for</span> w <span class="kw">in</span> Ws) <span class="op">+</span> <span class="bu">sum</span>(b.size <span class="cf">for</span> b <span class="kw">in</span> bs)<span class="sc">}</span><span class="ss"> parameters"</span>)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"the one it equals   : </span><span class="sc">{</span>W_eff<span class="sc">.</span>size <span class="op">+</span> b_eff<span class="sc">.</span>size<span class="sc">}</span><span class="ss"> parameters"</span>)</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"max difference      : </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(deep <span class="op">-</span> shallow))<span class="sc">:.2e}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>three linear layers : 97 parameters
+the one it equals   : 2 parameters
+max difference      : 4.44e-16</code></pre>
+</div>
+</div>
+</section>
+<section id="same-parameters-one-difference" class="level2">
+<h2 class="anchored" data-anchor-id="same-parameters-one-difference">Same parameters, one difference</h2>
+<p><img src="images/fig-collapse.png" class="dw92 img-fluid" width="900"></p>
+<p>Left: three linear layers and one linear layer, drawn on top of each other. The dotted line is hiding under the solid one. Both reach MSE 0.181, which is what a straight line through this data costs.</p>
+<p>Right: the same 97 parameters with tanh between the layers. MSE 0.009.</p>
+</section>
+<section id="sigmoid-and-tanh" class="level2">
+<h2 class="anchored" data-anchor-id="sigmoid-and-tanh">Sigmoid and tanh</h2>
+<p><img src="images/fig-activations.png" class="dw95 img-fluid" width="940"></p>
+<p><span class="math display">\sigma(z) = \frac{1}{1 + e^{-z}} \in (0, 1)
+  \qquad\qquad \tanh(z) = \frac{e^{z} - e^{-z}}{e^{z} + e^{-z}} \in (-1, 1)</span></p>
+<p>Both squash any real number into a bounded range, and both were the default for decades. Look at the right panel: far from zero, the slope is <strong>flat</strong>. A flat slope means a vanishing gradient, and a vanishing gradient means the parameter stops moving. Week 4 returns to this properly.</p>
+</section>
+<section id="relu-and-why-it-took-over" class="level2">
+<h2 class="anchored" data-anchor-id="relu-and-why-it-took-over">ReLU, and why it took over</h2>
+<p><span class="math display">\text{ReLU}(z) = \max(0, z)</span></p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><img src="images/2023-03-20-23-37-20.png" class="dw100 img-fluid" width="460"></p>
+</div><div class="column" style="width:50%;">
+<ul>
+<li><strong>Slope 1 for all positive <span class="math inline">z</span></strong>, so gradients pass through undiminished no matter how deep the network is</li>
+<li>Cheap: a comparison, not an exponential</li>
+<li>Sparse: negative inputs produce exact zeros</li>
+</ul>
+<p>It is the sensible default for hidden layers today.</p>
+</div>
+</div>
+<p>The cost is that negative inputs get slope exactly 0, so a unit can stop responding entirely. Variants such as leaky ReLU exist for that; you will almost never need them before you need better data.</p>
+</section>
+<section id="relu-is-not-differentiable-at-zero" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="relu-is-not-differentiable-at-zero">ReLU is not differentiable at zero</h2>
+<p>A fair objection, since the next two weeks are entirely about derivatives. There is a kink at <span class="math inline">z = 0</span> and no well-defined slope there.</p>
+<p>In practice nobody cares, for two reasons:</p>
+<ul>
+<li>Frameworks define the derivative at zero to be 0 (or 1) by convention and move on</li>
+<li>Hitting <strong>exactly</strong> zero in floating point is a measure-zero event</li>
+</ul>
+<p>This is worth flagging only because it is the first place in this course where the clean mathematical statement and the working practice differ. There will be others, and it is useful to know which kind of thing you are looking at.</p>
+</section>
+<section id="softmax-for-choosing-one-of-k-classes" class="level2">
+<h2 class="anchored" data-anchor-id="softmax-for-choosing-one-of-k-classes">Softmax, for choosing one of <span class="math inline">K</span> classes</h2>
+<p><span class="math display">\text{softmax}(\mathbf{z})_k = \frac{e^{z_k}}{\sum_{j=1}^{K} e^{z_j}}</span></p>
+<p>It takes <span class="math inline">K</span> unbounded numbers and returns <span class="math inline">K</span> values that are each positive and sum to 1, so the output can be read as a distribution over classes.</p>
+<ul>
+<li>Exponentiating makes everything positive and <strong>exaggerates</strong> differences</li>
+<li>Dividing by the sum forces <span class="math inline">\sum_k p_k = 1</span></li>
+<li>With <span class="math inline">K = 2</span> it reduces to the sigmoid, so it is a generalization rather than a new idea</li>
+</ul>
+<p>This is the output your multi-class problems need, and it pairs with the categorical cross-entropy from last week’s loss table.</p>
+</section>
+<section id="the-output-layer-is-not-a-matter-of-taste" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-output-layer-is-not-a-matter-of-taste">The output layer is not a matter of taste</h2>
+<p>Hidden layers are a design choice. The output layer is <strong>determined</strong> by what you are predicting, and it has to agree with the loss:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Problem</th>
+<th>Output units</th>
+<th>Output activation</th>
+<th>Loss</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Scalar regression</td>
+<td>1</td>
+<td>none</td>
+<td>MSE or MAE</td>
+</tr>
+<tr class="even">
+<td>Vector regression</td>
+<td><span class="math inline">m</span></td>
+<td>none</td>
+<td>MSE per component</td>
+</tr>
+<tr class="odd">
+<td>Binary classification</td>
+<td>1</td>
+<td>sigmoid</td>
+<td>binary cross-entropy</td>
+</tr>
+<tr class="even">
+<td>Multi-class, <span class="math inline">K</span> classes</td>
+<td><span class="math inline">K</span></td>
+<td>softmax</td>
+<td>categorical cross-entropy</td>
+</tr>
+</tbody>
+</table>
+<p>Getting this pair wrong is one of the most common bugs in student projects, and it usually does not raise an error. It trains, slowly, to something mediocre.</p>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+A wrinkle that will bite you in Week 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>PyTorch’s <code>nn.BCEWithLogitsLoss</code> and <code>nn.CrossEntropyLoss</code> apply the sigmoid or softmax <strong>themselves</strong>, for numerical stability. So you hand them the raw pre-activations and add no output activation of your own. Applying softmax and then <code>CrossEntropyLoss</code> is a real bug that still trains.</p>
+</div>
+</div>
+</section>
+<section id="four-problems-one-body" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="four-problems-one-body">Four problems, one body</h2>
+<p>The body of the network is unchanged in all four; only the head differs.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Scalar regression</strong></p>
+<p><img src="images/2023-03-21-09-02-35.png" class="dw100 img-fluid" width="470"></p>
+<p><strong>Binary classification</strong></p>
+<p><img src="images/2023-03-21-09-20-45.png" class="dw100 img-fluid" width="470"></p>
+</div><div class="column" style="width:50%;">
+<p><strong>Vector regression</strong></p>
+<p><img src="images/2023-03-21-09-08-10.png" class="dw100 img-fluid" width="470"></p>
+<p><strong>Multi-class classification</strong></p>
+<p><img src="images/2023-03-21-09-33-47.png" class="dw100 img-fluid" width="470"></p>
+</div>
+</div>
+<p>This is why one model family covers the entire problem taxonomy from Week 1.</p>
+</section>
+<section id="choosing-an-activation-in-practice" class="level2">
+<h2 class="anchored" data-anchor-id="choosing-an-activation-in-practice">Choosing an activation, in practice</h2>
+<p>The catalog is long. The decision is short:</p>
+<ul>
+<li><strong>Hidden layers</strong>: ReLU. Use tanh if you have a specific reason, and you will know when you do.</li>
+<li><strong>Output layer</strong>: read it off the table two slides ago. Not a choice.</li>
+<li><strong>Everything else</strong> (GELU, SiLU, leaky ReLU, ELU, Mish): real, occasionally worth a percentage point, and never the reason your model is not working.</li>
+</ul>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Where to spend your attention instead
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Data quality, the train/validation split, the loss matching the problem, and the learning rate. In that order. An activation swap has never rescued a project in this course; fixing a leaky split has.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="depth-and-width" class="level1">
+<h1>Depth and width</h1>
+<ul>
+<li>What each one buys</li>
+<li>What universal approximation does and does not promise</li>
+<li>The rule that makes training possible, which is next week’s subject</li>
+</ul>
+<section id="width-and-depth-are-different-knobs" class="level2">
+<h2 class="anchored" data-anchor-id="width-and-depth-are-different-knobs">Width and depth are different knobs</h2>
+<div class="columns contrast">
+<div class="column" style="width:48%;">
+<section id="width" class="level3">
+<h3 class="anchored" data-anchor-id="width">Width</h3>
+<p>More units in a layer.</p>
+<ul>
+<li>Each unit adds one more feature the layer can detect</li>
+<li>Costs parameters in proportion to the layers on either side</li>
+<li>Widening one layer never changes the number of steps a signal passes through</li>
+</ul>
+</section>
+</div><div class="column" style="width:48%;">
+<section id="depth" class="level3">
+<h3 class="anchored" data-anchor-id="depth">Depth</h3>
+<p>More layers.</p>
+<ul>
+<li>Each layer transforms the previous layer’s output rather than the input</li>
+<li>Lets features be built <strong>from other features</strong></li>
+<li>Costs a longer chain for gradients to travel, which is what makes deep networks hard to train</li>
+</ul>
+</section>
+</div>
+</div>
+<p>An architecture is mostly a choice of how to spend a parameter budget between these two.</p>
+</section>
+<section id="what-a-layer-actually-does" class="level2">
+<h2 class="anchored" data-anchor-id="what-a-layer-actually-does">What a layer actually does</h2>
+<p>Each layer applies the same two operations to whatever it receives, so the second layer is not looking at your data; it is looking at the <strong>first layer’s description</strong> of your data.</p>
+<p>That is the useful way to read depth. A layer is a change of coordinates: it moves the points into a space where the next step is easier.</p>
+<p>The clearest case is a problem where no straight line works at all, and one layer fixes it.</p>
+</section>
+<section id="a-hidden-layer-moving-the-points" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="a-hidden-layer-moving-the-points">A hidden layer, moving the points</h2>
+<p><img src="images/fig-coordinate-change.png" class="dw88 img-fluid" width="940"></p>
+<p><span class="math display">h_1 = \text{ReLU}(x_1 + x_2 - 0.5) \qquad h_2 = \text{ReLU}(-x_1 - x_2 - 0.5)</span></p>
+<p>Left: a problem no line can solve. Right: the <strong>same points</strong>, in the coordinates the hidden layer produced. Class 0 collapses into the corner, class 1 spreads along the axes, and one line now separates 99% of them.</p>
+<p>The layer did not draw a curve. It moved the data until a straight line was enough, and the output layer is still only a straight line.</p>
+</section>
+<section id="depth-is-composition" class="level2">
+<h2 class="anchored" data-anchor-id="depth-is-composition">Depth is composition</h2>
+<p>Stacking layers means composing functions:</p>
+<p><span class="math display">\hat{y} = f_3\!\left(f_2\!\left(f_1(\mathbf{x})\right)\right)
+\qquad \text{where } f_\ell(\mathbf{a}) = \sigma\!\left(\mathbf{W}^{(\ell)}\mathbf{a} + \mathbf{b}^{(\ell)}\right)</span></p>
+<p>Which raises the question training has to answer: if I change one weight deep inside <span class="math inline">f_1</span>, how much does the final loss change? The weight is buried under two more functions before it reaches the output.</p>
+<p>Calculus has exactly one tool for that.</p>
+</section>
+<section id="the-chain-rule" class="level2">
+<h2 class="anchored" data-anchor-id="the-chain-rule">The chain rule</h2>
+<p>For a composition of two functions, the derivative is a <strong>product</strong>:</p>
+<p><span class="math display">\frac{d}{dx}\,f\!\left(g(x)\right) = f'\!\left(g(x)\right)\cdot g'(x)</span></p>
+<p>In words: how much the output moves per unit of <span class="math inline">x</span> equals how much <span class="math inline">g</span> moves per unit of <span class="math inline">x</span>, times how much <span class="math inline">f</span> moves per unit of <span class="math inline">g</span>.</p>
+<p>The rule composes as many times as you like, one factor per stage:</p>
+<p><span class="math display">\frac{d}{dx}\,f\!\left(g\!\left(h(x)\right)\right)
+= f'\!\left(g(h(x))\right)\cdot g'\!\left(h(x)\right)\cdot h'(x)</span></p>
+</section>
+<section id="which-is-why-it-matters-here" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="which-is-why-it-matters-here">Which is why it matters here</h2>
+<p>A network <strong>is</strong> a composition, so the derivative of the loss with respect to an early weight is a product of one factor per layer it passes through:</p>
+<p><span class="math display">\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(1)}} =
+  \frac{\partial \mathcal{L}}{\partial \mathbf{a}^{(3)}} \cdot
+  \frac{\partial \mathbf{a}^{(3)}}{\partial \mathbf{a}^{(2)}} \cdot
+  \frac{\partial \mathbf{a}^{(2)}}{\partial \mathbf{a}^{(1)}} \cdot
+  \frac{\partial \mathbf{a}^{(1)}}{\partial \mathbf{W}^{(1)}}</span></p>
+<p>Two consequences, both of which shape the rest of the course:</p>
+<ul>
+<li>Those factors are <strong>shared</strong> between parameters. Computing them once and reusing them is the entire idea of backpropagation, which is next week.</li>
+<li>A product of many small numbers is a very small number. That is the vanishing gradient problem, and it is why the flat regions of sigmoid matter and why ReLU won.</li>
+</ul>
+<p>You do not need to differentiate a network by hand in this course. You do need to recognize that a gradient in a deep network is a product along a path.</p>
+</section>
+<section id="universal-approximation-stated-carefully" class="level2">
+<h2 class="anchored" data-anchor-id="universal-approximation-stated-carefully">Universal approximation, stated carefully</h2>
+<blockquote class="blockquote">
+<p>A feed-forward network with a <strong>single</strong> hidden layer containing <strong>enough</strong> units can approximate any continuous function on a closed, bounded region to any desired accuracy.</p>
+</blockquote>
+<p><img src="images/2023-03-20-22-26-18.png" class="dh300 img-fluid" width="620"></p>
+<p>Proved in the late 1980s, by Cybenko and by Hornik among others. It is the reason one model family covers regression, classification and generation alike.</p>
+</section>
+<section id="what-it-does-not-promise" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-it-does-not-promise">What it does not promise</h2>
+<p>Read the theorem carefully and notice everything it leaves out:</p>
+<ul>
+<li><strong>Not how many units.</strong> “Enough” could be astronomically many. The theorem is an existence result, and it puts no useful bound on the size.</li>
+<li><strong>Not that training will find them.</strong> It says good weights exist. Gradient descent from a random start is not guaranteed to reach them, and last week’s non-convex demo showed exactly that failure.</li>
+<li><strong>Not that it will generalize.</strong> Approximating the function on your data says nothing about new data. This is overfitting, and it is not a theoretical concern; it is the usual outcome.</li>
+<li><strong>Not that one layer is a good idea.</strong> It says one layer suffices in principle. Nobody builds that way.</li>
+</ul>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The useful reading
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Universal approximation tells you the model family is not the limitation. Your data, your optimization, and your evaluation are. Every one of those is a practical problem, which is why the rest of this course is practical.</p>
+</div>
+</div>
+</section>
+<section id="so-why-go-deep" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="so-why-go-deep">So why go deep?</h2>
+<p>Three architectures, one parameter budget, the same curve:</p>
+<p><img src="images/fig-depth-vs-width.png" class="dw85 img-fluid" width="940"></p>
+<p><strong>Depth made no difference here.</strong> All three reach the noise floor and the fits sit on top of one another; on a problem like this one hidden layer is genuinely enough, exactly as the theorem said. Depth earns its keep when features <strong>compose</strong>: pixels into edges into parts into objects. Week 5 shows that directly with images.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The takeaway
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Reach for depth when your data has structure that builds in stages, not because the field has “deep” in the name.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="watching-it-learn" class="level1">
+<h1>Watching it learn</h1>
+<ul>
+<li>A network with no hidden layer, failing</li>
+<li>The same network, fixed</li>
+<li>Training one the wrong way, on purpose</li>
+</ul>
+<section id="no-hidden-layer" class="level2">
+<h2 class="anchored" data-anchor-id="no-hidden-layer">No hidden layer</h2>
+<p><a href="https://playground.tensorflow.org/#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=false">playground.tensorflow.org</a></p>
+<p>Blue points inside, orange points around them. No hidden layer, so the model can only draw a straight boundary.</p>
+<p><img src="images/playground-0-hidden.png" class="dh330 img-fluid" width="760"></p>
+<p>It runs for <strong>1,793 epochs</strong> and the loss sits at <strong>0.504</strong>. It is not training slowly; it is finished. No straight line separates a disc from a ring.</p>
+</section>
+<section id="one-hidden-layer-four-units" class="level2">
+<h2 class="anchored" data-anchor-id="one-hidden-layer-four-units">One hidden layer, four units</h2>
+<p><a href="https://playground.tensorflow.org/?r=2#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=4&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=false">Same page, one layer added</a></p>
+<p><img src="images/playground-1-hidden.png" class="dh330 img-fluid" width="760"></p>
+<p>Test loss <strong>0.016</strong> by epoch 1,050, roughly 31 times better, and the boundary is now a closed region. Watch the middle column: each of the four units learned one straight boundary, and the output combined them into a shape. That is the coordinate-change slide, happening live.</p>
+</section>
+<section id="what-we-cannot-do-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="what-we-cannot-do-by-hand">What we cannot do by hand</h2>
+<p>We can now write any forward pass we like, and we have watched a browser find good weights. What we have <strong>not</strong> done is find the weights ourselves.</p>
+<p>Last week’s recipe was gradient descent:</p>
+<p><span class="math display">\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} - \lambda \nabla \mathcal{L}(\mathbf{w}_{\text{old}})</span></p>
+<p>which needs <span class="math inline">\dfrac{\partial \mathcal{L}}{\partial w}</span> for <strong>every</strong> parameter. For last week’s two-parameter model we could differentiate by hand. For 49 parameters, let alone 49 million, we cannot.</p>
+<p>So let us do it the dumbest way that works, and see what it costs.</p>
+</section>
+<section id="gradients-by-brute-force" class="level2">
+<h2 class="anchored" data-anchor-id="gradients-by-brute-force">Gradients by brute force</h2>
+<p>A derivative is defined as a limit of differences, so approximate it directly:</p>
+<p><span class="math display">\frac{\partial \mathcal{L}}{\partial w_j} \approx
+  \frac{\mathcal{L}(w_j + \varepsilon) - \mathcal{L}(w_j)}{\varepsilon}</span></p>
+<p>The recipe needs nothing you have not already seen:</p>
+<ol type="1">
+<li>Run the forward pass and record the loss</li>
+<li>For <strong>each</strong> parameter: nudge it by <span class="math inline">\varepsilon</span>, re-run the forward pass, see how much the loss changed, put it back</li>
+<li>That collection of numbers is the gradient. Take a step.</li>
+</ol>
+<p>This is called <strong>finite differences</strong>. It genuinely works, and every serious library refuses to train this way. Watch what happens.</p>
+</section>
+<section id="training-a-network-with-no-backprop" class="level2 codetight">
+<h2 class="codetight anchored" data-anchor-id="training-a-network-with-no-backprop">Training a network with no backprop</h2>
+<p>A <span class="math inline">1 \to 16 \to 1</span> tanh network, fitting a curve. Source code for your reference; all the cost lives in the loop inside <code>finite_difference_gradient</code>.</p>
+<p>Read the bottom four numbers together: the network went from useless, past what a straight line can do, to within a factor of two of the noise floor.</p>
+<div id="cece223a" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>SEED, HIDDEN, STEPS, LR, EPS <span class="op">=</span> <span class="dv">6600</span>, <span class="dv">16</span>, <span class="dv">400</span>, <span class="fl">0.1</span>, <span class="fl">1e-5</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>rng_data, rng_init <span class="op">=</span> np.random.default_rng(SEED), np.random.default_rng(SEED)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> np.linspace(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">200</span>).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>y_true <span class="op">=</span> np.sin(<span class="fl">3.0</span> <span class="op">*</span> x.ravel())</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> y_true <span class="op">+</span> rng_data.normal(<span class="dv">0</span>, <span class="fl">0.10</span>, <span class="dv">200</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>SHAPES <span class="op">=</span> [(<span class="st">"W"</span>, (HIDDEN, <span class="dv">1</span>)), (<span class="st">"b"</span>, (HIDDEN,)), (<span class="st">"W"</span>, (<span class="dv">1</span>, HIDDEN)), (<span class="st">"b"</span>, (<span class="dv">1</span>,))]</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>N_PARAMS <span class="op">=</span> <span class="bu">sum</span>(<span class="bu">int</span>(np.prod(s)) <span class="cf">for</span> _, s <span class="kw">in</span> SHAPES)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> unpack(theta):</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    out, i <span class="op">=</span> [], <span class="dv">0</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> _, shape <span class="kw">in</span> SHAPES:</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        n <span class="op">=</span> <span class="bu">int</span>(np.prod(shape))</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        out.append(theta[i:i <span class="op">+</span> n].reshape(shape))</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        i <span class="op">+=</span> n</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> out</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>calls <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> forward(X, theta):</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">global</span> calls</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    calls <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    W1, b1, W2, b2 <span class="op">=</span> unpack(theta)</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (np.tanh(X <span class="op">@</span> W1.T <span class="op">+</span> b1) <span class="op">@</span> W2.T <span class="op">+</span> b2).ravel()</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> loss(theta):</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="bu">float</span>(np.mean((forward(x, theta) <span class="op">-</span> y) <span class="op">**</span> <span class="dv">2</span>))</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> finite_difference_gradient(theta):</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>    base <span class="op">=</span> loss(theta)</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>    grad <span class="op">=</span> np.empty_like(theta)</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(theta.size):            <span class="co"># one forward pass per parameter</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>        bumped <span class="op">=</span> theta.copy()</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>        bumped[j] <span class="op">+=</span> EPS</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>        grad[j] <span class="op">=</span> (loss(bumped) <span class="op">-</span> base) <span class="op">/</span> EPS</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> grad, base</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>theta <span class="op">=</span> np.zeros(N_PARAMS)</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>i <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> kind, shape <span class="kw">in</span> SHAPES:</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="bu">int</span>(np.prod(shape))</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>    theta[i:i <span class="op">+</span> n] <span class="op">=</span> rng_init.normal(<span class="dv">0</span>, <span class="dv">1</span> <span class="op">/</span> np.sqrt(shape[<span class="dv">1</span>]), n) <span class="cf">if</span> kind <span class="op">==</span> <span class="st">"W"</span> <span class="cf">else</span> <span class="fl">0.0</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    i <span class="op">+=</span> n</span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>start <span class="op">=</span> loss(theta)</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> step <span class="kw">in</span> <span class="bu">range</span>(STEPS):</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>    grad, _ <span class="op">=</span> finite_difference_gradient(theta)</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>    theta <span class="op">-=</span> LR <span class="op">*</span> grad</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>straight_line <span class="op">=</span> np.mean((np.polyval(np.polyfit(x.ravel(), y, <span class="dv">1</span>), x.ravel()) <span class="op">-</span> y) <span class="op">**</span> <span class="dv">2</span>)</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"parameters                  </span><span class="sc">{</span>N_PARAMS<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"forward passes per gradient </span><span class="sc">{</span>N_PARAMS <span class="op">+</span> <span class="dv">1</span><span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"total forward passes        </span><span class="sc">{</span>calls<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"loss at the start           </span><span class="sc">{</span>start<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"loss at the end             </span><span class="sc">{</span>loss(theta)<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"a straight line would give  </span><span class="sc">{</span>straight_line<span class="sc">:.4f}</span><span class="ss">"</span>)</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"the noise floor is          </span><span class="sc">{</span>np<span class="sc">.</span>mean((y <span class="op">-</span> y_true) <span class="op">**</span> <span class="dv">2</span>)<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>parameters                  49
+forward passes per gradient 50
+total forward passes        20,001
+
+loss at the start           1.3256
+loss at the end             0.0190
+a straight line would give  0.1736
+the noise floor is          0.0113</code></pre>
+</div>
+</div>
+</section>
+<section id="what-that-produced" class="level2">
+<h2 class="anchored" data-anchor-id="what-that-produced">What that produced</h2>
+<p><img src="images/demo-mlp-training.gif" class="dw95 img-fluid" width="940"></p>
+<p>It works. The network beats a straight line by a factor of nine and lands within a factor of two of the noise floor, having never been told anything about sine waves.</p>
+</section>
+<section id="now-count-what-that-cost" class="level2">
+<h2 class="anchored" data-anchor-id="now-count-what-that-cost">Now count what that cost</h2>
+<p>To fit a curve you could sketch by hand:</p>
+<table class="table">
+<tbody>
+<tr class="odd">
+<td>Parameters</td>
+<td>49</td>
+</tr>
+<tr class="even">
+<td>Forward passes for <strong>one</strong> gradient</td>
+<td>50</td>
+</tr>
+<tr class="odd">
+<td>Gradient steps</td>
+<td>400</td>
+</tr>
+<tr class="even">
+<td><strong>Total forward passes</strong></td>
+<td><strong>20,001</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Twenty thousand evaluations of the network to move 49 numbers into place.</p>
+<p>And the cost scales with the <strong>number of parameters</strong>, because every single one needs its own forward pass.</p>
+</section>
+<section id="which-does-not-scale-at-all" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="which-does-not-scale-at-all">Which does not scale, at all</h2>
+<p>Same method, real models, at a generous one millisecond per forward pass:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Model</th>
+<th>Parameters</th>
+<th>One gradient step, this way</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Today’s demo</td>
+<td>49</td>
+<td>0.05 seconds</td>
+</tr>
+<tr class="even">
+<td>ResNet-50</td>
+<td>25 million</td>
+<td><strong>6.9 hours</strong></td>
+</tr>
+<tr class="odd">
+<td>GPT-3</td>
+<td>175 billion</td>
+<td><strong>5.5 years</strong></td>
+</tr>
+</tbody>
+</table>
+<p>ResNet-50 is the row to hold onto: it is a model you will fine-tune yourself in Week 6, and 6.9 hours buys you <strong>one</strong> step out of the many thousands needed.</p>
+<p>Deep learning is not possible this way. It is not a matter of faster hardware; it is the wrong algorithm by a factor of millions.</p>
+</section>
+<section id="and-that-is-why-next-week-exists" class="level2">
+<h2 class="anchored" data-anchor-id="and-that-is-why-next-week-exists">And that is why next week exists</h2>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The one algorithm that makes all of this work
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>There is a way to get the derivative with respect to <strong>every</strong> parameter, all of them, from a single backward sweep of the network. Not one pass per parameter. One pass, total.</p>
+<p>It is called <strong>backpropagation</strong>, it is the chain rule applied to the network’s structure, and it is the reason deep learning exists as a practical field rather than a mathematical curiosity.</p>
+</div>
+</div>
+<p>Next week: backpropagation, computational graphs, and PyTorch doing all of it for you.</p>
+</section>
+</section>
+<section id="vocabulary-before-we-go" class="level1">
+<h1>Vocabulary before we go</h1>
+<p>The words you need to read a training script, or a paper, or your own logs.</p>
+<section id="how-much-data-per-step" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="how-much-data-per-step">How much data per step?</h2>
+<p>Gradient descent needs a loss, and you get to choose how much data to compute it on:</p>
+<table class="table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>Data per step</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Full-batch</strong></td>
+<td>all <span class="math inline">N</span> examples</td>
+<td>most accurate step, slowest, and <span class="math inline">N</span> may not fit in memory</td>
+</tr>
+<tr class="even">
+<td><strong>Stochastic (SGD)</strong></td>
+<td>1 example</td>
+<td>very fast, very noisy steps</td>
+</tr>
+<tr class="odd">
+<td><strong>Mini-batch</strong></td>
+<td><span class="math inline">B</span> examples</td>
+<td>the compromise everyone actually uses</td>
+</tr>
+</tbody>
+</table>
+<p>Typical <span class="math inline">B</span> is 32 to 256. Last week’s demo was full-batch, because the whole dataset was 200 points.</p>
+<p>The noise in mini-batch gradients is not purely a cost: it helps the optimizer escape the bad flat regions you saw in last week’s non-convex demo.</p>
+</section>
+<section id="epoch-iteration-batch-size" class="level2">
+<h2 class="anchored" data-anchor-id="epoch-iteration-batch-size">Epoch, iteration, batch size</h2>
+<p>These three get confused constantly, including in published papers.</p>
+<ul>
+<li><strong>Batch size</strong> <span class="math inline">B</span>: examples used for one update</li>
+<li><strong>Iteration</strong> (or step): <strong>one</strong> parameter update</li>
+<li><strong>Epoch</strong>: one full pass through the training set</li>
+</ul>
+<p><span class="math display">\text{iterations per epoch} = \left\lceil \frac{N}{B} \right\rceil</span></p>
+<p>With 10,000 examples and <span class="math inline">B = 100</span>: one epoch is 100 iterations. Training for 20 epochs means 2,000 updates.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why it matters
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>“Trained for 10 epochs” and “trained for 10 iterations” differ by a factor of <span class="math inline">N/B</span>. When you compare your run to somebody else’s, check which one they meant.</p>
+</div>
+</div>
+</section>
+<section id="the-learning-rate-now-that-there-are-thousands-of-parameters" class="level2">
+<h2 class="anchored" data-anchor-id="the-learning-rate-now-that-there-are-thousands-of-parameters">The learning rate, now that there are thousands of parameters</h2>
+<p><span class="math display">\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} - \lambda \nabla \mathcal{L}</span></p>
+<p>The same <span class="math inline">\lambda</span> multiplies <strong>every</strong> parameter’s gradient. One number controls thousands of moves at once, which is why it is the hyper-parameter that matters most.</p>
+<ul>
+<li>Too small: the loss creeps down and you conclude the model cannot learn</li>
+<li>Too large: the loss jumps around, or becomes <code>nan</code> within a few steps</li>
+<li>Reasonable starting point: <span class="math inline">10^{-3}</span>, and then look at the curve</li>
+</ul>
+<p>Week 4 is largely about not having to guess: adaptive optimizers give parameters their own effective step sizes, and schedules change <span class="math inline">\lambda</span> over training.</p>
+</section>
+<section id="reading-a-training-curve" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="reading-a-training-curve">Reading a training curve</h2>
+<p>The first thing to look at, every time, before any metric:</p>
+<table class="table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>What you see</th>
+<th>What it usually means</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Both curves falling</td>
+<td>working; keep going</td>
+</tr>
+<tr class="even">
+<td>Training falls, validation rises</td>
+<td><strong>overfitting</strong>; stop at the minimum</td>
+</tr>
+<tr class="odd">
+<td>Both flat and high</td>
+<td>learning rate too small, or a bug</td>
+</tr>
+<tr class="even">
+<td>Loss becomes <code>nan</code></td>
+<td>learning rate too large</td>
+</tr>
+<tr class="odd">
+<td>Very spiky</td>
+<td>learning rate too large, or batch too small</td>
+</tr>
+<tr class="even">
+<td>Training loss near zero on a hard problem</td>
+<td>leakage; check your split</td>
+</tr>
+</tbody>
+</table>
+<p>The last row is the one to be suspicious of. A result that looks too good is the single most common serious bug in student projects, and it never announces itself.</p>
+</section>
+<section id="one-thing-about-initialization" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="one-thing-about-initialization">One thing about initialization</h2>
+<p>A fair question: why not start every weight at zero, the way you might for a linear model?</p>
+<p>Because then every unit in a layer computes <strong>exactly</strong> the same thing, receives <strong>exactly</strong> the same gradient, and updates <strong>exactly</strong> the same way. They stay identical forever, and a 512-unit layer does the work of one unit.</p>
+<p>Random initialization exists to break that symmetry. Notice that in today’s demo the weights were random and the biases were zero, which is the usual pattern: the weights already break the symmetry, so the biases do not have to.</p>
+<p>Week 4 covers why the <strong>scale</strong> of that randomness matters too.</p>
+</section>
+</section>
+<section id="before-you-go" class="level1">
+<h1>Before you go</h1>
+<ul>
+<li>Lab 2</li>
+<li>Quiz 2, so you know what to study</li>
+<li>Quiz 1, right now</li>
+</ul>
+<section id="lab-2-build-the-forward-pass" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="lab-2-build-the-forward-pass">Lab 2: build the forward pass</h2>
+<p><strong>Released today. Due Wednesday Sep 9, 11:59 PM ET.</strong></p>
+<p>Today’s lecture, by hand, in NumPy:</p>
+<ol type="1">
+<li>Build a layer as a matrix multiply, and get the shapes right</li>
+<li>Count the parameters of a network, and check it against your code</li>
+<li>Write a forward pass, single example and batched</li>
+<li>Show the collapse yourself: stack linear layers, then add a nonlinearity</li>
+<li>Train the small network with finite differences, and count the forward passes</li>
+</ol>
+<p>Same rules as Lab 1: graded for <strong>completion</strong>, work together if you like, solutions posted after the deadline.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why finite differences again
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Next week’s lab replaces your hand-rolled gradient with two lines of PyTorch autograd. Having felt the cost first is the point; the payoff does not land otherwise.</p>
+</div>
+</div>
+</section>
+<section id="quiz-2-study-guide" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="quiz-2-study-guide">Quiz 2 study guide</h2>
+<p><strong>Next week, end of class.</strong> Closed-book, no notes, no aids. A formula sheet is handed out with the quiz, so nothing here needs memorizing; choosing the right formula is still on you.</p>
+<p>What it covers, all from today and Lab 2:</p>
+<ol type="1">
+<li><strong>Shapes</strong>: given an architecture, the shape of any <span class="math inline">\mathbf{W}</span> or <span class="math inline">\mathbf{b}</span>, and the parameter count</li>
+<li><strong>The forward pass</strong>: the order of operations, and what each layer receives</li>
+<li><strong>Why a nonlinearity</strong>: what stacking linear layers gives you, and why</li>
+<li><strong>Activations</strong>: which for hidden layers, which for each output, and why the output is not a free choice</li>
+<li><strong>Depth vs width</strong>: what universal approximation does and does not promise</li>
+<li><strong>Vocabulary</strong>: epoch, iteration, batch size, learning rate</li>
+<li><strong>From Lab 2</strong>: what you observed, and why. Explanations, not numbers.</li>
+</ol>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The most reliable way to prepare
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Do Lab 2 yourself, and be able to say <strong>why</strong> each result came out the way it did. Questions are written so that having run the lab is hard to fake.</p>
+</div>
+</div>
+</section>
+<section id="wrap-up" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="wrap-up">Wrap-up</h2>
+<p>Where we started: three unexplained claims from last week. Where we are:</p>
+<ul>
+<li>A <strong>layer</strong> is a matrix multiply plus a bias, and its shape is fully determined by how many units it has and how many inputs it receives</li>
+<li>A <strong>forward pass</strong> is those layers applied in order, and it is everything a trained model does</li>
+<li>The <strong>activation</strong> is what keeps depth from collapsing; ReLU for hidden layers, and the output layer is dictated by the problem</li>
+<li><strong>Universal approximation</strong> says the model family is not your limitation</li>
+<li>Getting gradients the obvious way costs one forward pass per parameter, which is hopeless</li>
+</ul>
+<p><strong>And one habit, continued from last week:</strong> look at the training curve before you look at any metric. It tells you whether the number you are about to report means anything.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Next week
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>Backpropagation, computational graphs, and PyTorch.</strong> How every gradient comes out of one backward sweep, and the framework that does it for you.</p>
+</div>
+</div>
+<p><strong>Before Thursday:</strong> Lab 2 (due Wed), and a Spotlight slot if you have not claimed one.</p>
+</section>
+<section id="quiz-1" class="level2">
+<h2 class="anchored" data-anchor-id="quiz-1">Quiz 1</h2>
+<p>Closed-book, no notes. Covers Week 1: the six components, losses, splits, overfitting, gradient descent, and Lab 1.</p>
+<p>A formula sheet comes with it.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

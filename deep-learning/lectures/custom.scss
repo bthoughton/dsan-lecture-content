@@ -69,6 +69,17 @@ $presentation-h3-font-size: 1.2em;
   line-height: 1.15;
 }
 
+// The printed result now shares that slide with the listing and the animation,
+// and it is the numeric punchline (loss falling, parameters recovered), so it
+// has to be readable from the back. Reveal renders cell output at the same tiny
+// size as source; bump only the stdout block, which the slack on the slide
+// affords. Scoped to the source listing's own class so no other slide moves.
+.reveal section.codetight .cell-output-stdout pre,
+.reveal section.codetight .cell-output-stdout pre code {
+  font-size: 0.8em;
+  line-height: 1.35;
+}
+
 // ---------------------------------------------------------------------------
 // Ordered lists: Reveal ships these with padding-left: 0 and outside markers,
 // so "1." "2." render left of the content box and get clipped at the slide
@@ -91,6 +102,23 @@ $presentation-h3-font-size: 1.2em;
 
 .reveal .columns {
   justify-content: space-between;
+}
+
+// The two tinted panels are sized by their own content, so the wordier side
+// draws a taller box and the pair looks misaligned. `display: flex` has to be
+// set here, not just `align-items`: Quarto lays these columns out inline in the
+// revealjs format, so on its own `align-items` has nothing to act on. Scoped to
+// `.contrast` so column layouts that hold images are left alone.
+.reveal .columns.contrast {
+  display: flex;
+  align-items: stretch;
+  gap: 4%;
+}
+
+// As flex items the panels would grow to fill and close the gutter back up, so
+// pin them to a fixed basis: 48 + 48 + the 4% gap above accounts for the row.
+.reveal .columns.contrast > .column {
+  flex: 0 0 48%;
 }
 
 .reveal .col-yes,

@@ -389,6 +389,7 @@
       margin-right: 0; 
     }
   </style>
+  <link rel="icon" type="image/png" href="/icon.png">
 </head>
 <body class="quarto-light">
   <div class="reveal">
@@ -455,7 +456,7 @@ Prof.&nbsp;Ben Houghton
 </section>
 <section id="what-this-course-is-and-what-it-isnt" class="slide level2">
 <h2>What this course is, and what it isn’t</h2>
-<div class="columns">
+<div class="columns contrast">
 <div class="column col-yes" style="width:48%;">
 <h3 id="it-is">It is</h3>
 <ul>
@@ -504,25 +505,22 @@ Prof.&nbsp;Ben Houghton
 <blockquote>
 <p>You need rock-solid fundamentals so that you can best <strong>direct</strong> agentic workflows, and <strong>understand where they are going wrong.</strong></p>
 </blockquote>
-<p>The code was never the hard part. Here is what an agent cannot do for you:</p>
+<p>An agent writes the training loop, and reads the loss curve correctly. <strong>That isn’t the gap.</strong> This is:</p>
 <div class="columns">
-<div class="column" style="width:50%;">
+<div class="column" style="width:49%;">
 <ul>
-<li>Frame the problem</li>
-<li>Decide what the target variable should even be</li>
-<li>Choose a loss that matches what you actually care about</li>
+<li><strong>Business justification.</strong> Whether this is worth building, and what being wrong costs</li>
+<li><strong>Domain nuance.</strong> Why a column isn’t what its name says; why a feature won’t exist at prediction time</li>
 </ul>
-</div><div class="column" style="width:50%;">
+</div><div class="column" style="width:49%;">
 <ul>
-<li>Design an evaluation that isn’t lying to you</li>
-<li>Notice that your validation split leaks</li>
-<li>Read a loss curve</li>
-<li>Decide it’s good enough to ship</li>
+<li><strong>The big picture.</strong> It loses the thread of the project, sometimes the codebase</li>
+<li><strong>Context.</strong> It knows only what’s in the window; assembling the right mix is your job</li>
+<li><strong>Priorities.</strong> Handed ten problems, it treats all ten as equally urgent</li>
 </ul>
 </div>
 </div>
-<p>So the job moves <strong>up the stack</strong>: to judgment, framing, and diagnosis. Which means <strong>testing, benchmarking, reporting, and investigating</strong> become the core skills.</p>
-<p>And it’s why quizzes are closed-book with no AI: <em>that</em> part has to be yours.</p>
+<p>The job moves <strong>up the stack</strong>: framing, judgment, knowing what matters. So <strong>testing, benchmarking, and investigating</strong> become the core skills.</p>
 </section>
 <section id="a-story-the-tests-were-green" class="slide level2">
 <h2>A story: the tests were green</h2>
@@ -760,7 +758,7 @@ Prof.&nbsp;Ben Houghton
 <ul>
 <li>Use it. Cursor, Claude Code, Copilot, whatever you actually work in.</li>
 <li>Disclose it: tool, where, what for</li>
-<li>Be able to explain <strong>every line</strong> you submit</li>
+<li><strong>Own it</strong>: explain what your code does and how it does it</li>
 </ul>
 </div>
 </div>
@@ -768,13 +766,13 @@ Prof.&nbsp;Ben Houghton
 <section id="the-semester-project" class="slide level2 smaller">
 <h2>The semester project</h2>
 <p>One coherent project, carried across the whole semester. <strong>Groups of 2</strong> (3 only by approval).</p>
-<div class="columns">
+<div class="columns contrast">
 <div class="column col-yes" style="width:48%;">
 <h3 id="in-scope">In scope</h3>
 <ul>
 <li>Any genuine deep learning problem</li>
 <li>Vision, NLP, time series, generative, multimodal, graphs</li>
-<li><strong>Fine-tuning and transfer learning are encouraged</strong></li>
+<li><strong>Fine-tuning a pretrained model is encouraged</strong></li>
 </ul>
 </div><div class="column col-no" style="width:48%;">
 <h3 id="not-in-scope">Not in scope</h3>
@@ -883,8 +881,7 @@ Prof.&nbsp;Ben Houghton
 <p>You do not need frontier compute to do excellent work. The check-ins reward <strong>reasoning and evaluation</strong>, not scale.</p>
 <p><strong>Realistic, strong project shapes</strong></p>
 <ul>
-<li><strong>Fine-tune a pretrained backbone</strong> on a domain you care about</li>
-<li><strong>Transfer learning</strong> on a modest, real dataset, and evaluate it honestly</li>
+<li><strong>Adapt a pretrained model</strong> to a domain you care about: fine-tune it, or freeze it and train a small head</li>
 <li><strong>A careful comparison</strong>: two approaches, one controlled change, a real ablation</li>
 <li><strong>A failure analysis</strong> nobody else bothered to do</li>
 <li><strong>A small multimodal system</strong>: image + text, audio + text</li>
@@ -1246,8 +1243,8 @@ Prof.&nbsp;Ben Houghton
 </section>
 <section id="all-six-components-in-one-cell" class="slide level2 smaller codetight">
 <h2>All six components, in one cell</h2>
-<p>Not walking through this line by line; it is in the handout too. The one line worth finding is inside <code>loss</code>, the only place the choice of MSE appears.</p>
-<div id="4388a0e5" class="cell" data-execution_count="1">
+<p>Source code below for your reference. The one line worth finding is inside <code>loss</code>, the only place the choice of MSE appears.</p>
+<div id="5356d109" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href=""></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -1290,9 +1287,6 @@ final loss   0.0356
 recovered    A=2.96, k=0.33   (true: A=3.0, k=0.35)</code></pre>
 </div>
 </div>
-</section>
-<section id="watching-it-learn" class="slide level2">
-<h2>Watching it learn</h2>
 <p><img data-src="images/demo-learning.gif" class="dw80" width="800"></p>
 <p>The curve snapping onto the data and the dot rolling downhill are the <strong>same event</strong>, drawn two ways. Watch the parameter values at the top.</p>
 </section>
@@ -1500,7 +1494,7 @@ recovered    A=2.96, k=0.33   (true: A=3.0, k=0.35)</code></pre>
 </section>
 <section id="quiz-1-study-guide" class="slide level2 smaller scrollable">
 <h2>Quiz 1 study guide</h2>
-<p><strong>Thursday Sep 3, end of class. ~12 minutes. Covers today’s lecture and Lab 1. Closed-book: no notes, no AI. A formula sheet is provided, so nothing needs memorizing; choosing the right formula is still on you.</strong></p>
+<p><strong>Thursday Sep 3, end of class. ~12 minutes. Covers today’s lecture and Lab 1. Closed-book: no notes, no AI. A formula sheet is handed out with it, so nothing needs memorizing; choosing the right formula is still on you.</strong></p>
 <ol type="1">
 <li><strong>The six components</strong>: name them, and say what each one does</li>
 <li><strong>Metrics vs loss</strong>: the difference, and why they’re often different functions</li>
@@ -1520,29 +1514,29 @@ recovered    A=2.96, k=0.33   (true: A=3.0, k=0.35)</code></pre>
 <div class="column" style="width:50%;">
 <p><strong>Python / NumPy</strong></p>
 <ul>
-<li>NumPy basics</li>
-<li>NumPy performance example</li>
-<li>Objects and classes</li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/computer-science/python/numpy-basics/demo.html">NumPy basics</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/computer-science/python/numpy-performance-example/demo.html">NumPy performance example</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/computer-science/python/object-and-classes/demo.html">Objects and classes</a> <em>(video)</em></li>
 </ul>
 <p><strong>Calculus, only what we use</strong></p>
 <ul>
-<li>Univariate differentiation fundamentals</li>
-<li>Multivariable functions and partial derivatives</li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/mathematics/calculus/single-variable-calculus/univariate-differentiation-fundamentals/video.html">Univariate differentiation fundamentals</a> <em>(video)</em></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/mathematics/calculus/multivariable-calculus/multivariable-functions-and-partial-derivatives/notes.html">Multivariable functions and partial derivatives</a></li>
 </ul>
 </div><div class="column" style="width:50%;">
 <p><strong>Optimization</strong></p>
 <ul>
-<li>Univariate gradient descent: video demo</li>
-<li>Numerical optimization</li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/mathematics/solvers-and-optimization/numerical-methods/univariate-gradient-descent-video-demo/video.html">Univariate gradient descent</a> <em>(video)</em></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/mathematics/solvers-and-optimization/numerical-methods/numerical-optimization/notes.html">Numerical optimization</a></li>
 </ul>
 <p><strong>Machine learning refresh</strong></p>
 <ul>
-<li>Summary of parametric machine learning <em>(video)</em></li>
-<li>Univariate curve fitting example</li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/supervised-learning/fundamental-concepts/summary-of-parameteric-machine-learning/video.html">Summary of parametric machine learning</a> <em>(video)</em></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/supervised-learning/low-dimensional-curve-fitting/univariate-curve-fitting-example/notes.html">Univariate curve fitting example</a></li>
 </ul>
 </div>
 </div>
-<p><sup>These recordings were made by Prof.&nbsp;Hickman. Site access details are on Canvas.</sup></p>
+<p><sup>All of the above live on Prof.&nbsp;Hickman’s <a href="https://jfh.georgetown.domains/centralized-lecture-content/">centralized lecture content</a> site, which has a great deal more than this.</sup></p>
 </section>
 <section id="wrap-up" class="slide level2 smaller scrollable">
 <h2>Wrap-up</h2>
