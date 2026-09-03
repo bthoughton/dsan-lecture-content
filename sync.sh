@@ -44,14 +44,16 @@ pull_source() {
     "$source_dir/" "$dest_dir/"
 }
 
-# The quiz directories hold answer keys and the unsat quizzes next to the study
-# guides, so copy by allowlist only. Never mirror these directories wholesale.
+# The quiz directories hold answer keys and the unsat quizzes next to the
+# student handouts, so copy by allowlist only. Never mirror these wholesale.
 pull_study_guides() {
   local source_dir="$1" dest_dir="$2"
   rsync -avz --checksum --delete \
     --include='*/' \
     --include='study-guide.html' \
     --include='study-guide.pdf' \
+    --include='formula-sheet.html' \
+    --include='formula-sheet.pdf' \
     --exclude='*' \
     "$source_dir/" "$dest_dir/"
 }
@@ -229,7 +231,7 @@ build_week_pages() {
   local labs_dir="$SCRIPT_DIR/deep-learning/labs"
   local guides_dir="$SCRIPT_DIR/deep-learning/study-guides"
 
-  local num week_name out_qmd topic links lab_name nb quiz_name guide guide_pdf guide_note
+  local num week_name out_qmd topic links lab_name nb quiz_name guide guide_pdf formula formula_pdf guide_note
   while read -r num; do
     week_name="week-$num"
     topic=$(lecture_topic "$lectures_dir/$week_name/$week_name.html" "$week_name")
@@ -248,7 +250,7 @@ build_week_pages() {
       links="$links · [Slides](../lectures/$week_name/presentation.html)"
     fi
     if [ -n "$(week_recording "$num")" ]; then
-      links="$links · [Lecture Recording](../recordings/$week_name/$week_name-recording.mp4)"
+      links="$links · [Lecture Recording](../recordings/$week_name/)"
     fi
     echo "| Lecture | $links |" >> "$out_qmd"
 
@@ -263,11 +265,21 @@ build_week_pages() {
     quiz_name=$(printf 'quiz-%02d' "$num")
     guide="$guides_dir/$quiz_name/study-guide.html"
     guide_pdf="$guides_dir/$quiz_name/study-guide.pdf"
+    formula="$guides_dir/$quiz_name/formula-sheet.html"
+    formula_pdf="$guides_dir/$quiz_name/formula-sheet.pdf"
     guide_note=""
-    if [ -f "$guide" ]; then
-      links="[Study guide](../study-guides/$quiz_name/study-guide.html)"
-      [ -f "$guide_pdf" ] && links="$links · [PDF](../study-guides/$quiz_name/study-guide.pdf)"
+    if [ -f "$guide" ] || [ -f "$guide_pdf" ]; then
+      links=""
+      [ -f "$guide" ] && links="[Study guide](../study-guides/$quiz_name/study-guide.html)"
+      [ -f "$guide_pdf" ] && links="${links:+$links · }[PDF](../study-guides/$quiz_name/study-guide.pdf)"
       echo "| Quiz $num study guide | $links |" >> "$out_qmd"
+      guide_note="Quiz $num covers this week's lecture and lab, and is taken at the end of the next class."
+    fi
+    if [ -f "$formula" ] || [ -f "$formula_pdf" ]; then
+      links=""
+      [ -f "$formula" ] && links="[Formula sheet](../study-guides/$quiz_name/formula-sheet.html)"
+      [ -f "$formula_pdf" ] && links="${links:+$links · }[PDF](../study-guides/$quiz_name/formula-sheet.pdf)"
+      echo "| Quiz $num formula sheet | $links |" >> "$out_qmd"
       guide_note="Quiz $num covers this week's lecture and lab, and is taken at the end of the next class."
     fi
 
@@ -280,7 +292,97 @@ build_week_pages() {
     } >> "$out_qmd"
 
     render_page "$out_qmd"
+
+    if [ -n "$(week_recording "$num")" ]; then
+      build_recording_player "$num" "$topic"
+    fi
   done < <(week_numbers "$lectures_dir")
+}
+
+# Browsers ignore playback-rate hints on a raw MP4, so each recording gets a
+# small player page that sets video.playbackRate to 1.25 on load.
+build_recording_player() {
+  local num="$1" topic="$2"
+  local week_name="week-$num"
+  local out_dir="$BUILD_DIR/deep-learning/recordings/$week_name"
+  local out_html="$out_dir/index.html"
+  local src="$week_name-recording.mp4"
+  local page_title week_href
+  page_title=$(printf 'Week %s Lecture Recording' "$num")
+  topic=$(printf '%s' "$topic" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g')
+  week_href="../../$week_name/"
+
+  mkdir -p "$out_dir"
+  cat > "$out_html" <<EOF
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>$page_title</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #111318;
+        color: #e8e8ee;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 1.5rem 1.25rem 2rem;
+      }
+      header { max-width: 1100px; width: 100%; margin-bottom: 1rem; }
+      h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; }
+      .subtitle { color: #9aa0ae; font-size: 0.95rem; }
+      .player-wrap { max-width: 1100px; width: 100%; }
+      video { width: 100%; height: auto; background: #000; border-radius: 8px; }
+      .meta { max-width: 1100px; width: 100%; margin-top: 0.85rem; color: #9aa0ae; font-size: 0.9rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+      a { color: #8ab4ff; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>$page_title</h1>
+      <p class="subtitle">$topic</p>
+    </header>
+    <div class="player-wrap">
+      <video id="player" controls playsinline preload="metadata">
+        <source src="$src" type="video/mp4" />
+        Your browser does not support HTML video.
+      </video>
+    </div>
+    <p class="meta">
+      <span>Starts at 1.25×. Use the player controls to change speed.</span>
+      <a href="$week_href">Back to week $num</a>
+    </p>
+    <script>
+      (function () {
+        const DEFAULT_RATE = 1.25;
+        const video = document.getElementById("player");
+        let userChanged = false;
+
+        function applyDefault() {
+          if (!userChanged) {
+            video.defaultPlaybackRate = DEFAULT_RATE;
+            video.playbackRate = DEFAULT_RATE;
+          }
+        }
+
+        video.addEventListener("ratechange", function () {
+          if (Math.abs(video.playbackRate - DEFAULT_RATE) > 0.01) {
+            userChanged = true;
+          }
+        });
+        video.addEventListener("loadedmetadata", applyDefault);
+        video.addEventListener("play", applyDefault);
+        applyDefault();
+      })();
+    </script>
+  </body>
+</html>
+EOF
 }
 
 # rsync on the host is too old for --mkpath, so nested targets need creating first.
@@ -430,6 +532,10 @@ while read -r recording_week; do
   [ -n "$recording_file" ] || continue
   push_video "$recording_file" \
     "deep-learning/recordings/week-$recording_week/week-$recording_week-recording.mp4"
+  player_html="$BUILD_DIR/deep-learning/recordings/week-$recording_week/index.html"
+  if [ -f "$player_html" ]; then
+    push_file "$player_html" "deep-learning/recordings/week-$recording_week/index.html"
+  fi
 done < <(week_numbers "$SCRIPT_DIR/deep-learning/lectures")
 
 echo "==> Syncing DSAN 6600 week pages..."

@@ -429,18 +429,23 @@ Prof.&nbsp;Ben Houghton
 </ol>
 <p>Last 20 minutes: Lab 2, then Quiz 1.</p>
 </section>
-<section id="where-we-stopped-last-week" class="slide level2 scrollable">
-<h2>Where we stopped last week</h2>
+<section id="week-1-recap" class="slide level2 scrollable">
+<h2>Week 1 recap</h2>
 <p>Three claims, none of them yet explained:</p>
 <ol type="1">
-<li>An <strong>artificial neuron</strong> is a logistic regression you already know.</li>
+<li>An <strong>artificial neuron</strong> with a sigmoid activation is exactly the <strong>logistic regression</strong> you already know.</li>
 <li>A neural network is what you get when you <strong>stack</strong> neurons into layers and put a <strong>nonlinearity</strong> between the layers.</li>
 <li>With enough units, such a network can approximate essentially any continuous function.</li>
 </ol>
 <p>Today all three get filled in, in that order. By the end you will have written a forward pass yourself and trained a network without using the algorithm that makes training practical.</p>
 </section>
-<section id="where-the-name-comes-from" class="slide level2 smaller">
-<h2>Where the name comes from</h2>
+<section id="ann-architecture-2-3-2-1" class="slide level2">
+<h2>ANN architecture: 2-3-2-1</h2>
+<p><img data-src="images/ann-2321-bridge.png" class="dh460" width="820"></p>
+<p>Same 2-3-2-1 network. Today we take it apart: a layer is a matrix multiply, the twenty numbers are the parameters training will change, and the nested formula is the forward pass.</p>
+</section>
+<section id="biological-analogy" class="slide level2">
+<h2>Biological analogy</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
 <p>The vocabulary is borrowed from neuroscience: a <strong>neuron</strong> receives signals, weighs them, and fires if the total is large enough.</p>
@@ -463,8 +468,8 @@ Prof.&nbsp;Ben Houghton
 </div>
 </div>
 </section>
-<section id="one-neuron-written-properly" class="slide level2">
-<h2>One neuron, written properly</h2>
+<section id="the-artificial-neuron" class="slide level2">
+<h2>The artificial neuron</h2>
 <p>A neuron takes an input vector, weighs each component, adds a bias, and passes the total through a function:</p>
 <p><span class="math display">\[z = \mathbf{w}^{\top}\mathbf{x} + b \qquad a = \sigma(z)\]</span></p>
 <ul>
@@ -476,27 +481,41 @@ Prof.&nbsp;Ben Houghton
 </ul>
 <p>Set <span class="math inline">\(\sigma\)</span> to the logistic function and this is exactly the logistic regression from last week. Nothing new has happened yet.</p>
 </section>
-<section id="a-layer-is-several-neurons-sharing-one-input" class="slide level2">
-<h2>A layer is several neurons sharing one input</h2>
-<p>Put three neurons side by side. They see the <strong>same</strong> <span class="math inline">\(\mathbf{x}\)</span>, and each has its own weights and its own bias:</p>
+<section id="a-layer-of-neurons" class="slide level2">
+<h2>A layer of neurons</h2>
+<p>Put three neurons side by side <strong>within one layer</strong>. They see the <strong>same</strong> <span class="math inline">\(\mathbf{x}\)</span>, and each has its own weights and its own bias:</p>
 <p><span class="math display">\[z_1 = \mathbf{w}_1^{\top}\mathbf{x} + b_1 \qquad
   z_2 = \mathbf{w}_2^{\top}\mathbf{x} + b_2 \qquad
   z_3 = \mathbf{w}_3^{\top}\mathbf{x} + b_3\]</span></p>
-<p>Writing those three lines separately is already tedious, and a real layer has hundreds. So stack the <span class="math inline">\(\mathbf{w}_i\)</span> as the <strong>rows</strong> of a matrix:</p>
+<p>Writing those three lines separately is already tedious, and a real layer has hundreds. So stack the <span class="math inline">\(\mathbf{w}_i\)</span> as the <strong>rows</strong> of one matrix, <strong>one row per neuron</strong>:</p>
 <p><span class="math display">\[\mathbf{W} = \begin{pmatrix}
 \text{---}\;\mathbf{w}_1^{\top}\;\text{---} \\
 \text{---}\;\mathbf{w}_2^{\top}\;\text{---} \\
 \text{---}\;\mathbf{w}_3^{\top}\;\text{---}
-\end{pmatrix}\]</span></p>
+\end{pmatrix}
+\qquad \text{shape } (3 \times d)\]</span></p>
+<div class="callout callout-note callout-titled callout-style-default">
+<div class="callout-body">
+<div class="callout-title">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<p><strong>Reading this matrix</strong></p>
+</div>
+<div class="callout-content">
+<p>The lines are notation, not arithmetic: each row <strong>is</strong> one whole weight vector laid flat, so <span class="math inline">\(\mathbf{W}\)</span> is three rows of length <span class="math inline">\(d\)</span>. The subscript is the <strong>neuron</strong> index, not the layer index; layers never share a matrix, and this is literally what <code>nn.Linear(d, 3).weight</code> stores.</p>
+</div>
+</div>
+</div>
 </section>
-<section id="therefore-a-layer-is-a-matrix-multiply" class="slide level2">
-<h2>Therefore a layer is a matrix multiply</h2>
+<section id="ann-layer-as-matrix-multiplication" class="slide level2">
+<h2>ANN layer as matrix multiplication</h2>
 <p><span class="math display">\[\boxed{\;\mathbf{z} = \mathbf{W}\mathbf{x} + \mathbf{b}\;}\]</span></p>
 <p><img data-src="images/fig-layer-as-matmul.png" class="dw95" width="900"></p>
 <p>One line, any number of units. This is the reason deep learning runs on GPUs: the core operation is a matrix multiply, and that is the one thing a GPU does faster than anything else.</p>
 </section>
-<section id="reading-the-shapes" class="slide level2 smaller">
-<h2>Reading the shapes</h2>
+<section id="weight-matrix-shapes" class="slide level2">
+<h2>Weight matrix shapes</h2>
 <p>The two rules that resolve nearly every shape error you will hit:</p>
 <ul>
 <li><strong>Rows of <span class="math inline">\(\mathbf{W}\)</span></strong> = how many units this layer has, so how many numbers come <strong>out</strong></li>
@@ -539,13 +558,13 @@ Prof.&nbsp;Ben Houghton
 </table>
 <p>Notice each layer’s input count is the previous layer’s output count. That chain is the whole constraint on an architecture.</p>
 </section>
-<section id="the-architecture-drawn" class="slide level2">
-<h2>The architecture, drawn</h2>
+<section id="network-diagram" class="slide level2">
+<h2>2-3-2-1 network diagram</h2>
 <p><img data-src="images/fig-mlp-2321.png" class="dw95" width="900"></p>
-<p>Read it left to right. Two numbers go in, three come out of the first hidden layer, two out of the second, one out of the network. The activation sits between the layers, and the output layer here has none.</p>
+<p>Same 2-3-2-1 network as the map from last week, diagram only. Two numbers go in, three come out of the first hidden layer, two out of the second, one out of the network. The activation sits between the layers, and the output layer here has none.</p>
 </section>
-<section id="counting-the-parameters" class="slide level2">
-<h2>Counting the parameters</h2>
+<section id="parameter-count" class="slide level2">
+<h2>Parameter count</h2>
 <p>Every entry of every <span class="math inline">\(\mathbf{W}\)</span> and every <span class="math inline">\(\mathbf{b}\)</span> is a number training will change. So count them:</p>
 <p><span class="math display">\[\underbrace{(3\times2 + 3)}_{\text{hidden 1} \;=\; 9} +
   \underbrace{(2\times3 + 2)}_{\text{hidden 2} \;=\; 8} +
@@ -565,8 +584,8 @@ Prof.&nbsp;Ben Houghton
 </div>
 </div>
 </section>
-<section id="one-example-or-many" class="slide level2">
-<h2>One example, or many</h2>
+<section id="batches" class="slide level2">
+<h2>Batches</h2>
 <p>Everything so far describes a single example. In practice you push many through at once, one <strong>row</strong> per example:</p>
 <p><span class="math display">\[\mathbf{X} \;\text{is}\; (N,\, d) \qquad
   \mathbf{Z} = \mathbf{X}\mathbf{W}^{\top} + \mathbf{b} \;\text{is}\; (N,\, \text{units})\]</span></p>
@@ -578,11 +597,16 @@ Prof.&nbsp;Ben Houghton
 </ul>
 <p>PyTorch stores <code>nn.Linear</code> weights as (out_features, in_features) too, so this convention carries directly into Week 3.</p>
 </section>
+<section id="batching-example" class="slide level2">
+<h2>Batching example</h2>
+<p><img data-src="images/fig-row-vs-batch.png" class="dw88" width="900"></p>
+<p>A single example is not a special case of the math; it is a matrix with one row. The shaded row goes in and comes out the same whether it travels alone or with three others, because <strong>rows never interact inside a layer</strong>. Only <span class="math inline">\(N\)</span> changed.</p>
+</section>
 <section id="tensors" class="slide level2 smaller">
 <h2>Tensors</h2>
-<div class="columns">
-<div class="column" style="width:55%;">
 <p>A <strong>tensor</strong> is just an array with any number of axes, and it is the only data structure in deep learning.</p>
+<div class="columns">
+<div class="column" style="width:54%;">
 <table>
 <thead>
 <tr class="header">
@@ -614,11 +638,11 @@ Prof.&nbsp;Ben Houghton
 </tr>
 </tbody>
 </table>
-<p>Same layer, same matrix multiply; only the bookkeeping changes.</p>
-</div><div class="column" style="width:45%;">
-<p><img data-src="images/2023-03-21-12-35-56.png" class="dw100" width="430"></p>
+</div><div class="column" style="width:46%;">
+<p>The number of axes is the only thing that changes. Same layer, same matrix multiply; the extra axes are bookkeeping that says how many examples, how long the sequence, how big the picture.</p>
 </div>
 </div>
+<p><img data-src="images/fig-tensor-ladder.png" class="dw88" width="900"></p>
 </section></section>
 <section>
 <section id="the-forward-pass" class="title-slide slide level1 center">
@@ -629,21 +653,47 @@ Prof.&nbsp;Ben Houghton
 <li>Why it is all a trained model ever does</li>
 </ul>
 </section>
-<section id="what-forward-pass-means" class="slide level2">
-<h2>What “forward pass” means</h2>
+<section id="forward-pass-definition" class="slide level2 smaller">
+<h2>Forward pass definition</h2>
 <p>Feed an input in at the left; apply each layer in turn; read the prediction off at the right. That is the forward pass, and there is nothing more to it:</p>
 <p><span class="math display">\[\mathbf{a}^{(0)} = \mathbf{x} \qquad
   \mathbf{a}^{(\ell)} = \sigma\!\left(\mathbf{W}^{(\ell)}\mathbf{a}^{(\ell-1)} + \mathbf{b}^{(\ell)}\right)
   \qquad \hat{y} = \mathbf{a}^{(L)}\]</span></p>
-<p>Three things to notice:</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<table>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\ell\)</span></td>
+<td>which layer, counting from the input</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\mathbf{a}^{(\ell)}\)</span></td>
+<td>the vector coming <strong>out</strong> of layer <span class="math inline">\(\ell\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(L\)</span></td>
+<td>the last layer, so <span class="math inline">\(\mathbf{a}^{(L)}\)</span> is the prediction</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\sigma\)</span></td>
+<td>the activation, applied element-wise</td>
+</tr>
+</tbody>
+</table>
+<p>The superscript is a <strong>layer index, not a power</strong>.</p>
+</div><div class="column" style="width:50%;">
 <ul>
 <li>The <strong>only</strong> operations are a matrix multiply, an addition, and an element-wise function</li>
 <li>Each layer’s output is the next layer’s input, which is why the shapes have to chain</li>
-<li>The output layer usually gets a <strong>different</strong> activation, or none; that choice is dictated by the problem, and we get to it shortly</li>
+<li>The output layer usually gets a <strong>different</strong> activation, or none</li>
 </ul>
+</div>
+</div>
+<p><span class="math inline">\(\mathbf{a}^{(0)} = \mathbf{x}\)</span> is bookkeeping: the middle formula refers to “the previous layer’s output”, so naming the input <em>layer 0’s output</em> lets that one formula cover every layer, including the first.</p>
 </section>
-<section id="the-multi-layer-perceptron-named-properly" class="slide level2 smaller">
-<h2>The multi-layer perceptron, named properly</h2>
+<section id="the-multilayer-perceptron" class="slide level2 smaller">
+<h2>The multilayer perceptron</h2>
 <p>What we have just built has several names, all meaning the same thing:</p>
 <ul>
 <li><strong>Multi-layer perceptron (MLP)</strong></li>
@@ -662,10 +712,10 @@ Prof.&nbsp;Ben Houghton
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
-<p><strong>Why this one first</strong></p>
+<p><strong>Relation to later architectures</strong></p>
 </div>
 <div class="callout-content">
-<p>Every architecture in this course is a constrained MLP. A CNN is an MLP whose weights are reused across positions. A transformer is an MLP with a mechanism for deciding which inputs to look at. Learn this one properly and the rest are modifications.</p>
+<p>Every architecture in this course starts from this one. A CNN is an MLP whose weights are reused across positions, which is a genuine restriction of the same machinery. A transformer keeps MLP blocks but <strong>adds attention</strong>, a step that lets positions in a sequence share information, weighted by the data itself; that one is an addition rather than a restriction. Either way, this is the object being modified.</p>
 </div>
 </div>
 </div>
@@ -673,7 +723,7 @@ Prof.&nbsp;Ben Houghton
 <section id="a-forward-pass-in-numpy" class="slide level2">
 <h2>A forward pass, in NumPy</h2>
 <p>Nine lines, no framework. The shapes printed below each step are the point.</p>
-<div id="81c72881" class="cell" data-execution_count="1">
+<div id="5d187f59" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href=""></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -708,10 +758,10 @@ parameters: 20</code></pre>
 </div>
 </div>
 </section>
-<section id="the-same-code-on-a-batch" class="slide level2">
-<h2>The same code, on a batch</h2>
+<section id="batched-forward-pass" class="slide level2">
+<h2>Batched forward pass</h2>
 <p>Swap the single vector for a matrix of rows and transpose the weights. The arithmetic per example is identical; you have only stopped looping.</p>
-<div id="17914caa" class="cell" data-execution_count="2">
+<div id="9f291721" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href=""></a>X <span class="op">=</span> rng.normal(<span class="dv">0</span>, <span class="dv">1</span>, (<span class="dv">5</span>, <span class="dv">2</span>))              <span class="co"># five examples, 2 features each</span></span>
@@ -725,11 +775,10 @@ parameters: 20</code></pre>
 <span id="cb3-9"><a href=""></a></span>
 <span id="cb3-10"><a href=""></a><span class="co"># And it agrees with the one-at-a-time version.</span></span>
 <span id="cb3-11"><a href=""></a>one_at_a_time <span class="op">=</span> np.array([</span>
-<span id="cb3-12"><a href=""></a>    (np.tanh(np.tanh(W2 <span class="op">@</span> np.tanh(W1 <span class="op">@</span> xi <span class="op">+</span> b1) <span class="op">+</span> b2)) <span class="op">*</span> <span class="dv">0</span> <span class="op">+</span></span>
-<span id="cb3-13"><a href=""></a>     W3 <span class="op">@</span> np.tanh(W2 <span class="op">@</span> np.tanh(W1 <span class="op">@</span> xi <span class="op">+</span> b1) <span class="op">+</span> b2) <span class="op">+</span> b3)[<span class="dv">0</span>]</span>
-<span id="cb3-14"><a href=""></a>    <span class="cf">for</span> xi <span class="kw">in</span> X</span>
-<span id="cb3-15"><a href=""></a>])</span>
-<span id="cb3-16"><a href=""></a><span class="bu">print</span>(<span class="ss">f"max difference vs looping: </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(one_at_a_time <span class="op">-</span> Y.ravel()))<span class="sc">:.2e}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-12"><a href=""></a>    (W3 <span class="op">@</span> np.tanh(W2 <span class="op">@</span> np.tanh(W1 <span class="op">@</span> xi <span class="op">+</span> b1) <span class="op">+</span> b2) <span class="op">+</span> b3)[<span class="dv">0</span>]</span>
+<span id="cb3-13"><a href=""></a>    <span class="cf">for</span> xi <span class="kw">in</span> X</span>
+<span id="cb3-14"><a href=""></a>])</span>
+<span id="cb3-15"><a href=""></a><span class="bu">print</span>(<span class="ss">f"max difference vs looping: </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(one_at_a_time <span class="op">-</span> Y.ravel()))<span class="sc">:.2e}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>X   (5, 2)  -&gt;  A1 (5, 3)  -&gt;  A2 (5, 2)  -&gt;  Y (5, 1)
@@ -739,8 +788,8 @@ max difference vs looping: 1.11e-16</code></pre>
 </div>
 </div>
 </section>
-<section id="a-forward-pass-is-all-a-trained-model-ever-does" class="slide level2 smaller">
-<h2>A forward pass is all a trained model ever does</h2>
+<section id="inference-is-a-forward-pass" class="slide level2">
+<h2>Inference is a forward pass</h2>
 <p>Once training is finished, the weights are frozen numbers and using the model is just the arithmetic above.</p>
 <ul>
 <li>Every prediction served in production is a forward pass</li>
@@ -758,8 +807,8 @@ max difference vs looping: 1.11e-16</code></pre>
 <li>The one choice that is not up to you</li>
 </ul>
 </section>
-<section id="why-a-nonlinearity-at-all" class="slide level2">
-<h2>Why a nonlinearity at all</h2>
+<section id="why-nonlinear-activations" class="slide level2">
+<h2>Why nonlinear activations</h2>
 <p>Last week’s claim was that without one, stacking gains you nothing. Here is why, in one line of algebra. Take two layers with no activation:</p>
 <p><span class="math display">\[\mathbf{z} = \mathbf{W}_2\left(\mathbf{W}_1\mathbf{x} + \mathbf{b}_1\right) + \mathbf{b}_2
              = \underbrace{\left(\mathbf{W}_2\mathbf{W}_1\right)}_{\text{one matrix}}\mathbf{x}
@@ -767,10 +816,10 @@ max difference vs looping: 1.11e-16</code></pre>
 <p>The composition of two linear maps is a linear map. Add fifty more layers and it is still a linear map, just with more arithmetic done to produce the same straight line.</p>
 <p><strong>The activation is not a detail or a tuning knob. It is the thing that makes depth mean anything.</strong></p>
 </section>
-<section id="the-collapse-in-numbers" class="slide level2">
-<h2>The collapse, in numbers</h2>
+<section id="linear-layers-collapse" class="slide level2">
+<h2>Linear layers collapse</h2>
 <p>97 parameters and three layers, versus the single layer they are secretly equal to. No fitting involved; we just multiply the matrices out.</p>
-<div id="2ce59a7b" class="cell" data-execution_count="3">
+<div id="eca587bf" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href=""></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">6600</span>)</span>
@@ -805,8 +854,8 @@ max difference      : 4.44e-16</code></pre>
 </div>
 </div>
 </section>
-<section id="same-parameters-one-difference" class="slide level2">
-<h2>Same parameters, one difference</h2>
+<section id="linear-collapse-with-and-without-activations" class="slide level2">
+<h2>Linear collapse with and without activations</h2>
 <p><img data-src="images/fig-collapse.png" class="dw92" width="900"></p>
 <p>Left: three linear layers and one linear layer, drawn on top of each other. The dotted line is hiding under the solid one. Both reach MSE 0.181, which is what a straight line through this data costs.</p>
 <p>Right: the same 97 parameters with tanh between the layers. MSE 0.009.</p>
@@ -818,8 +867,8 @@ max difference      : 4.44e-16</code></pre>
   \qquad\qquad \tanh(z) = \frac{e^{z} - e^{-z}}{e^{z} + e^{-z}} \in (-1, 1)\]</span></p>
 <p>Both squash any real number into a bounded range, and both were the default for decades. Look at the right panel: far from zero, the slope is <strong>flat</strong>. A flat slope means a vanishing gradient, and a vanishing gradient means the parameter stops moving. Week 4 returns to this properly.</p>
 </section>
-<section id="relu-and-why-it-took-over" class="slide level2">
-<h2>ReLU, and why it took over</h2>
+<section id="relu" class="slide level2">
+<h2>ReLU</h2>
 <p><span class="math display">\[\text{ReLU}(z) = \max(0, z)\]</span></p>
 <div class="columns">
 <div class="column" style="width:50%;">
@@ -835,8 +884,8 @@ max difference      : 4.44e-16</code></pre>
 </div>
 <p>The cost is that negative inputs get slope exactly 0, so a unit can stop responding entirely. Variants such as leaky ReLU exist for that; you will almost never need them before you need better data.</p>
 </section>
-<section id="relu-is-not-differentiable-at-zero" class="slide level2 smaller">
-<h2>ReLU is not differentiable at zero</h2>
+<section id="relu-at-zero" class="slide level2">
+<h2>ReLU at zero</h2>
 <p>A fair objection, since the next two weeks are entirely about derivatives. There is a kink at <span class="math inline">\(z = 0\)</span> and no well-defined slope there.</p>
 <p>In practice nobody cares, for two reasons:</p>
 <ul>
@@ -845,8 +894,8 @@ max difference      : 4.44e-16</code></pre>
 </ul>
 <p>This is worth flagging only because it is the first place in this course where the clean mathematical statement and the working practice differ. There will be others, and it is useful to know which kind of thing you are looking at.</p>
 </section>
-<section id="softmax-for-choosing-one-of-k-classes" class="slide level2">
-<h2>Softmax, for choosing one of <span class="math inline">\(K\)</span> classes</h2>
+<section id="softmax" class="slide level2">
+<h2>Softmax</h2>
 <p><span class="math display">\[\text{softmax}(\mathbf{z})_k = \frac{e^{z_k}}{\sum_{j=1}^{K} e^{z_j}}\]</span></p>
 <p>It takes <span class="math inline">\(K\)</span> unbounded numbers and returns <span class="math inline">\(K\)</span> values that are each positive and sum to 1, so the output can be read as a distribution over classes.</p>
 <ul>
@@ -856,8 +905,8 @@ max difference      : 4.44e-16</code></pre>
 </ul>
 <p>This is the output your multi-class problems need, and it pairs with the categorical cross-entropy from last week’s loss table.</p>
 </section>
-<section id="the-output-layer-is-not-a-matter-of-taste" class="slide level2 smaller">
-<h2>The output layer is not a matter of taste</h2>
+<section id="output-layer-activations" class="slide level2 smaller">
+<h2>Output-layer activations</h2>
 <p>Hidden layers are a design choice. The output layer is <strong>determined</strong> by what you are predicting, and it has to agree with the loss:</p>
 <table>
 <thead>
@@ -910,8 +959,8 @@ max difference      : 4.44e-16</code></pre>
 </div>
 </div>
 </section>
-<section id="four-problems-one-body" class="slide level2 smaller">
-<h2>Four problems, one body</h2>
+<section id="shared-body-different-heads" class="slide level2">
+<h2>Shared body, different heads</h2>
 <p>The body of the network is unchanged in all four; only the head differs.</p>
 <div class="columns">
 <div class="column" style="width:50%;">
@@ -928,8 +977,8 @@ max difference      : 4.44e-16</code></pre>
 </div>
 <p>This is why one model family covers the entire problem taxonomy from Week 1.</p>
 </section>
-<section id="choosing-an-activation-in-practice" class="slide level2">
-<h2>Choosing an activation, in practice</h2>
+<section id="choosing-activations" class="slide level2">
+<h2>Choosing activations</h2>
 <p>The catalog is long. The decision is short:</p>
 <ul>
 <li><strong>Hidden layers</strong>: ReLU. Use tanh if you have a specific reason, and you will know when you do.</li>
@@ -959,8 +1008,8 @@ max difference      : 4.44e-16</code></pre>
 <li>The rule that makes training possible, which is next week’s subject</li>
 </ul>
 </section>
-<section id="width-and-depth-are-different-knobs" class="slide level2">
-<h2>Width and depth are different knobs</h2>
+<section id="width-versus-depth" class="slide level2">
+<h2>Width versus depth</h2>
 <div class="columns contrast">
 <div class="column" style="width:48%;">
 <h3 id="width">Width</h3>
@@ -982,21 +1031,21 @@ max difference      : 4.44e-16</code></pre>
 </div>
 <p>An architecture is mostly a choice of how to spend a parameter budget between these two.</p>
 </section>
-<section id="what-a-layer-actually-does" class="slide level2">
-<h2>What a layer actually does</h2>
+<section id="hidden-layers-as-coordinate-changes" class="slide level2">
+<h2>Hidden layers as coordinate changes</h2>
 <p>Each layer applies the same two operations to whatever it receives, so the second layer is not looking at your data; it is looking at the <strong>first layer’s description</strong> of your data.</p>
 <p>That is the useful way to read depth. A layer is a change of coordinates: it moves the points into a space where the next step is easier.</p>
 <p>The clearest case is a problem where no straight line works at all, and one layer fixes it.</p>
 </section>
-<section id="a-hidden-layer-moving-the-points" class="slide level2 smaller">
-<h2>A hidden layer, moving the points</h2>
+<section id="coordinate-change-xor" class="slide level2 smaller">
+<h2>Coordinate change: XOR</h2>
 <p><img data-src="images/fig-coordinate-change.png" class="dw88" width="940"></p>
 <p><span class="math display">\[h_1 = \text{ReLU}(x_1 + x_2 - 0.5) \qquad h_2 = \text{ReLU}(-x_1 - x_2 - 0.5)\]</span></p>
 <p>Left: a problem no line can solve. Right: the <strong>same points</strong>, in the coordinates the hidden layer produced. Class 0 collapses into the corner, class 1 spreads along the axes, and one line now separates 99% of them.</p>
 <p>The layer did not draw a curve. It moved the data until a straight line was enough, and the output layer is still only a straight line.</p>
 </section>
-<section id="depth-is-composition" class="slide level2">
-<h2>Depth is composition</h2>
+<section id="depth-as-composition" class="slide level2">
+<h2>Depth as composition</h2>
 <p>Stacking layers means composing functions:</p>
 <p><span class="math display">\[\hat{y} = f_3\!\left(f_2\!\left(f_1(\mathbf{x})\right)\right)
 \qquad \text{where } f_\ell(\mathbf{a}) = \sigma\!\left(\mathbf{W}^{(\ell)}\mathbf{a} + \mathbf{b}^{(\ell)}\right)\]</span></p>
@@ -1012,8 +1061,8 @@ max difference      : 4.44e-16</code></pre>
 <p><span class="math display">\[\frac{d}{dx}\,f\!\left(g\!\left(h(x)\right)\right)
 = f'\!\left(g(h(x))\right)\cdot g'\!\left(h(x)\right)\cdot h'(x)\]</span></p>
 </section>
-<section id="which-is-why-it-matters-here" class="slide level2 smaller">
-<h2>Which is why it matters here</h2>
+<section id="chain-rule-in-a-network" class="slide level2">
+<h2>Chain rule in a network</h2>
 <p>A network <strong>is</strong> a composition, so the derivative of the loss with respect to an early weight is a product of one factor per layer it passes through:</p>
 <p><span class="math display">\[\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(1)}} =
   \frac{\partial \mathcal{L}}{\partial \mathbf{a}^{(3)}} \cdot
@@ -1027,16 +1076,16 @@ max difference      : 4.44e-16</code></pre>
 </ul>
 <p>You do not need to differentiate a network by hand in this course. You do need to recognize that a gradient in a deep network is a product along a path.</p>
 </section>
-<section id="universal-approximation-stated-carefully" class="slide level2">
-<h2>Universal approximation, stated carefully</h2>
+<section id="universal-approximation-theorem" class="slide level2">
+<h2>Universal approximation theorem</h2>
 <blockquote>
 <p>A feed-forward network with a <strong>single</strong> hidden layer containing <strong>enough</strong> units can approximate any continuous function on a closed, bounded region to any desired accuracy.</p>
 </blockquote>
 <p><img data-src="images/2023-03-20-22-26-18.png" class="dh300" width="620"></p>
 <p>Proved in the late 1980s, by Cybenko and by Hornik among others. It is the reason one model family covers regression, classification and generation alike.</p>
 </section>
-<section id="what-it-does-not-promise" class="slide level2 smaller">
-<h2>What it does not promise</h2>
+<section id="limits-of-universal-approximation" class="slide level2 smaller">
+<h2>Limits of universal approximation</h2>
 <p>Read the theorem carefully and notice everything it leaves out:</p>
 <ul>
 <li><strong>Not how many units.</strong> “Enough” could be astronomically many. The theorem is an existence result, and it puts no useful bound on the size.</li>
@@ -1058,8 +1107,8 @@ max difference      : 4.44e-16</code></pre>
 </div>
 </div>
 </section>
-<section id="so-why-go-deep" class="slide level2 smaller">
-<h2>So why go deep?</h2>
+<section id="why-depth" class="slide level2 smaller">
+<h2>Why depth</h2>
 <p>Three architectures, one parameter budget, the same curve:</p>
 <p><img data-src="images/fig-depth-vs-width.png" class="dw85" width="940"></p>
 <p><strong>Depth made no difference here.</strong> All three reach the noise floor and the fits sit on top of one another; on a problem like this one hidden layer is genuinely enough, exactly as the theorem said. Depth earns its keep when features <strong>compose</strong>: pixels into edges into parts into objects. Week 5 shows that directly with images.</p>
@@ -1078,37 +1127,56 @@ max difference      : 4.44e-16</code></pre>
 </div>
 </section></section>
 <section>
-<section id="watching-it-learn" class="title-slide slide level1 center">
-<h1>Watching it learn</h1>
+<section id="training" class="title-slide slide level1 center">
+<h1>Training</h1>
 <ul>
 <li>A network with no hidden layer, failing</li>
 <li>The same network, fixed</li>
 <li>Training one the wrong way, on purpose</li>
 </ul>
 </section>
-<section id="no-hidden-layer" class="slide level2">
-<h2>No hidden layer</h2>
-<p><a href="https://playground.tensorflow.org/#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=false">playground.tensorflow.org</a></p>
-<p>Blue points inside, orange points around them. No hidden layer, so the model can only draw a straight boundary.</p>
-<p><img data-src="images/playground-0-hidden.png" class="dh330" width="760"></p>
-<p>It runs for <strong>1,793 epochs</strong> and the loss sits at <strong>0.504</strong>. It is not training slowly; it is finished. No straight line separates a disc from a ring.</p>
+<section id="playground-no-hidden-layer" class="slide level2 pgslide" data-background-iframe="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" data-background-interactive="true">
+<h2>Playground: no hidden layer</h2>
+<aside class="notes">
+<p>Press play. Let it run to a few hundred epochs. The loss parks around 0.5 and stops moving. Say out loud: this is not slow training, this is a model that cannot represent the answer. Then advance to the next slide, which is the same page with one layer added.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
-<section id="one-hidden-layer-four-units" class="slide level2">
-<h2>One hidden layer, four units</h2>
-<p><a href="https://playground.tensorflow.org/?r=2#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=4&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=false">Same page, one layer added</a></p>
-<p><img data-src="images/playground-1-hidden.png" class="dh330" width="760"></p>
-<p>Test loss <strong>0.016</strong> by epoch 1,050, roughly 31 times better, and the boundary is now a closed region. Watch the middle column: each of the four units learned one straight boundary, and the output combined them into a shape. That is the coordinate-change slide, happening live.</p>
+<section id="playground-one-hidden-layer" class="slide level2 pgslide" data-background-iframe="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=4&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" data-background-interactive="true">
+<h2>Playground: one hidden layer</h2>
+<aside class="notes">
+<p>Same dataset, same learning rate, one hidden layer of four units. Press play. Loss falls to roughly 0.02, around thirty times better than the previous slide. Hover a hidden unit to show it has learned a single straight boundary, then point at the output panel: the curve is four straight cuts combined. Tie this back to the coordinate-change figure.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
 </section>
-<section id="what-we-cannot-do-by-hand" class="slide level2">
-<h2>What we cannot do by hand</h2>
+<section id="computing-gradients" class="slide level2">
+<h2>Computing gradients</h2>
 <p>We can now write any forward pass we like, and we have watched a browser find good weights. What we have <strong>not</strong> done is find the weights ourselves.</p>
 <p>Last week’s recipe was gradient descent:</p>
 <p><span class="math display">\[\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} - \lambda \nabla \mathcal{L}(\mathbf{w}_{\text{old}})\]</span></p>
 <p>which needs <span class="math inline">\(\dfrac{\partial \mathcal{L}}{\partial w}\)</span> for <strong>every</strong> parameter. For last week’s two-parameter model we could differentiate by hand. For 49 parameters, let alone 49 million, we cannot.</p>
 <p>So let us do it the dumbest way that works, and see what it costs.</p>
 </section>
-<section id="gradients-by-brute-force" class="slide level2 scrollable">
-<h2>Gradients by brute force</h2>
+<section id="gradients-by-finite-differences" class="slide level2 scrollable">
+<h2>Gradients by finite differences</h2>
 <p>A derivative is defined as a limit of differences, so approximate it directly:</p>
 <p><span class="math display">\[\frac{\partial \mathcal{L}}{\partial w_j} \approx
   \frac{\mathcal{L}(w_j + \varepsilon) - \mathcal{L}(w_j)}{\varepsilon}\]</span></p>
@@ -1120,11 +1188,11 @@ max difference      : 4.44e-16</code></pre>
 </ol>
 <p>This is called <strong>finite differences</strong>. It genuinely works, and every serious library refuses to train this way. Watch what happens.</p>
 </section>
-<section id="training-a-network-with-no-backprop" class="slide level2 codetight">
-<h2>Training a network with no backprop</h2>
+<section id="training-with-finite-differences" class="slide level2 codetight">
+<h2>Training with finite differences</h2>
 <p>A <span class="math inline">\(1 \to 16 \to 1\)</span> tanh network, fitting a curve. Source code for your reference; all the cost lives in the loop inside <code>finite_difference_gradient</code>.</p>
 <p>Read the bottom four numbers together: the network went from useless, past what a straight line can do, to within a factor of two of the noise floor.</p>
-<div id="cece223a" class="cell" data-execution_count="4">
+<div id="36608190" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href=""></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -1200,13 +1268,13 @@ the noise floor is          0.0113</code></pre>
 </div>
 </div>
 </section>
-<section id="what-that-produced" class="slide level2">
-<h2>What that produced</h2>
-<p><img data-src="images/demo-mlp-training.gif" class="dw95" width="940"></p>
+<section id="finite-difference-training-results" class="slide level2">
+<h2>Finite-difference training results</h2>
+<p><img data-src="images/demo-mlp-training.gif" class="dw85" width="880"></p>
 <p>It works. The network beats a straight line by a factor of nine and lands within a factor of two of the noise floor, having never been told anything about sine waves.</p>
 </section>
-<section id="now-count-what-that-cost" class="slide level2">
-<h2>Now count what that cost</h2>
+<section id="cost-of-finite-difference-gradients" class="slide level2">
+<h2>Cost of finite-difference gradients</h2>
 <p>To fit a curve you could sketch by hand:</p>
 <table>
 <tbody>
@@ -1231,8 +1299,8 @@ the noise floor is          0.0113</code></pre>
 <p>Twenty thousand evaluations of the network to move 49 numbers into place.</p>
 <p>And the cost scales with the <strong>number of parameters</strong>, because every single one needs its own forward pass.</p>
 </section>
-<section id="which-does-not-scale-at-all" class="slide level2 smaller">
-<h2>Which does not scale, at all</h2>
+<section id="why-finite-differences-do-not-scale" class="slide level2">
+<h2>Why finite differences do not scale</h2>
 <p>Same method, real models, at a generous one millisecond per forward pass:</p>
 <table>
 <thead>
@@ -1263,8 +1331,8 @@ the noise floor is          0.0113</code></pre>
 <p>ResNet-50 is the row to hold onto: it is a model you will fine-tune yourself in Week 6, and 6.9 hours buys you <strong>one</strong> step out of the many thousands needed.</p>
 <p>Deep learning is not possible this way. It is not a matter of faster hardware; it is the wrong algorithm by a factor of millions.</p>
 </section>
-<section id="and-that-is-why-next-week-exists" class="slide level2">
-<h2>And that is why next week exists</h2>
+<section id="next-week-backpropagation" class="slide level2">
+<h2>Next week: backpropagation</h2>
 <div class="callout callout-important callout-titled callout-style-default">
 <div class="callout-body">
 <div class="callout-title">
@@ -1282,12 +1350,12 @@ the noise floor is          0.0113</code></pre>
 <p>Next week: backpropagation, computational graphs, and PyTorch doing all of it for you.</p>
 </section></section>
 <section>
-<section id="vocabulary-before-we-go" class="title-slide slide level1 center">
-<h1>Vocabulary before we go</h1>
+<section id="training-vocabulary" class="title-slide slide level1 center">
+<h1>Training vocabulary</h1>
 <p>The words you need to read a training script, or a paper, or your own logs.</p>
 </section>
-<section id="how-much-data-per-step" class="slide level2 smaller">
-<h2>How much data per step?</h2>
+<section id="minibatch-gradient-descent" class="slide level2">
+<h2>Minibatch gradient descent</h2>
 <p>Gradient descent needs a loss, and you get to choose how much data to compute it on:</p>
 <table>
 <colgroup>
@@ -1347,8 +1415,8 @@ the noise floor is          0.0113</code></pre>
 </div>
 </div>
 </section>
-<section id="the-learning-rate-now-that-there-are-thousands-of-parameters" class="slide level2">
-<h2>The learning rate, now that there are thousands of parameters</h2>
+<section id="learning-rate" class="slide level2">
+<h2>Learning rate</h2>
 <p><span class="math display">\[\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} - \lambda \nabla \mathcal{L}\]</span></p>
 <p>The same <span class="math inline">\(\lambda\)</span> multiplies <strong>every</strong> parameter’s gradient. One number controls thousands of moves at once, which is why it is the hyper-parameter that matters most.</p>
 <ul>
@@ -1358,8 +1426,8 @@ the noise floor is          0.0113</code></pre>
 </ul>
 <p>Week 4 is largely about not having to guess: adaptive optimizers give parameters their own effective step sizes, and schedules change <span class="math inline">\(\lambda\)</span> over training.</p>
 </section>
-<section id="reading-a-training-curve" class="slide level2 smaller">
-<h2>Reading a training curve</h2>
+<section id="training-curves" class="slide level2">
+<h2>Training curves</h2>
 <p>The first thing to look at, every time, before any metric:</p>
 <table>
 <colgroup>
@@ -1401,24 +1469,25 @@ the noise floor is          0.0113</code></pre>
 </table>
 <p>The last row is the one to be suspicious of. A result that looks too good is the single most common serious bug in student projects, and it never announces itself.</p>
 </section>
-<section id="one-thing-about-initialization" class="slide level2 smaller">
-<h2>One thing about initialization</h2>
+<section id="weight-initialization" class="slide level2">
+<h2>Weight initialization</h2>
 <p>A fair question: why not start every weight at zero, the way you might for a linear model?</p>
 <p>Because then every unit in a layer computes <strong>exactly</strong> the same thing, receives <strong>exactly</strong> the same gradient, and updates <strong>exactly</strong> the same way. They stay identical forever, and a 512-unit layer does the work of one unit.</p>
 <p>Random initialization exists to break that symmetry. Notice that in today’s demo the weights were random and the biases were zero, which is the usual pattern: the weights already break the symmetry, so the biases do not have to.</p>
 <p>Week 4 covers why the <strong>scale</strong> of that randomness matters too.</p>
 </section></section>
 <section>
-<section id="before-you-go" class="title-slide slide level1 center">
-<h1>Before you go</h1>
+<section id="closing" class="title-slide slide level1 center">
+<h1>Closing</h1>
 <ul>
 <li>Lab 2</li>
 <li>Quiz 2, so you know what to study</li>
+<li>Supplemental content</li>
 <li>Quiz 1, right now</li>
 </ul>
 </section>
-<section id="lab-2-build-the-forward-pass" class="slide level2 smaller scrollable">
-<h2>Lab 2: build the forward pass</h2>
+<section id="lab-2" class="slide level2 scrollable">
+<h2>Lab 2</h2>
 <p><strong>Released today. Due Wednesday Sep 9, 11:59 PM ET.</strong></p>
 <p>Today’s lecture, by hand, in NumPy:</p>
 <ol type="1">
@@ -1469,6 +1538,35 @@ the noise floor is          0.0113</code></pre>
 </div>
 </div>
 </div>
+</section>
+<section id="supplemental-content" class="slide level2">
+<h2>Supplemental content</h2>
+<p>These are <strong>optional</strong>. No graded work assumes you watched them. They are on Prof.&nbsp;Hickman’s centralized lecture content site, and they go deeper on today’s topics than we had time for.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Neural networks</strong></p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/fundamentals/introduction-to-neural-networks/slides.html">Introduction to neural networks</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/fundamentals/introduction-to-deep-learning/slides.html">Introduction to deep learning</a></li>
+<li><a href="https://playground.tensorflow.org/">TensorFlow Playground</a></li>
+</ul>
+<p><strong>Linear algebra of a layer</strong></p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/backprop/matrix-multiplication-differentiation/matrix-multiplication-differentiaion.html">Matrix-multiplication differentiation</a></li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Calculus for the chain rule</strong></p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/mathematics/calculus/multivariable-calculus/multivariable-functions-and-partial-derivatives/notes.html">Multivariable functions and partial derivatives</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/mathematics/calculus/multivariable-calculus/calculus-overview/notes.html">Calculus overview</a></li>
+</ul>
+<p><strong>Optimization</strong></p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/fundamentals/gradient-descent/notes.html">Gradient descent</a></li>
+</ul>
+</div>
+</div>
+<p><sup>All of the above live on the <a href="https://jfh.georgetown.domains/centralized-lecture-content/">centralized lecture content</a> site, which has a great deal more than this.</sup></p>
 </section>
 <section id="wrap-up" class="slide level2 smaller">
 <h2>Wrap-up</h2>

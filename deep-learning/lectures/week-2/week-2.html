@@ -128,74 +128,77 @@ window.Quarto = {
   <li><a href="#how-neural-networks-work" id="toc-how-neural-networks-work" class="nav-link active" data-scroll-target="#how-neural-networks-work">How neural networks work</a>
   <ul class="collapse">
   <li><a href="#agenda" id="toc-agenda" class="nav-link" data-scroll-target="#agenda">Agenda</a></li>
-  <li><a href="#where-we-stopped-last-week" id="toc-where-we-stopped-last-week" class="nav-link" data-scroll-target="#where-we-stopped-last-week">Where we stopped last week</a></li>
-  <li><a href="#where-the-name-comes-from" id="toc-where-the-name-comes-from" class="nav-link" data-scroll-target="#where-the-name-comes-from">Where the name comes from</a></li>
-  <li><a href="#one-neuron-written-properly" id="toc-one-neuron-written-properly" class="nav-link" data-scroll-target="#one-neuron-written-properly">One neuron, written properly</a></li>
-  <li><a href="#a-layer-is-several-neurons-sharing-one-input" id="toc-a-layer-is-several-neurons-sharing-one-input" class="nav-link" data-scroll-target="#a-layer-is-several-neurons-sharing-one-input">A layer is several neurons sharing one input</a></li>
-  <li><a href="#therefore-a-layer-is-a-matrix-multiply" id="toc-therefore-a-layer-is-a-matrix-multiply" class="nav-link" data-scroll-target="#therefore-a-layer-is-a-matrix-multiply">Therefore a layer is a matrix multiply</a></li>
-  <li><a href="#reading-the-shapes" id="toc-reading-the-shapes" class="nav-link" data-scroll-target="#reading-the-shapes">Reading the shapes</a></li>
-  <li><a href="#the-architecture-drawn" id="toc-the-architecture-drawn" class="nav-link" data-scroll-target="#the-architecture-drawn">The architecture, drawn</a></li>
-  <li><a href="#counting-the-parameters" id="toc-counting-the-parameters" class="nav-link" data-scroll-target="#counting-the-parameters">Counting the parameters</a></li>
-  <li><a href="#one-example-or-many" id="toc-one-example-or-many" class="nav-link" data-scroll-target="#one-example-or-many">One example, or many</a></li>
+  <li><a href="#week-1-recap" id="toc-week-1-recap" class="nav-link" data-scroll-target="#week-1-recap">Week 1 recap</a></li>
+  <li><a href="#ann-architecture-2-3-2-1" id="toc-ann-architecture-2-3-2-1" class="nav-link" data-scroll-target="#ann-architecture-2-3-2-1">ANN architecture: 2-3-2-1</a></li>
+  <li><a href="#biological-analogy" id="toc-biological-analogy" class="nav-link" data-scroll-target="#biological-analogy">Biological analogy</a></li>
+  <li><a href="#the-artificial-neuron" id="toc-the-artificial-neuron" class="nav-link" data-scroll-target="#the-artificial-neuron">The artificial neuron</a></li>
+  <li><a href="#a-layer-of-neurons" id="toc-a-layer-of-neurons" class="nav-link" data-scroll-target="#a-layer-of-neurons">A layer of neurons</a></li>
+  <li><a href="#ann-layer-as-matrix-multiplication" id="toc-ann-layer-as-matrix-multiplication" class="nav-link" data-scroll-target="#ann-layer-as-matrix-multiplication">ANN layer as matrix multiplication</a></li>
+  <li><a href="#weight-matrix-shapes" id="toc-weight-matrix-shapes" class="nav-link" data-scroll-target="#weight-matrix-shapes">Weight matrix shapes</a></li>
+  <li><a href="#network-diagram" id="toc-network-diagram" class="nav-link" data-scroll-target="#network-diagram">2-3-2-1 network diagram</a></li>
+  <li><a href="#parameter-count" id="toc-parameter-count" class="nav-link" data-scroll-target="#parameter-count">Parameter count</a></li>
+  <li><a href="#batches" id="toc-batches" class="nav-link" data-scroll-target="#batches">Batches</a></li>
+  <li><a href="#batching-example" id="toc-batching-example" class="nav-link" data-scroll-target="#batching-example">Batching example</a></li>
   <li><a href="#tensors" id="toc-tensors" class="nav-link" data-scroll-target="#tensors">Tensors</a></li>
   </ul></li>
   <li><a href="#the-forward-pass" id="toc-the-forward-pass" class="nav-link" data-scroll-target="#the-forward-pass">The forward pass</a>
   <ul class="collapse">
-  <li><a href="#what-forward-pass-means" id="toc-what-forward-pass-means" class="nav-link" data-scroll-target="#what-forward-pass-means">What “forward pass” means</a></li>
-  <li><a href="#the-multi-layer-perceptron-named-properly" id="toc-the-multi-layer-perceptron-named-properly" class="nav-link" data-scroll-target="#the-multi-layer-perceptron-named-properly">The multi-layer perceptron, named properly</a></li>
+  <li><a href="#forward-pass-definition" id="toc-forward-pass-definition" class="nav-link" data-scroll-target="#forward-pass-definition">Forward pass definition</a></li>
+  <li><a href="#the-multilayer-perceptron" id="toc-the-multilayer-perceptron" class="nav-link" data-scroll-target="#the-multilayer-perceptron">The multilayer perceptron</a></li>
   <li><a href="#a-forward-pass-in-numpy" id="toc-a-forward-pass-in-numpy" class="nav-link" data-scroll-target="#a-forward-pass-in-numpy">A forward pass, in NumPy</a></li>
-  <li><a href="#the-same-code-on-a-batch" id="toc-the-same-code-on-a-batch" class="nav-link" data-scroll-target="#the-same-code-on-a-batch">The same code, on a batch</a></li>
-  <li><a href="#a-forward-pass-is-all-a-trained-model-ever-does" id="toc-a-forward-pass-is-all-a-trained-model-ever-does" class="nav-link" data-scroll-target="#a-forward-pass-is-all-a-trained-model-ever-does">A forward pass is all a trained model ever does</a></li>
+  <li><a href="#batched-forward-pass" id="toc-batched-forward-pass" class="nav-link" data-scroll-target="#batched-forward-pass">Batched forward pass</a></li>
+  <li><a href="#inference-is-a-forward-pass" id="toc-inference-is-a-forward-pass" class="nav-link" data-scroll-target="#inference-is-a-forward-pass">Inference is a forward pass</a></li>
   </ul></li>
   <li><a href="#activations" id="toc-activations" class="nav-link" data-scroll-target="#activations">Activations</a>
   <ul class="collapse">
-  <li><a href="#why-a-nonlinearity-at-all" id="toc-why-a-nonlinearity-at-all" class="nav-link" data-scroll-target="#why-a-nonlinearity-at-all">Why a nonlinearity at all</a></li>
-  <li><a href="#the-collapse-in-numbers" id="toc-the-collapse-in-numbers" class="nav-link" data-scroll-target="#the-collapse-in-numbers">The collapse, in numbers</a></li>
-  <li><a href="#same-parameters-one-difference" id="toc-same-parameters-one-difference" class="nav-link" data-scroll-target="#same-parameters-one-difference">Same parameters, one difference</a></li>
+  <li><a href="#why-nonlinear-activations" id="toc-why-nonlinear-activations" class="nav-link" data-scroll-target="#why-nonlinear-activations">Why nonlinear activations</a></li>
+  <li><a href="#linear-layers-collapse" id="toc-linear-layers-collapse" class="nav-link" data-scroll-target="#linear-layers-collapse">Linear layers collapse</a></li>
+  <li><a href="#linear-collapse-with-and-without-activations" id="toc-linear-collapse-with-and-without-activations" class="nav-link" data-scroll-target="#linear-collapse-with-and-without-activations">Linear collapse with and without activations</a></li>
   <li><a href="#sigmoid-and-tanh" id="toc-sigmoid-and-tanh" class="nav-link" data-scroll-target="#sigmoid-and-tanh">Sigmoid and tanh</a></li>
-  <li><a href="#relu-and-why-it-took-over" id="toc-relu-and-why-it-took-over" class="nav-link" data-scroll-target="#relu-and-why-it-took-over">ReLU, and why it took over</a></li>
-  <li><a href="#relu-is-not-differentiable-at-zero" id="toc-relu-is-not-differentiable-at-zero" class="nav-link" data-scroll-target="#relu-is-not-differentiable-at-zero">ReLU is not differentiable at zero</a></li>
-  <li><a href="#softmax-for-choosing-one-of-k-classes" id="toc-softmax-for-choosing-one-of-k-classes" class="nav-link" data-scroll-target="#softmax-for-choosing-one-of-k-classes">Softmax, for choosing one of <span class="math inline">K</span> classes</a></li>
-  <li><a href="#the-output-layer-is-not-a-matter-of-taste" id="toc-the-output-layer-is-not-a-matter-of-taste" class="nav-link" data-scroll-target="#the-output-layer-is-not-a-matter-of-taste">The output layer is not a matter of taste</a></li>
-  <li><a href="#four-problems-one-body" id="toc-four-problems-one-body" class="nav-link" data-scroll-target="#four-problems-one-body">Four problems, one body</a></li>
-  <li><a href="#choosing-an-activation-in-practice" id="toc-choosing-an-activation-in-practice" class="nav-link" data-scroll-target="#choosing-an-activation-in-practice">Choosing an activation, in practice</a></li>
+  <li><a href="#relu" id="toc-relu" class="nav-link" data-scroll-target="#relu">ReLU</a></li>
+  <li><a href="#relu-at-zero" id="toc-relu-at-zero" class="nav-link" data-scroll-target="#relu-at-zero">ReLU at zero</a></li>
+  <li><a href="#softmax" id="toc-softmax" class="nav-link" data-scroll-target="#softmax">Softmax</a></li>
+  <li><a href="#output-layer-activations" id="toc-output-layer-activations" class="nav-link" data-scroll-target="#output-layer-activations">Output-layer activations</a></li>
+  <li><a href="#shared-body-different-heads" id="toc-shared-body-different-heads" class="nav-link" data-scroll-target="#shared-body-different-heads">Shared body, different heads</a></li>
+  <li><a href="#choosing-activations" id="toc-choosing-activations" class="nav-link" data-scroll-target="#choosing-activations">Choosing activations</a></li>
   </ul></li>
   <li><a href="#depth-and-width" id="toc-depth-and-width" class="nav-link" data-scroll-target="#depth-and-width">Depth and width</a>
   <ul class="collapse">
-  <li><a href="#width-and-depth-are-different-knobs" id="toc-width-and-depth-are-different-knobs" class="nav-link" data-scroll-target="#width-and-depth-are-different-knobs">Width and depth are different knobs</a></li>
-  <li><a href="#what-a-layer-actually-does" id="toc-what-a-layer-actually-does" class="nav-link" data-scroll-target="#what-a-layer-actually-does">What a layer actually does</a></li>
-  <li><a href="#a-hidden-layer-moving-the-points" id="toc-a-hidden-layer-moving-the-points" class="nav-link" data-scroll-target="#a-hidden-layer-moving-the-points">A hidden layer, moving the points</a></li>
-  <li><a href="#depth-is-composition" id="toc-depth-is-composition" class="nav-link" data-scroll-target="#depth-is-composition">Depth is composition</a></li>
+  <li><a href="#width-versus-depth" id="toc-width-versus-depth" class="nav-link" data-scroll-target="#width-versus-depth">Width versus depth</a></li>
+  <li><a href="#hidden-layers-as-coordinate-changes" id="toc-hidden-layers-as-coordinate-changes" class="nav-link" data-scroll-target="#hidden-layers-as-coordinate-changes">Hidden layers as coordinate changes</a></li>
+  <li><a href="#coordinate-change-xor" id="toc-coordinate-change-xor" class="nav-link" data-scroll-target="#coordinate-change-xor">Coordinate change: XOR</a></li>
+  <li><a href="#depth-as-composition" id="toc-depth-as-composition" class="nav-link" data-scroll-target="#depth-as-composition">Depth as composition</a></li>
   <li><a href="#the-chain-rule" id="toc-the-chain-rule" class="nav-link" data-scroll-target="#the-chain-rule">The chain rule</a></li>
-  <li><a href="#which-is-why-it-matters-here" id="toc-which-is-why-it-matters-here" class="nav-link" data-scroll-target="#which-is-why-it-matters-here">Which is why it matters here</a></li>
-  <li><a href="#universal-approximation-stated-carefully" id="toc-universal-approximation-stated-carefully" class="nav-link" data-scroll-target="#universal-approximation-stated-carefully">Universal approximation, stated carefully</a></li>
-  <li><a href="#what-it-does-not-promise" id="toc-what-it-does-not-promise" class="nav-link" data-scroll-target="#what-it-does-not-promise">What it does not promise</a></li>
-  <li><a href="#so-why-go-deep" id="toc-so-why-go-deep" class="nav-link" data-scroll-target="#so-why-go-deep">So why go deep?</a></li>
+  <li><a href="#chain-rule-in-a-network" id="toc-chain-rule-in-a-network" class="nav-link" data-scroll-target="#chain-rule-in-a-network">Chain rule in a network</a></li>
+  <li><a href="#universal-approximation-theorem" id="toc-universal-approximation-theorem" class="nav-link" data-scroll-target="#universal-approximation-theorem">Universal approximation theorem</a></li>
+  <li><a href="#limits-of-universal-approximation" id="toc-limits-of-universal-approximation" class="nav-link" data-scroll-target="#limits-of-universal-approximation">Limits of universal approximation</a></li>
+  <li><a href="#why-depth" id="toc-why-depth" class="nav-link" data-scroll-target="#why-depth">Why depth</a></li>
   </ul></li>
-  <li><a href="#watching-it-learn" id="toc-watching-it-learn" class="nav-link" data-scroll-target="#watching-it-learn">Watching it learn</a>
+  <li><a href="#training" id="toc-training" class="nav-link" data-scroll-target="#training">Training</a>
   <ul class="collapse">
-  <li><a href="#no-hidden-layer" id="toc-no-hidden-layer" class="nav-link" data-scroll-target="#no-hidden-layer">No hidden layer</a></li>
-  <li><a href="#one-hidden-layer-four-units" id="toc-one-hidden-layer-four-units" class="nav-link" data-scroll-target="#one-hidden-layer-four-units">One hidden layer, four units</a></li>
-  <li><a href="#what-we-cannot-do-by-hand" id="toc-what-we-cannot-do-by-hand" class="nav-link" data-scroll-target="#what-we-cannot-do-by-hand">What we cannot do by hand</a></li>
-  <li><a href="#gradients-by-brute-force" id="toc-gradients-by-brute-force" class="nav-link" data-scroll-target="#gradients-by-brute-force">Gradients by brute force</a></li>
-  <li><a href="#training-a-network-with-no-backprop" id="toc-training-a-network-with-no-backprop" class="nav-link" data-scroll-target="#training-a-network-with-no-backprop">Training a network with no backprop</a></li>
-  <li><a href="#what-that-produced" id="toc-what-that-produced" class="nav-link" data-scroll-target="#what-that-produced">What that produced</a></li>
-  <li><a href="#now-count-what-that-cost" id="toc-now-count-what-that-cost" class="nav-link" data-scroll-target="#now-count-what-that-cost">Now count what that cost</a></li>
-  <li><a href="#which-does-not-scale-at-all" id="toc-which-does-not-scale-at-all" class="nav-link" data-scroll-target="#which-does-not-scale-at-all">Which does not scale, at all</a></li>
-  <li><a href="#and-that-is-why-next-week-exists" id="toc-and-that-is-why-next-week-exists" class="nav-link" data-scroll-target="#and-that-is-why-next-week-exists">And that is why next week exists</a></li>
+  <li><a href="#playground-no-hidden-layer" id="toc-playground-no-hidden-layer" class="nav-link" data-scroll-target="#playground-no-hidden-layer">Playground: no hidden layer</a></li>
+  <li><a href="#playground-one-hidden-layer" id="toc-playground-one-hidden-layer" class="nav-link" data-scroll-target="#playground-one-hidden-layer">Playground: one hidden layer</a></li>
+  <li><a href="#computing-gradients" id="toc-computing-gradients" class="nav-link" data-scroll-target="#computing-gradients">Computing gradients</a></li>
+  <li><a href="#gradients-by-finite-differences" id="toc-gradients-by-finite-differences" class="nav-link" data-scroll-target="#gradients-by-finite-differences">Gradients by finite differences</a></li>
+  <li><a href="#training-with-finite-differences" id="toc-training-with-finite-differences" class="nav-link" data-scroll-target="#training-with-finite-differences">Training with finite differences</a></li>
+  <li><a href="#finite-difference-training-results" id="toc-finite-difference-training-results" class="nav-link" data-scroll-target="#finite-difference-training-results">Finite-difference training results</a></li>
+  <li><a href="#cost-of-finite-difference-gradients" id="toc-cost-of-finite-difference-gradients" class="nav-link" data-scroll-target="#cost-of-finite-difference-gradients">Cost of finite-difference gradients</a></li>
+  <li><a href="#why-finite-differences-do-not-scale" id="toc-why-finite-differences-do-not-scale" class="nav-link" data-scroll-target="#why-finite-differences-do-not-scale">Why finite differences do not scale</a></li>
+  <li><a href="#next-week-backpropagation" id="toc-next-week-backpropagation" class="nav-link" data-scroll-target="#next-week-backpropagation">Next week: backpropagation</a></li>
   </ul></li>
-  <li><a href="#vocabulary-before-we-go" id="toc-vocabulary-before-we-go" class="nav-link" data-scroll-target="#vocabulary-before-we-go">Vocabulary before we go</a>
+  <li><a href="#training-vocabulary" id="toc-training-vocabulary" class="nav-link" data-scroll-target="#training-vocabulary">Training vocabulary</a>
   <ul class="collapse">
-  <li><a href="#how-much-data-per-step" id="toc-how-much-data-per-step" class="nav-link" data-scroll-target="#how-much-data-per-step">How much data per step?</a></li>
+  <li><a href="#minibatch-gradient-descent" id="toc-minibatch-gradient-descent" class="nav-link" data-scroll-target="#minibatch-gradient-descent">Minibatch gradient descent</a></li>
   <li><a href="#epoch-iteration-batch-size" id="toc-epoch-iteration-batch-size" class="nav-link" data-scroll-target="#epoch-iteration-batch-size">Epoch, iteration, batch size</a></li>
-  <li><a href="#the-learning-rate-now-that-there-are-thousands-of-parameters" id="toc-the-learning-rate-now-that-there-are-thousands-of-parameters" class="nav-link" data-scroll-target="#the-learning-rate-now-that-there-are-thousands-of-parameters">The learning rate, now that there are thousands of parameters</a></li>
-  <li><a href="#reading-a-training-curve" id="toc-reading-a-training-curve" class="nav-link" data-scroll-target="#reading-a-training-curve">Reading a training curve</a></li>
-  <li><a href="#one-thing-about-initialization" id="toc-one-thing-about-initialization" class="nav-link" data-scroll-target="#one-thing-about-initialization">One thing about initialization</a></li>
+  <li><a href="#learning-rate" id="toc-learning-rate" class="nav-link" data-scroll-target="#learning-rate">Learning rate</a></li>
+  <li><a href="#training-curves" id="toc-training-curves" class="nav-link" data-scroll-target="#training-curves">Training curves</a></li>
+  <li><a href="#weight-initialization" id="toc-weight-initialization" class="nav-link" data-scroll-target="#weight-initialization">Weight initialization</a></li>
   </ul></li>
-  <li><a href="#before-you-go" id="toc-before-you-go" class="nav-link" data-scroll-target="#before-you-go">Before you go</a>
+  <li><a href="#closing" id="toc-closing" class="nav-link" data-scroll-target="#closing">Closing</a>
   <ul class="collapse">
-  <li><a href="#lab-2-build-the-forward-pass" id="toc-lab-2-build-the-forward-pass" class="nav-link" data-scroll-target="#lab-2-build-the-forward-pass">Lab 2: build the forward pass</a></li>
+  <li><a href="#lab-2" id="toc-lab-2" class="nav-link" data-scroll-target="#lab-2">Lab 2</a></li>
   <li><a href="#quiz-2-study-guide" id="toc-quiz-2-study-guide" class="nav-link" data-scroll-target="#quiz-2-study-guide">Quiz 2 study guide</a></li>
+  <li><a href="#supplemental-content" id="toc-supplemental-content" class="nav-link" data-scroll-target="#supplemental-content">Supplemental content</a></li>
   <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap-up</a></li>
   <li><a href="#quiz-1" id="toc-quiz-1" class="nav-link" data-scroll-target="#quiz-1">Quiz 1</a></li>
   </ul></li>
@@ -254,18 +257,23 @@ window.Quarto = {
 </ol>
 <p>Last 20 minutes: Lab 2, then Quiz 1.</p>
 </section>
-<section id="where-we-stopped-last-week" class="level2">
-<h2 class="anchored" data-anchor-id="where-we-stopped-last-week">Where we stopped last week</h2>
+<section id="week-1-recap" class="level2">
+<h2 class="anchored" data-anchor-id="week-1-recap">Week 1 recap</h2>
 <p>Three claims, none of them yet explained:</p>
 <ol type="1">
-<li>An <strong>artificial neuron</strong> is a logistic regression you already know.</li>
+<li>An <strong>artificial neuron</strong> with a sigmoid activation is exactly the <strong>logistic regression</strong> you already know.</li>
 <li>A neural network is what you get when you <strong>stack</strong> neurons into layers and put a <strong>nonlinearity</strong> between the layers.</li>
 <li>With enough units, such a network can approximate essentially any continuous function.</li>
 </ol>
 <p>Today all three get filled in, in that order. By the end you will have written a forward pass yourself and trained a network without using the algorithm that makes training practical.</p>
 </section>
-<section id="where-the-name-comes-from" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="where-the-name-comes-from">Where the name comes from</h2>
+<section id="ann-architecture-2-3-2-1" class="level2">
+<h2 class="anchored" data-anchor-id="ann-architecture-2-3-2-1">ANN architecture: 2-3-2-1</h2>
+<p><img src="images/ann-2321-bridge.png" class="dh460 img-fluid" width="820"></p>
+<p>Same 2-3-2-1 network. Today we take it apart: a layer is a matrix multiply, the twenty numbers are the parameters training will change, and the nested formula is the forward pass.</p>
+</section>
+<section id="biological-analogy" class="level2">
+<h2 class="anchored" data-anchor-id="biological-analogy">Biological analogy</h2>
 <div class="columns">
 <div class="column" style="width:52%;">
 <p>The vocabulary is borrowed from neuroscience: a <strong>neuron</strong> receives signals, weighs them, and fires if the total is large enough.</p>
@@ -288,8 +296,8 @@ Do not lean on the analogy
 </div>
 </div>
 </section>
-<section id="one-neuron-written-properly" class="level2">
-<h2 class="anchored" data-anchor-id="one-neuron-written-properly">One neuron, written properly</h2>
+<section id="the-artificial-neuron" class="level2">
+<h2 class="anchored" data-anchor-id="the-artificial-neuron">The artificial neuron</h2>
 <p>A neuron takes an input vector, weighs each component, adds a bias, and passes the total through a function:</p>
 <p><span class="math display">z = \mathbf{w}^{\top}\mathbf{x} + b \qquad a = \sigma(z)</span></p>
 <ul>
@@ -301,27 +309,41 @@ Do not lean on the analogy
 </ul>
 <p>Set <span class="math inline">\sigma</span> to the logistic function and this is exactly the logistic regression from last week. Nothing new has happened yet.</p>
 </section>
-<section id="a-layer-is-several-neurons-sharing-one-input" class="level2">
-<h2 class="anchored" data-anchor-id="a-layer-is-several-neurons-sharing-one-input">A layer is several neurons sharing one input</h2>
-<p>Put three neurons side by side. They see the <strong>same</strong> <span class="math inline">\mathbf{x}</span>, and each has its own weights and its own bias:</p>
+<section id="a-layer-of-neurons" class="level2">
+<h2 class="anchored" data-anchor-id="a-layer-of-neurons">A layer of neurons</h2>
+<p>Put three neurons side by side <strong>within one layer</strong>. They see the <strong>same</strong> <span class="math inline">\mathbf{x}</span>, and each has its own weights and its own bias:</p>
 <p><span class="math display">z_1 = \mathbf{w}_1^{\top}\mathbf{x} + b_1 \qquad
   z_2 = \mathbf{w}_2^{\top}\mathbf{x} + b_2 \qquad
   z_3 = \mathbf{w}_3^{\top}\mathbf{x} + b_3</span></p>
-<p>Writing those three lines separately is already tedious, and a real layer has hundreds. So stack the <span class="math inline">\mathbf{w}_i</span> as the <strong>rows</strong> of a matrix:</p>
+<p>Writing those three lines separately is already tedious, and a real layer has hundreds. So stack the <span class="math inline">\mathbf{w}_i</span> as the <strong>rows</strong> of one matrix, <strong>one row per neuron</strong>:</p>
 <p><span class="math display">\mathbf{W} = \begin{pmatrix}
 \text{---}\;\mathbf{w}_1^{\top}\;\text{---} \\
 \text{---}\;\mathbf{w}_2^{\top}\;\text{---} \\
 \text{---}\;\mathbf{w}_3^{\top}\;\text{---}
-\end{pmatrix}</span></p>
+\end{pmatrix}
+\qquad \text{shape } (3 \times d)</span></p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Reading this matrix
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The lines are notation, not arithmetic: each row <strong>is</strong> one whole weight vector laid flat, so <span class="math inline">\mathbf{W}</span> is three rows of length <span class="math inline">d</span>. The subscript is the <strong>neuron</strong> index, not the layer index; layers never share a matrix, and this is literally what <code>nn.Linear(d, 3).weight</code> stores.</p>
+</div>
+</div>
 </section>
-<section id="therefore-a-layer-is-a-matrix-multiply" class="level2">
-<h2 class="anchored" data-anchor-id="therefore-a-layer-is-a-matrix-multiply">Therefore a layer is a matrix multiply</h2>
+<section id="ann-layer-as-matrix-multiplication" class="level2">
+<h2 class="anchored" data-anchor-id="ann-layer-as-matrix-multiplication">ANN layer as matrix multiplication</h2>
 <p><span class="math display">\boxed{\;\mathbf{z} = \mathbf{W}\mathbf{x} + \mathbf{b}\;}</span></p>
 <p><img src="images/fig-layer-as-matmul.png" class="dw95 img-fluid" width="900"></p>
 <p>One line, any number of units. This is the reason deep learning runs on GPUs: the core operation is a matrix multiply, and that is the one thing a GPU does faster than anything else.</p>
 </section>
-<section id="reading-the-shapes" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="reading-the-shapes">Reading the shapes</h2>
+<section id="weight-matrix-shapes" class="level2">
+<h2 class="anchored" data-anchor-id="weight-matrix-shapes">Weight matrix shapes</h2>
 <p>The two rules that resolve nearly every shape error you will hit:</p>
 <ul>
 <li><strong>Rows of <span class="math inline">\mathbf{W}</span></strong> = how many units this layer has, so how many numbers come <strong>out</strong></li>
@@ -364,13 +386,13 @@ Do not lean on the analogy
 </table>
 <p>Notice each layer’s input count is the previous layer’s output count. That chain is the whole constraint on an architecture.</p>
 </section>
-<section id="the-architecture-drawn" class="level2">
-<h2 class="anchored" data-anchor-id="the-architecture-drawn">The architecture, drawn</h2>
+<section id="network-diagram" class="level2">
+<h2 class="anchored" data-anchor-id="network-diagram">2-3-2-1 network diagram</h2>
 <p><img src="images/fig-mlp-2321.png" class="dw95 img-fluid" width="900"></p>
-<p>Read it left to right. Two numbers go in, three come out of the first hidden layer, two out of the second, one out of the network. The activation sits between the layers, and the output layer here has none.</p>
+<p>Same 2-3-2-1 network as the map from last week, diagram only. Two numbers go in, three come out of the first hidden layer, two out of the second, one out of the network. The activation sits between the layers, and the output layer here has none.</p>
 </section>
-<section id="counting-the-parameters" class="level2">
-<h2 class="anchored" data-anchor-id="counting-the-parameters">Counting the parameters</h2>
+<section id="parameter-count" class="level2">
+<h2 class="anchored" data-anchor-id="parameter-count">Parameter count</h2>
 <p>Every entry of every <span class="math inline">\mathbf{W}</span> and every <span class="math inline">\mathbf{b}</span> is a number training will change. So count them:</p>
 <p><span class="math display">\underbrace{(3\times2 + 3)}_{\text{hidden 1} \;=\; 9} +
   \underbrace{(2\times3 + 2)}_{\text{hidden 2} \;=\; 8} +
@@ -390,8 +412,8 @@ Worth being able to do in your head
 </div>
 </div>
 </section>
-<section id="one-example-or-many" class="level2">
-<h2 class="anchored" data-anchor-id="one-example-or-many">One example, or many</h2>
+<section id="batches" class="level2">
+<h2 class="anchored" data-anchor-id="batches">Batches</h2>
 <p>Everything so far describes a single example. In practice you push many through at once, one <strong>row</strong> per example:</p>
 <p><span class="math display">\mathbf{X} \;\text{is}\; (N,\, d) \qquad
   \mathbf{Z} = \mathbf{X}\mathbf{W}^{\top} + \mathbf{b} \;\text{is}\; (N,\, \text{units})</span></p>
@@ -403,11 +425,16 @@ Worth being able to do in your head
 </ul>
 <p>PyTorch stores <code>nn.Linear</code> weights as (out_features, in_features) too, so this convention carries directly into Week 3.</p>
 </section>
+<section id="batching-example" class="level2">
+<h2 class="anchored" data-anchor-id="batching-example">Batching example</h2>
+<p><img src="images/fig-row-vs-batch.png" class="dw88 img-fluid" width="900"></p>
+<p>A single example is not a special case of the math; it is a matrix with one row. The shaded row goes in and comes out the same whether it travels alone or with three others, because <strong>rows never interact inside a layer</strong>. Only <span class="math inline">N</span> changed.</p>
+</section>
 <section id="tensors" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="tensors">Tensors</h2>
-<div class="columns">
-<div class="column" style="width:55%;">
 <p>A <strong>tensor</strong> is just an array with any number of axes, and it is the only data structure in deep learning.</p>
+<div class="columns">
+<div class="column" style="width:54%;">
 <table class="table">
 <thead>
 <tr class="header">
@@ -439,11 +466,11 @@ Worth being able to do in your head
 </tr>
 </tbody>
 </table>
-<p>Same layer, same matrix multiply; only the bookkeeping changes.</p>
-</div><div class="column" style="width:45%;">
-<p><img src="images/2023-03-21-12-35-56.png" class="dw100 img-fluid" width="430"></p>
+</div><div class="column" style="width:46%;">
+<p>The number of axes is the only thing that changes. Same layer, same matrix multiply; the extra axes are bookkeeping that says how many examples, how long the sequence, how big the picture.</p>
 </div>
 </div>
+<p><img src="images/fig-tensor-ladder.png" class="dw88 img-fluid" width="900"></p>
 </section>
 </section>
 <section id="the-forward-pass" class="level1">
@@ -453,21 +480,47 @@ Worth being able to do in your head
 <li>Writing one from scratch</li>
 <li>Why it is all a trained model ever does</li>
 </ul>
-<section id="what-forward-pass-means" class="level2">
-<h2 class="anchored" data-anchor-id="what-forward-pass-means">What “forward pass” means</h2>
+<section id="forward-pass-definition" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="forward-pass-definition">Forward pass definition</h2>
 <p>Feed an input in at the left; apply each layer in turn; read the prediction off at the right. That is the forward pass, and there is nothing more to it:</p>
 <p><span class="math display">\mathbf{a}^{(0)} = \mathbf{x} \qquad
   \mathbf{a}^{(\ell)} = \sigma\!\left(\mathbf{W}^{(\ell)}\mathbf{a}^{(\ell-1)} + \mathbf{b}^{(\ell)}\right)
   \qquad \hat{y} = \mathbf{a}^{(L)}</span></p>
-<p>Three things to notice:</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<table class="table">
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\ell</span></td>
+<td>which layer, counting from the input</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\mathbf{a}^{(\ell)}</span></td>
+<td>the vector coming <strong>out</strong> of layer <span class="math inline">\ell</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">L</span></td>
+<td>the last layer, so <span class="math inline">\mathbf{a}^{(L)}</span> is the prediction</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\sigma</span></td>
+<td>the activation, applied element-wise</td>
+</tr>
+</tbody>
+</table>
+<p>The superscript is a <strong>layer index, not a power</strong>.</p>
+</div><div class="column" style="width:50%;">
 <ul>
 <li>The <strong>only</strong> operations are a matrix multiply, an addition, and an element-wise function</li>
 <li>Each layer’s output is the next layer’s input, which is why the shapes have to chain</li>
-<li>The output layer usually gets a <strong>different</strong> activation, or none; that choice is dictated by the problem, and we get to it shortly</li>
+<li>The output layer usually gets a <strong>different</strong> activation, or none</li>
 </ul>
+</div>
+</div>
+<p><span class="math inline">\mathbf{a}^{(0)} = \mathbf{x}</span> is bookkeeping: the middle formula refers to “the previous layer’s output”, so naming the input <em>layer 0’s output</em> lets that one formula cover every layer, including the first.</p>
 </section>
-<section id="the-multi-layer-perceptron-named-properly" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="the-multi-layer-perceptron-named-properly">The multi-layer perceptron, named properly</h2>
+<section id="the-multilayer-perceptron" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-multilayer-perceptron">The multilayer perceptron</h2>
 <p>What we have just built has several names, all meaning the same thing:</p>
 <ul>
 <li><strong>Multi-layer perceptron (MLP)</strong></li>
@@ -486,18 +539,18 @@ Worth being able to do in your head
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Why this one first
+Relation to later architectures
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Every architecture in this course is a constrained MLP. A CNN is an MLP whose weights are reused across positions. A transformer is an MLP with a mechanism for deciding which inputs to look at. Learn this one properly and the rest are modifications.</p>
+<p>Every architecture in this course starts from this one. A CNN is an MLP whose weights are reused across positions, which is a genuine restriction of the same machinery. A transformer keeps MLP blocks but <strong>adds attention</strong>, a step that lets positions in a sequence share information, weighted by the data itself; that one is an addition rather than a restriction. Either way, this is the object being modified.</p>
 </div>
 </div>
 </section>
 <section id="a-forward-pass-in-numpy" class="level2">
 <h2 class="anchored" data-anchor-id="a-forward-pass-in-numpy">A forward pass, in NumPy</h2>
 <p>Nine lines, no framework. The shapes printed below each step are the point.</p>
-<div id="81c72881" class="cell" data-execution_count="1">
+<div id="5d187f59" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -532,10 +585,10 @@ parameters: 20</code></pre>
 </div>
 </div>
 </section>
-<section id="the-same-code-on-a-batch" class="level2">
-<h2 class="anchored" data-anchor-id="the-same-code-on-a-batch">The same code, on a batch</h2>
+<section id="batched-forward-pass" class="level2">
+<h2 class="anchored" data-anchor-id="batched-forward-pass">Batched forward pass</h2>
 <p>Swap the single vector for a matrix of rows and transpose the weights. The arithmetic per example is identical; you have only stopped looping.</p>
-<div id="17914caa" class="cell" data-execution_count="2">
+<div id="9f291721" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.normal(<span class="dv">0</span>, <span class="dv">1</span>, (<span class="dv">5</span>, <span class="dv">2</span>))              <span class="co"># five examples, 2 features each</span></span>
@@ -549,11 +602,10 @@ parameters: 20</code></pre>
 <span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co"># And it agrees with the one-at-a-time version.</span></span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>one_at_a_time <span class="op">=</span> np.array([</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    (np.tanh(np.tanh(W2 <span class="op">@</span> np.tanh(W1 <span class="op">@</span> xi <span class="op">+</span> b1) <span class="op">+</span> b2)) <span class="op">*</span> <span class="dv">0</span> <span class="op">+</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>     W3 <span class="op">@</span> np.tanh(W2 <span class="op">@</span> np.tanh(W1 <span class="op">@</span> xi <span class="op">+</span> b1) <span class="op">+</span> b2) <span class="op">+</span> b3)[<span class="dv">0</span>]</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> xi <span class="kw">in</span> X</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"max difference vs looping: </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(one_at_a_time <span class="op">-</span> Y.ravel()))<span class="sc">:.2e}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    (W3 <span class="op">@</span> np.tanh(W2 <span class="op">@</span> np.tanh(W1 <span class="op">@</span> xi <span class="op">+</span> b1) <span class="op">+</span> b2) <span class="op">+</span> b3)[<span class="dv">0</span>]</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> xi <span class="kw">in</span> X</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"max difference vs looping: </span><span class="sc">{</span>np<span class="sc">.</span><span class="bu">max</span>(np.<span class="bu">abs</span>(one_at_a_time <span class="op">-</span> Y.ravel()))<span class="sc">:.2e}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>X   (5, 2)  -&gt;  A1 (5, 3)  -&gt;  A2 (5, 2)  -&gt;  Y (5, 1)
@@ -563,8 +615,8 @@ max difference vs looping: 1.11e-16</code></pre>
 </div>
 </div>
 </section>
-<section id="a-forward-pass-is-all-a-trained-model-ever-does" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="a-forward-pass-is-all-a-trained-model-ever-does">A forward pass is all a trained model ever does</h2>
+<section id="inference-is-a-forward-pass" class="level2">
+<h2 class="anchored" data-anchor-id="inference-is-a-forward-pass">Inference is a forward pass</h2>
 <p>Once training is finished, the weights are frozen numbers and using the model is just the arithmetic above.</p>
 <ul>
 <li>Every prediction served in production is a forward pass</li>
@@ -594,8 +646,8 @@ Vocabulary you will meet
 <li>Which one, and where</li>
 <li>The one choice that is not up to you</li>
 </ul>
-<section id="why-a-nonlinearity-at-all" class="level2">
-<h2 class="anchored" data-anchor-id="why-a-nonlinearity-at-all">Why a nonlinearity at all</h2>
+<section id="why-nonlinear-activations" class="level2">
+<h2 class="anchored" data-anchor-id="why-nonlinear-activations">Why nonlinear activations</h2>
 <p>Last week’s claim was that without one, stacking gains you nothing. Here is why, in one line of algebra. Take two layers with no activation:</p>
 <p><span class="math display">\mathbf{z} = \mathbf{W}_2\left(\mathbf{W}_1\mathbf{x} + \mathbf{b}_1\right) + \mathbf{b}_2
              = \underbrace{\left(\mathbf{W}_2\mathbf{W}_1\right)}_{\text{one matrix}}\mathbf{x}
@@ -603,10 +655,10 @@ Vocabulary you will meet
 <p>The composition of two linear maps is a linear map. Add fifty more layers and it is still a linear map, just with more arithmetic done to produce the same straight line.</p>
 <p><strong>The activation is not a detail or a tuning knob. It is the thing that makes depth mean anything.</strong></p>
 </section>
-<section id="the-collapse-in-numbers" class="level2">
-<h2 class="anchored" data-anchor-id="the-collapse-in-numbers">The collapse, in numbers</h2>
+<section id="linear-layers-collapse" class="level2">
+<h2 class="anchored" data-anchor-id="linear-layers-collapse">Linear layers collapse</h2>
 <p>97 parameters and three layers, versus the single layer they are secretly equal to. No fitting involved; we just multiply the matrices out.</p>
-<div id="2ce59a7b" class="cell" data-execution_count="3">
+<div id="eca587bf" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">6600</span>)</span>
@@ -641,8 +693,8 @@ max difference      : 4.44e-16</code></pre>
 </div>
 </div>
 </section>
-<section id="same-parameters-one-difference" class="level2">
-<h2 class="anchored" data-anchor-id="same-parameters-one-difference">Same parameters, one difference</h2>
+<section id="linear-collapse-with-and-without-activations" class="level2">
+<h2 class="anchored" data-anchor-id="linear-collapse-with-and-without-activations">Linear collapse with and without activations</h2>
 <p><img src="images/fig-collapse.png" class="dw92 img-fluid" width="900"></p>
 <p>Left: three linear layers and one linear layer, drawn on top of each other. The dotted line is hiding under the solid one. Both reach MSE 0.181, which is what a straight line through this data costs.</p>
 <p>Right: the same 97 parameters with tanh between the layers. MSE 0.009.</p>
@@ -654,8 +706,8 @@ max difference      : 4.44e-16</code></pre>
   \qquad\qquad \tanh(z) = \frac{e^{z} - e^{-z}}{e^{z} + e^{-z}} \in (-1, 1)</span></p>
 <p>Both squash any real number into a bounded range, and both were the default for decades. Look at the right panel: far from zero, the slope is <strong>flat</strong>. A flat slope means a vanishing gradient, and a vanishing gradient means the parameter stops moving. Week 4 returns to this properly.</p>
 </section>
-<section id="relu-and-why-it-took-over" class="level2">
-<h2 class="anchored" data-anchor-id="relu-and-why-it-took-over">ReLU, and why it took over</h2>
+<section id="relu" class="level2">
+<h2 class="anchored" data-anchor-id="relu">ReLU</h2>
 <p><span class="math display">\text{ReLU}(z) = \max(0, z)</span></p>
 <div class="columns">
 <div class="column" style="width:50%;">
@@ -671,8 +723,8 @@ max difference      : 4.44e-16</code></pre>
 </div>
 <p>The cost is that negative inputs get slope exactly 0, so a unit can stop responding entirely. Variants such as leaky ReLU exist for that; you will almost never need them before you need better data.</p>
 </section>
-<section id="relu-is-not-differentiable-at-zero" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="relu-is-not-differentiable-at-zero">ReLU is not differentiable at zero</h2>
+<section id="relu-at-zero" class="level2">
+<h2 class="anchored" data-anchor-id="relu-at-zero">ReLU at zero</h2>
 <p>A fair objection, since the next two weeks are entirely about derivatives. There is a kink at <span class="math inline">z = 0</span> and no well-defined slope there.</p>
 <p>In practice nobody cares, for two reasons:</p>
 <ul>
@@ -681,8 +733,8 @@ max difference      : 4.44e-16</code></pre>
 </ul>
 <p>This is worth flagging only because it is the first place in this course where the clean mathematical statement and the working practice differ. There will be others, and it is useful to know which kind of thing you are looking at.</p>
 </section>
-<section id="softmax-for-choosing-one-of-k-classes" class="level2">
-<h2 class="anchored" data-anchor-id="softmax-for-choosing-one-of-k-classes">Softmax, for choosing one of <span class="math inline">K</span> classes</h2>
+<section id="softmax" class="level2">
+<h2 class="anchored" data-anchor-id="softmax">Softmax</h2>
 <p><span class="math display">\text{softmax}(\mathbf{z})_k = \frac{e^{z_k}}{\sum_{j=1}^{K} e^{z_j}}</span></p>
 <p>It takes <span class="math inline">K</span> unbounded numbers and returns <span class="math inline">K</span> values that are each positive and sum to 1, so the output can be read as a distribution over classes.</p>
 <ul>
@@ -692,8 +744,8 @@ max difference      : 4.44e-16</code></pre>
 </ul>
 <p>This is the output your multi-class problems need, and it pairs with the categorical cross-entropy from last week’s loss table.</p>
 </section>
-<section id="the-output-layer-is-not-a-matter-of-taste" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="the-output-layer-is-not-a-matter-of-taste">The output layer is not a matter of taste</h2>
+<section id="output-layer-activations" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="output-layer-activations">Output-layer activations</h2>
 <p>Hidden layers are a design choice. The output layer is <strong>determined</strong> by what you are predicting, and it has to agree with the loss:</p>
 <table class="table">
 <thead>
@@ -746,8 +798,8 @@ A wrinkle that will bite you in Week 3
 </div>
 </div>
 </section>
-<section id="four-problems-one-body" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="four-problems-one-body">Four problems, one body</h2>
+<section id="shared-body-different-heads" class="level2">
+<h2 class="anchored" data-anchor-id="shared-body-different-heads">Shared body, different heads</h2>
 <p>The body of the network is unchanged in all four; only the head differs.</p>
 <div class="columns">
 <div class="column" style="width:50%;">
@@ -764,8 +816,8 @@ A wrinkle that will bite you in Week 3
 </div>
 <p>This is why one model family covers the entire problem taxonomy from Week 1.</p>
 </section>
-<section id="choosing-an-activation-in-practice" class="level2">
-<h2 class="anchored" data-anchor-id="choosing-an-activation-in-practice">Choosing an activation, in practice</h2>
+<section id="choosing-activations" class="level2">
+<h2 class="anchored" data-anchor-id="choosing-activations">Choosing activations</h2>
 <p>The catalog is long. The decision is short:</p>
 <ul>
 <li><strong>Hidden layers</strong>: ReLU. Use tanh if you have a specific reason, and you will know when you do.</li>
@@ -794,8 +846,8 @@ Where to spend your attention instead
 <li>What universal approximation does and does not promise</li>
 <li>The rule that makes training possible, which is next week’s subject</li>
 </ul>
-<section id="width-and-depth-are-different-knobs" class="level2">
-<h2 class="anchored" data-anchor-id="width-and-depth-are-different-knobs">Width and depth are different knobs</h2>
+<section id="width-versus-depth" class="level2">
+<h2 class="anchored" data-anchor-id="width-versus-depth">Width versus depth</h2>
 <div class="columns contrast">
 <div class="column" style="width:48%;">
 <section id="width" class="level3">
@@ -821,21 +873,21 @@ Where to spend your attention instead
 </div>
 <p>An architecture is mostly a choice of how to spend a parameter budget between these two.</p>
 </section>
-<section id="what-a-layer-actually-does" class="level2">
-<h2 class="anchored" data-anchor-id="what-a-layer-actually-does">What a layer actually does</h2>
+<section id="hidden-layers-as-coordinate-changes" class="level2">
+<h2 class="anchored" data-anchor-id="hidden-layers-as-coordinate-changes">Hidden layers as coordinate changes</h2>
 <p>Each layer applies the same two operations to whatever it receives, so the second layer is not looking at your data; it is looking at the <strong>first layer’s description</strong> of your data.</p>
 <p>That is the useful way to read depth. A layer is a change of coordinates: it moves the points into a space where the next step is easier.</p>
 <p>The clearest case is a problem where no straight line works at all, and one layer fixes it.</p>
 </section>
-<section id="a-hidden-layer-moving-the-points" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="a-hidden-layer-moving-the-points">A hidden layer, moving the points</h2>
+<section id="coordinate-change-xor" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="coordinate-change-xor">Coordinate change: XOR</h2>
 <p><img src="images/fig-coordinate-change.png" class="dw88 img-fluid" width="940"></p>
 <p><span class="math display">h_1 = \text{ReLU}(x_1 + x_2 - 0.5) \qquad h_2 = \text{ReLU}(-x_1 - x_2 - 0.5)</span></p>
 <p>Left: a problem no line can solve. Right: the <strong>same points</strong>, in the coordinates the hidden layer produced. Class 0 collapses into the corner, class 1 spreads along the axes, and one line now separates 99% of them.</p>
 <p>The layer did not draw a curve. It moved the data until a straight line was enough, and the output layer is still only a straight line.</p>
 </section>
-<section id="depth-is-composition" class="level2">
-<h2 class="anchored" data-anchor-id="depth-is-composition">Depth is composition</h2>
+<section id="depth-as-composition" class="level2">
+<h2 class="anchored" data-anchor-id="depth-as-composition">Depth as composition</h2>
 <p>Stacking layers means composing functions:</p>
 <p><span class="math display">\hat{y} = f_3\!\left(f_2\!\left(f_1(\mathbf{x})\right)\right)
 \qquad \text{where } f_\ell(\mathbf{a}) = \sigma\!\left(\mathbf{W}^{(\ell)}\mathbf{a} + \mathbf{b}^{(\ell)}\right)</span></p>
@@ -851,8 +903,8 @@ Where to spend your attention instead
 <p><span class="math display">\frac{d}{dx}\,f\!\left(g\!\left(h(x)\right)\right)
 = f'\!\left(g(h(x))\right)\cdot g'\!\left(h(x)\right)\cdot h'(x)</span></p>
 </section>
-<section id="which-is-why-it-matters-here" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="which-is-why-it-matters-here">Which is why it matters here</h2>
+<section id="chain-rule-in-a-network" class="level2">
+<h2 class="anchored" data-anchor-id="chain-rule-in-a-network">Chain rule in a network</h2>
 <p>A network <strong>is</strong> a composition, so the derivative of the loss with respect to an early weight is a product of one factor per layer it passes through:</p>
 <p><span class="math display">\frac{\partial \mathcal{L}}{\partial \mathbf{W}^{(1)}} =
   \frac{\partial \mathcal{L}}{\partial \mathbf{a}^{(3)}} \cdot
@@ -866,16 +918,16 @@ Where to spend your attention instead
 </ul>
 <p>You do not need to differentiate a network by hand in this course. You do need to recognize that a gradient in a deep network is a product along a path.</p>
 </section>
-<section id="universal-approximation-stated-carefully" class="level2">
-<h2 class="anchored" data-anchor-id="universal-approximation-stated-carefully">Universal approximation, stated carefully</h2>
+<section id="universal-approximation-theorem" class="level2">
+<h2 class="anchored" data-anchor-id="universal-approximation-theorem">Universal approximation theorem</h2>
 <blockquote class="blockquote">
 <p>A feed-forward network with a <strong>single</strong> hidden layer containing <strong>enough</strong> units can approximate any continuous function on a closed, bounded region to any desired accuracy.</p>
 </blockquote>
 <p><img src="images/2023-03-20-22-26-18.png" class="dh300 img-fluid" width="620"></p>
 <p>Proved in the late 1980s, by Cybenko and by Hornik among others. It is the reason one model family covers regression, classification and generation alike.</p>
 </section>
-<section id="what-it-does-not-promise" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="what-it-does-not-promise">What it does not promise</h2>
+<section id="limits-of-universal-approximation" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="limits-of-universal-approximation">Limits of universal approximation</h2>
 <p>Read the theorem carefully and notice everything it leaves out:</p>
 <ul>
 <li><strong>Not how many units.</strong> “Enough” could be astronomically many. The theorem is an existence result, and it puts no useful bound on the size.</li>
@@ -897,8 +949,8 @@ The useful reading
 </div>
 </div>
 </section>
-<section id="so-why-go-deep" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="so-why-go-deep">So why go deep?</h2>
+<section id="why-depth" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="why-depth">Why depth</h2>
 <p>Three architectures, one parameter budget, the same curve:</p>
 <p><img src="images/fig-depth-vs-width.png" class="dw85 img-fluid" width="940"></p>
 <p><strong>Depth made no difference here.</strong> All three reach the noise floor and the fits sit on top of one another; on a problem like this one hidden layer is genuinely enough, exactly as the theorem said. Depth earns its keep when features <strong>compose</strong>: pixels into edges into parts into objects. Week 5 shows that directly with images.</p>
@@ -917,36 +969,43 @@ The takeaway
 </div>
 </section>
 </section>
-<section id="watching-it-learn" class="level1">
-<h1>Watching it learn</h1>
+<section id="training" class="level1">
+<h1>Training</h1>
 <ul>
 <li>A network with no hidden layer, failing</li>
 <li>The same network, fixed</li>
 <li>Training one the wrong way, on purpose</li>
 </ul>
-<section id="no-hidden-layer" class="level2">
-<h2 class="anchored" data-anchor-id="no-hidden-layer">No hidden layer</h2>
-<p><a href="https://playground.tensorflow.org/#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=false">playground.tensorflow.org</a></p>
+<section id="playground-no-hidden-layer" class="level2 pgslide" data-background-iframe="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" data-background-interactive="true">
+<h2 class="pgslide anchored" data-background-iframe="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" data-background-interactive="true" data-anchor-id="playground-no-hidden-layer">Playground: no hidden layer</h2>
+<iframe src="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" width="100%" height="620" style="border:1px solid #dfe4e8; border-radius:4px;"></iframe>
+<p><a href="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" target="_blank">Open it full size in a new tab</a></p>
 <p>Blue points inside, orange points around them. No hidden layer, so the model can only draw a straight boundary.</p>
-<p><img src="images/playground-0-hidden.png" class="dh330 img-fluid" width="760"></p>
-<p>It runs for <strong>1,793 epochs</strong> and the loss sits at <strong>0.504</strong>. It is not training slowly; it is finished. No straight line separates a disc from a ring.</p>
+<p>Press play and watch the loss stall near <strong>0.5</strong>. It is not training slowly; it is finished. No straight line separates a disc from a ring.</p>
+<div class="notes">
+<p>Press play. Let it run to a few hundred epochs. The loss parks around 0.5 and stops moving. Say out loud: this is not slow training, this is a model that cannot represent the answer. Then advance to the next slide, which is the same page with one layer added.</p>
+</div>
 </section>
-<section id="one-hidden-layer-four-units" class="level2">
-<h2 class="anchored" data-anchor-id="one-hidden-layer-four-units">One hidden layer, four units</h2>
-<p><a href="https://playground.tensorflow.org/?r=2#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=4&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=false">Same page, one layer added</a></p>
-<p><img src="images/playground-1-hidden.png" class="dh330 img-fluid" width="760"></p>
-<p>Test loss <strong>0.016</strong> by epoch 1,050, roughly 31 times better, and the boundary is now a closed region. Watch the middle column: each of the four units learned one straight boundary, and the output combined them into a shape. That is the coordinate-change slide, happening live.</p>
+<section id="playground-one-hidden-layer" class="level2 pgslide" data-background-iframe="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=4&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" data-background-interactive="true">
+<h2 class="pgslide anchored" data-background-iframe="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=4&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" data-background-interactive="true" data-anchor-id="playground-one-hidden-layer">Playground: one hidden layer</h2>
+<iframe src="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=4&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" width="100%" height="620" style="border:1px solid #dfe4e8; border-radius:4px;"></iframe>
+<p><a href="playground/index.html#activation=tanh&amp;batchSize=10&amp;dataset=circle&amp;regDataset=reg-plane&amp;learningRate=0.03&amp;regularizationRate=0&amp;noise=0&amp;networkShape=4&amp;seed=0.62835&amp;showTestData=false&amp;discretize=false&amp;percTrainData=50&amp;x=true&amp;y=true&amp;xTimesY=false&amp;xSquared=false&amp;ySquared=false&amp;cosX=false&amp;sinX=false&amp;cosY=false&amp;sinY=false&amp;collectStats=false&amp;problem=classification&amp;initZero=false&amp;hideText=true" target="_blank">Open it full size in a new tab</a></p>
+<p>One hidden layer of four units, everything else unchanged. The loss drops toward <strong>0.02</strong> and the boundary closes into a region.</p>
+<p>Watch the middle column while it runs: each of the four units learns one straight boundary, and the output layer combines them into a shape. That is the coordinate-change slide, happening live.</p>
+<div class="notes">
+<p>Same dataset, same learning rate, one hidden layer of four units. Press play. Loss falls to roughly 0.02, around thirty times better than the previous slide. Hover a hidden unit to show it has learned a single straight boundary, then point at the output panel: the curve is four straight cuts combined. Tie this back to the coordinate-change figure.</p>
+</div>
 </section>
-<section id="what-we-cannot-do-by-hand" class="level2">
-<h2 class="anchored" data-anchor-id="what-we-cannot-do-by-hand">What we cannot do by hand</h2>
+<section id="computing-gradients" class="level2">
+<h2 class="anchored" data-anchor-id="computing-gradients">Computing gradients</h2>
 <p>We can now write any forward pass we like, and we have watched a browser find good weights. What we have <strong>not</strong> done is find the weights ourselves.</p>
 <p>Last week’s recipe was gradient descent:</p>
 <p><span class="math display">\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} - \lambda \nabla \mathcal{L}(\mathbf{w}_{\text{old}})</span></p>
 <p>which needs <span class="math inline">\dfrac{\partial \mathcal{L}}{\partial w}</span> for <strong>every</strong> parameter. For last week’s two-parameter model we could differentiate by hand. For 49 parameters, let alone 49 million, we cannot.</p>
 <p>So let us do it the dumbest way that works, and see what it costs.</p>
 </section>
-<section id="gradients-by-brute-force" class="level2">
-<h2 class="anchored" data-anchor-id="gradients-by-brute-force">Gradients by brute force</h2>
+<section id="gradients-by-finite-differences" class="level2">
+<h2 class="anchored" data-anchor-id="gradients-by-finite-differences">Gradients by finite differences</h2>
 <p>A derivative is defined as a limit of differences, so approximate it directly:</p>
 <p><span class="math display">\frac{\partial \mathcal{L}}{\partial w_j} \approx
   \frac{\mathcal{L}(w_j + \varepsilon) - \mathcal{L}(w_j)}{\varepsilon}</span></p>
@@ -958,11 +1017,11 @@ The takeaway
 </ol>
 <p>This is called <strong>finite differences</strong>. It genuinely works, and every serious library refuses to train this way. Watch what happens.</p>
 </section>
-<section id="training-a-network-with-no-backprop" class="level2 codetight">
-<h2 class="codetight anchored" data-anchor-id="training-a-network-with-no-backprop">Training a network with no backprop</h2>
+<section id="training-with-finite-differences" class="level2 codetight">
+<h2 class="codetight anchored" data-anchor-id="training-with-finite-differences">Training with finite differences</h2>
 <p>A <span class="math inline">1 \to 16 \to 1</span> tanh network, fitting a curve. Source code for your reference; all the cost lives in the loop inside <code>finite_difference_gradient</code>.</p>
 <p>Read the bottom four numbers together: the network went from useless, past what a straight line can do, to within a factor of two of the noise floor.</p>
-<div id="cece223a" class="cell" data-execution_count="4">
+<div id="36608190" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -1038,13 +1097,13 @@ the noise floor is          0.0113</code></pre>
 </div>
 </div>
 </section>
-<section id="what-that-produced" class="level2">
-<h2 class="anchored" data-anchor-id="what-that-produced">What that produced</h2>
-<p><img src="images/demo-mlp-training.gif" class="dw95 img-fluid" width="940"></p>
+<section id="finite-difference-training-results" class="level2">
+<h2 class="anchored" data-anchor-id="finite-difference-training-results">Finite-difference training results</h2>
+<p><img src="images/demo-mlp-training.gif" class="dw85 img-fluid" width="880"></p>
 <p>It works. The network beats a straight line by a factor of nine and lands within a factor of two of the noise floor, having never been told anything about sine waves.</p>
 </section>
-<section id="now-count-what-that-cost" class="level2">
-<h2 class="anchored" data-anchor-id="now-count-what-that-cost">Now count what that cost</h2>
+<section id="cost-of-finite-difference-gradients" class="level2">
+<h2 class="anchored" data-anchor-id="cost-of-finite-difference-gradients">Cost of finite-difference gradients</h2>
 <p>To fit a curve you could sketch by hand:</p>
 <table class="table">
 <tbody>
@@ -1069,8 +1128,8 @@ the noise floor is          0.0113</code></pre>
 <p>Twenty thousand evaluations of the network to move 49 numbers into place.</p>
 <p>And the cost scales with the <strong>number of parameters</strong>, because every single one needs its own forward pass.</p>
 </section>
-<section id="which-does-not-scale-at-all" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="which-does-not-scale-at-all">Which does not scale, at all</h2>
+<section id="why-finite-differences-do-not-scale" class="level2">
+<h2 class="anchored" data-anchor-id="why-finite-differences-do-not-scale">Why finite differences do not scale</h2>
 <p>Same method, real models, at a generous one millisecond per forward pass:</p>
 <table class="table">
 <thead>
@@ -1101,8 +1160,8 @@ the noise floor is          0.0113</code></pre>
 <p>ResNet-50 is the row to hold onto: it is a model you will fine-tune yourself in Week 6, and 6.9 hours buys you <strong>one</strong> step out of the many thousands needed.</p>
 <p>Deep learning is not possible this way. It is not a matter of faster hardware; it is the wrong algorithm by a factor of millions.</p>
 </section>
-<section id="and-that-is-why-next-week-exists" class="level2">
-<h2 class="anchored" data-anchor-id="and-that-is-why-next-week-exists">And that is why next week exists</h2>
+<section id="next-week-backpropagation" class="level2">
+<h2 class="anchored" data-anchor-id="next-week-backpropagation">Next week: backpropagation</h2>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -1120,11 +1179,11 @@ The one algorithm that makes all of this work
 <p>Next week: backpropagation, computational graphs, and PyTorch doing all of it for you.</p>
 </section>
 </section>
-<section id="vocabulary-before-we-go" class="level1">
-<h1>Vocabulary before we go</h1>
+<section id="training-vocabulary" class="level1">
+<h1>Training vocabulary</h1>
 <p>The words you need to read a training script, or a paper, or your own logs.</p>
-<section id="how-much-data-per-step" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="how-much-data-per-step">How much data per step?</h2>
+<section id="minibatch-gradient-descent" class="level2">
+<h2 class="anchored" data-anchor-id="minibatch-gradient-descent">Minibatch gradient descent</h2>
 <p>Gradient descent needs a loss, and you get to choose how much data to compute it on:</p>
 <table class="table">
 <colgroup>
@@ -1184,8 +1243,8 @@ Why it matters
 </div>
 </div>
 </section>
-<section id="the-learning-rate-now-that-there-are-thousands-of-parameters" class="level2">
-<h2 class="anchored" data-anchor-id="the-learning-rate-now-that-there-are-thousands-of-parameters">The learning rate, now that there are thousands of parameters</h2>
+<section id="learning-rate" class="level2">
+<h2 class="anchored" data-anchor-id="learning-rate">Learning rate</h2>
 <p><span class="math display">\mathbf{w}_{\text{new}} = \mathbf{w}_{\text{old}} - \lambda \nabla \mathcal{L}</span></p>
 <p>The same <span class="math inline">\lambda</span> multiplies <strong>every</strong> parameter’s gradient. One number controls thousands of moves at once, which is why it is the hyper-parameter that matters most.</p>
 <ul>
@@ -1195,8 +1254,8 @@ Why it matters
 </ul>
 <p>Week 4 is largely about not having to guess: adaptive optimizers give parameters their own effective step sizes, and schedules change <span class="math inline">\lambda</span> over training.</p>
 </section>
-<section id="reading-a-training-curve" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="reading-a-training-curve">Reading a training curve</h2>
+<section id="training-curves" class="level2">
+<h2 class="anchored" data-anchor-id="training-curves">Training curves</h2>
 <p>The first thing to look at, every time, before any metric:</p>
 <table class="table">
 <colgroup>
@@ -1238,23 +1297,24 @@ Why it matters
 </table>
 <p>The last row is the one to be suspicious of. A result that looks too good is the single most common serious bug in student projects, and it never announces itself.</p>
 </section>
-<section id="one-thing-about-initialization" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="one-thing-about-initialization">One thing about initialization</h2>
+<section id="weight-initialization" class="level2">
+<h2 class="anchored" data-anchor-id="weight-initialization">Weight initialization</h2>
 <p>A fair question: why not start every weight at zero, the way you might for a linear model?</p>
 <p>Because then every unit in a layer computes <strong>exactly</strong> the same thing, receives <strong>exactly</strong> the same gradient, and updates <strong>exactly</strong> the same way. They stay identical forever, and a 512-unit layer does the work of one unit.</p>
 <p>Random initialization exists to break that symmetry. Notice that in today’s demo the weights were random and the biases were zero, which is the usual pattern: the weights already break the symmetry, so the biases do not have to.</p>
 <p>Week 4 covers why the <strong>scale</strong> of that randomness matters too.</p>
 </section>
 </section>
-<section id="before-you-go" class="level1">
-<h1>Before you go</h1>
+<section id="closing" class="level1">
+<h1>Closing</h1>
 <ul>
 <li>Lab 2</li>
 <li>Quiz 2, so you know what to study</li>
+<li>Supplemental content</li>
 <li>Quiz 1, right now</li>
 </ul>
-<section id="lab-2-build-the-forward-pass" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="lab-2-build-the-forward-pass">Lab 2: build the forward pass</h2>
+<section id="lab-2" class="level2">
+<h2 class="anchored" data-anchor-id="lab-2">Lab 2</h2>
 <p><strong>Released today. Due Wednesday Sep 9, 11:59 PM ET.</strong></p>
 <p>Today’s lecture, by hand, in NumPy:</p>
 <ol type="1">
@@ -1305,6 +1365,35 @@ The most reliable way to prepare
 <p>Do Lab 2 yourself, and be able to say <strong>why</strong> each result came out the way it did. Questions are written so that having run the lab is hard to fake.</p>
 </div>
 </div>
+</section>
+<section id="supplemental-content" class="level2">
+<h2 class="anchored" data-anchor-id="supplemental-content">Supplemental content</h2>
+<p>These are <strong>optional</strong>. No graded work assumes you watched them. They are on Prof.&nbsp;Hickman’s centralized lecture content site, and they go deeper on today’s topics than we had time for.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Neural networks</strong></p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/fundamentals/introduction-to-neural-networks/slides.html">Introduction to neural networks</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/fundamentals/introduction-to-deep-learning/slides.html">Introduction to deep learning</a></li>
+<li><a href="https://playground.tensorflow.org/">TensorFlow Playground</a></li>
+</ul>
+<p><strong>Linear algebra of a layer</strong></p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/backprop/matrix-multiplication-differentiation/matrix-multiplication-differentiaion.html">Matrix-multiplication differentiation</a></li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Calculus for the chain rule</strong></p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/mathematics/calculus/multivariable-calculus/multivariable-functions-and-partial-derivatives/notes.html">Multivariable functions and partial derivatives</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/mathematics/calculus/multivariable-calculus/calculus-overview/notes.html">Calculus overview</a></li>
+</ul>
+<p><strong>Optimization</strong></p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/fundamentals/gradient-descent/notes.html">Gradient descent</a></li>
+</ul>
+</div>
+</div>
+<p><sup>All of the above live on the <a href="https://jfh.georgetown.domains/centralized-lecture-content/">centralized lecture content</a> site, which has a great deal more than this.</sup></p>
 </section>
 <section id="wrap-up" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="wrap-up">Wrap-up</h2>

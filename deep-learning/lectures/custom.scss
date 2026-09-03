@@ -142,6 +142,29 @@ $presentation-h3-font-size: 1.2em;
 .reveal .col-no  h3 { color: #a8281f; }
 
 // ---------------------------------------------------------------------------
+// Zoomable diagrams.
+//
+// From week 3 on, build-notebook.py wraps every slide image in a link to the
+// image file, so a dense hand-drawn figure can be opened in its own tab and
+// zoomed during lecture.
+//
+// The anchor must be block-level. Every sizing class below centers its image
+// with `display: block` plus auto left/right margins, and inside a
+// shrink-to-fit inline anchor there is no spare horizontal space for those
+// margins to distribute, so the image would jump to the left edge.
+//
+// This is deck-only styling. The HTML handout has no custom stylesheet, and
+// there the wrapped image just renders at its `width=N` attribute as before.
+// ---------------------------------------------------------------------------
+
+.reveal a.zoom {
+  display: block;
+  cursor: zoom-in;
+  text-decoration: none;
+  border-bottom: none;
+}
+
+// ---------------------------------------------------------------------------
 // Odd widths, used where a legacy screenshot has to stay at or below its own
 // native resolution so it does not get upscaled by Reveal's slide transform.
 // ---------------------------------------------------------------------------
