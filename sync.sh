@@ -32,6 +32,10 @@ COLAB_BASE="https://colab.research.google.com/github/bthoughton/dsan-lecture-con
 # Solution notebooks must never reach this repo or the public site.
 PRIVATE=(--exclude='*-complete.ipynb' --exclude='*-solution.ipynb' --exclude='*-solutions.ipynb')
 
+# Running a lab notebook downloads its dataset next to it. Lab 4 pulls 82 MB of
+# Fashion-MNIST into labs/lab-4/data. None of that belongs in a git repo.
+BULKY=(--exclude='data/' --exclude='.ipynb_checkpoints/' --exclude='__pycache__/')
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -41,6 +45,7 @@ pull_source() {
   rsync -avz --checksum --delete \
     --exclude='index.qmd' \
     "${PRIVATE[@]}" \
+    "${BULKY[@]}" \
     "$source_dir/" "$dest_dir/"
 }
 
@@ -86,9 +91,11 @@ render_page() {
   fi
 }
 
-# Strip the "DSAN 6600 Week 01:" style prefix off a page title to leave the topic.
+# Strip a leading "DSAN 6600 Week 01:", "DSAN 6600:" or "Lab 3 -" off a page
+# title to leave the topic. Lecture decks are no longer named by week, so the
+# common case is now the bare course prefix.
 strip_prefix() {
-  sed -E 's/^.*(Week|Lab) [0-9]+ ?[-—:] ?//'
+  sed -E -e 's/^.*(Week|Lab) [0-9]+ ?[-—:] ?//' -e 's/^DSAN [0-9]+ ?[-—:] ?//'
 }
 
 lecture_topic() {
@@ -97,6 +104,79 @@ lecture_topic() {
     topic=$( { grep -oP '(?<=<title>).*?(?=</title>)' "$html" | head -1 | strip_prefix; } || true)
   fi
   echo "${topic:-$fallback}"
+}
+
+# ---------------------------------------------------------------------------
+# Week schedule, read from the course repo
+#
+# A deck is a unit of content; a class meeting is a slot on the calendar, and
+# they are not one-to-one. Week 3 used two decks and produced none of its own;
+# the backprop deck then spanned two meetings. So deck folders under lectures/
+# are named by topic and carry no week number, and this table is the calendar.
+#
+# The mapping lives with the content, in lectures/schedule.txt of the course
+# repo, not here: whoever moves a lecture is editing that repo anyway. Format
+# is one pipe-delimited row per meeting,
+#
+#     week | date | topic | deck slugs, space separated
+#
+# with # comments and blank lines ignored. See that file's header for the
+# editing rules.
+# ---------------------------------------------------------------------------
+DL_SCHEDULE="$SCRIPT_DIR/deep-learning/lectures/schedule.txt"
+
+# Field $2 of the row for week $1, or empty if the week has no row.
+schedule_field() {
+  local want="$1" field="$2"
+  [ -f "$DL_SCHEDULE" ] || return 0
+  awk -F'|' -v want="$want" -v f="$field" '
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*$/ { next }
+    {
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1)
+      if ($1 == want) {
+        v = $f
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", v)
+        print v
+        exit
+      }
+    }' "$DL_SCHEDULE"
+}
+
+dl_lecture_folders() {
+  local decks
+  decks=$(schedule_field "$1" 4)
+  echo "$decks"
+}
+
+dl_week_date() {
+  local d
+  d=$(schedule_field "$1" 2)
+  if [ -n "$d" ]; then
+    echo "$d"
+  else
+    date -d "2026-08-27 + $(($1-1)) weeks" +"%b %-d" 2>/dev/null || true
+  fi
+}
+
+dl_lab_for_week() {
+  schedule_field "$1" 5
+}
+
+dl_week_topic() {
+  local num="$1" topic first
+  topic=$(schedule_field "$num" 3)
+  if [ -n "$topic" ]; then
+    echo "$topic"
+    return 0
+  fi
+  # No row yet: fall back to the title of the first deck, if one is named.
+  first=$(dl_lecture_folders "$num" | awk '{print $1}')
+  if [ -n "$first" ]; then
+    lecture_topic "$SCRIPT_DIR/deep-learning/lectures/$first/$first.html" "week-$num"
+  else
+    echo "week-$num"
+  fi
 }
 
 lab_topic() {
@@ -112,11 +192,14 @@ lab_topic() {
 # directory so Zoom's own filenames can be left alone.
 week_recording() {
   local num="$1" mp4
+  # Always return 0: under set -e, a failed $(week_recording) assignment
+  # would abort the deploy loop before later weeks are uploaded.
   for mp4 in "$DL_RECORDING_DIR/week-$num"/*.mp4; do
     [ -f "$mp4" ] || continue
-    echo "$mp4"
+    printf '%s\n' "$mp4"
     return 0
   done
+  return 0
 }
 
 week_numbers() {
@@ -127,8 +210,40 @@ week_numbers() {
   done | sort -n
 }
 
+# Every deck folder that holds a rendered notebook of the same name, in order.
+# Works for both naming schemes: 6500 still uses week-N, 6600 uses topic slugs
+# with a numeric prefix.
+deck_names() {
+  local lectures_dir="$1" deck_dir name
+  for deck_dir in "$lectures_dir"/*/; do
+    [ -d "$deck_dir" ] || continue
+    name=$(basename "$deck_dir")
+    [ -f "$deck_dir/$name.html" ] || continue
+    printf '%s\n' "$name"
+  done | sort -V
+}
+
+# The weeks to build pages for, straight from the schedule. A week appears here
+# whether or not it has a deck yet, so announced-but-untaught weeks still get a
+# page saying "Coming soon".
+dl_week_numbers() {
+  [ -f "$DL_SCHEDULE" ] || return 0
+  awk -F'|' '
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*$/ { next }
+    NF > 1 {
+      gsub(/^[[:space:]]+|[[:space:]]+$/, "", $1)
+      if ($1 ~ /^[0-9]+$/) print $1
+    }' "$DL_SCHEDULE" | sort -n | uniq
+}
+
+# One row per deck. The first column is a label, not a week: a deck can be
+# taught over two meetings, or revisited later, so tying this index to the
+# calendar is what caused the 6600 index and the week pages to disagree.
+# Weeks live on the landing page and the per-week pages instead.
 build_lectures_index() {
   local content_dir="$1" out_qmd="$2" header_src="$3" title="$4"
+  local col_label="${5:-Week}"
 
   mkdir -p "$(dirname "$out_qmd")"
   header_with_title "$header_src" "$title" > "$out_qmd"
@@ -136,17 +251,19 @@ build_lectures_index() {
     echo ""
     echo "## Lecture Schedule"
     echo ""
-    echo "| Week | Topic | Link |"
+    echo "| $col_label | Topic | Link |"
     echo "|:----:|-------|:----:|"
   } >> "$out_qmd"
 
-  local num week_name topic
-  while read -r num; do
-    week_name="week-$num"
-    topic=$(lecture_topic "$content_dir/$week_name/$week_name.html" "$week_name")
-    printf '| %02d | %s | [Lecture](%s/%s.html) |\n' \
-      "$num" "$topic" "$week_name" "$week_name" >> "$out_qmd"
-  done < <(week_numbers "$content_dir")
+  local name num topic
+  while read -r name; do
+    [ -n "$name" ] || continue
+    topic=$(lecture_topic "$content_dir/$name/$name.html" "$name")
+    num=$(printf '%s' "$name" | grep -oP '^\d+|\d+' | head -1)
+    printf '| %s | %s | [Lecture](%s/%s.html) |\n' \
+      "$(printf '%02d' "${num:-0}" 2>/dev/null || echo "${num:-}")" \
+      "$topic" "$name" "$name" >> "$out_qmd"
+  done < <(deck_names "$content_dir")
 
   echo "" >> "$out_qmd"
   echo ": {.table .table-striped .table-hover}" >> "$out_qmd"
@@ -189,9 +306,9 @@ build_labs_index() {
   echo ": {.table .table-striped .table-hover}" >> "$out_qmd"
 }
 
-# The 6600 landing page: one row per week, described by the lecture's own title.
+# The 6600 landing page: one row per week, from lectures/schedule.txt.
 build_course_index() {
-  local out_qmd="$1" header_src="$2" title="$3" lectures_dir="$4"
+  local out_qmd="$1" header_src="$2" title="$3"
 
   mkdir -p "$(dirname "$out_qmd")"
   header_with_title "$header_src" "$title" > "$out_qmd"
@@ -202,15 +319,16 @@ build_course_index() {
     echo "Each week has one page holding that week's lecture, lab, and quiz study"
     echo "guide."
     echo ""
-    echo "| Week | Topic |"
-    echo "|:-----|-------|"
+    echo "| Week | Date | Topic |"
+    echo "|:-----|:-----|-------|"
   } >> "$out_qmd"
 
   local num topic
   while read -r num; do
-    topic=$(lecture_topic "$lectures_dir/week-$num/week-$num.html" "week-$num")
-    printf '| [Week %02d](week-%d/) | %s |\n' "$num" "$num" "$topic" >> "$out_qmd"
-  done < <(week_numbers "$lectures_dir")
+    topic=$(dl_week_topic "$num")
+    printf '| [Week %02d](week-%d/) | %s | %s |\n' \
+      "$num" "$num" "$(dl_week_date "$num")" "$topic" >> "$out_qmd"
+  done < <(dl_week_numbers)
 
   {
     echo ""
@@ -231,10 +349,11 @@ build_week_pages() {
   local labs_dir="$SCRIPT_DIR/deep-learning/labs"
   local guides_dir="$SCRIPT_DIR/deep-learning/study-guides"
 
-  local num week_name out_qmd topic links lab_name nb quiz_name guide guide_pdf formula formula_pdf guide_note
+  local num week_name out_qmd topic links lab_name lab_num nb quiz_name guide guide_pdf formula formula_pdf guide_note
+  local deck lec_title deck_count lecture_rows recording_link
   while read -r num; do
     week_name="week-$num"
-    topic=$(lecture_topic "$lectures_dir/$week_name/$week_name.html" "$week_name")
+    topic=$(dl_week_topic "$num")
 
     out_qmd="$BUILD_DIR/deep-learning/$week_name/index.qmd"
     mkdir -p "$(dirname "$out_qmd")"
@@ -245,21 +364,45 @@ build_week_pages() {
       echo "|----------|-------|"
     } >> "$out_qmd"
 
-    links="[Notes](../lectures/$week_name/$week_name.html)"
-    if [ -f "$lectures_dir/$week_name/presentation.html" ]; then
-      links="$links · [Slides](../lectures/$week_name/presentation.html)"
+    # dl_lecture_folders returns deck folder names, which are topic slugs and
+    # already complete. A week naming two decks labels each by its own title,
+    # since "Lecture" twice would tell the student nothing.
+    lecture_rows=0
+    deck_count=$(dl_lecture_folders "$num" | wc -w)
+    for deck in $(dl_lecture_folders "$num"); do
+      [ -f "$lectures_dir/$deck/$deck.html" ] || continue
+      lec_title=$(lecture_topic "$lectures_dir/$deck/$deck.html" "$deck")
+      links="[Notes](../lectures/$deck/$deck.html)"
+      if [ -f "$lectures_dir/$deck/presentation.html" ]; then
+        links="$links · [Slides](../lectures/$deck/presentation.html)"
+      fi
+      if [ "$deck_count" -gt 1 ]; then
+        echo "| Lecture notes: $lec_title | $links |" >> "$out_qmd"
+      else
+        if [ -n "$(week_recording "$num")" ]; then
+          links="$links · [Lecture Recording](../recordings/$week_name/)"
+        fi
+        echo "| Lecture | $links |" >> "$out_qmd"
+      fi
+      lecture_rows=$((lecture_rows + 1))
+    done
+    if [ "$deck_count" -gt 1 ] && [ -n "$(week_recording "$num")" ]; then
+      echo "| Lecture Recording | [Lecture Recording](../recordings/$week_name/) |" >> "$out_qmd"
+      lecture_rows=$((lecture_rows + 1))
     fi
-    if [ -n "$(week_recording "$num")" ]; then
-      links="$links · [Lecture Recording](../recordings/$week_name/)"
+    if [ "$lecture_rows" -eq 0 ]; then
+      echo "| Lecture | Coming soon |" >> "$out_qmd"
     fi
-    echo "| Lecture | $links |" >> "$out_qmd"
 
-    lab_name="lab-$num"
-    nb="$labs_dir/$lab_name/$lab_name.ipynb"
-    if [ -f "$nb" ]; then
-      links="[Open in Colab]($COLAB_BASE/$repo_root/labs/$lab_name/$lab_name.ipynb)"
-      links="$links · [Download](../labs/$lab_name/$lab_name.ipynb){download=\"$lab_name.ipynb\"}"
-      echo "| Lab $num: $(lab_topic "$nb" "$lab_name") | $links |" >> "$out_qmd"
+    lab_name=$(dl_lab_for_week "$num")
+    if [ -n "$lab_name" ]; then
+      nb="$labs_dir/$lab_name/$lab_name.ipynb"
+      if [ -f "$nb" ]; then
+        lab_num=$(echo "$lab_name" | grep -oP '\d+')
+        links="[Open in Colab]($COLAB_BASE/$repo_root/labs/$lab_name/$lab_name.ipynb)"
+        links="$links · [Download](../labs/$lab_name/$lab_name.ipynb){download=\"$lab_name.ipynb\"}"
+        echo "| Lab $lab_num: $(lab_topic "$nb" "$lab_name") | $links |" >> "$out_qmd"
+      fi
     fi
 
     quiz_name=$(printf 'quiz-%02d' "$num")
@@ -296,7 +439,7 @@ build_week_pages() {
     if [ -n "$(week_recording "$num")" ]; then
       build_recording_player "$num" "$topic"
     fi
-  done < <(week_numbers "$lectures_dir")
+  done < <(dl_week_numbers)
 }
 
 # Browsers ignore playback-rate hints on a raw MP4, so each recording gets a
@@ -389,7 +532,7 @@ EOF
 ensure_remote_dir() {
   local remote_path="$1"
   [ -n "$remote_path" ] && [ "$remote_path" != "." ] || return 0
-  ssh -i "$KEY" "$REMOTE" "mkdir -p $REMOTE_ROOT/$remote_path"
+  ssh -n -i "$KEY" "$REMOTE" "mkdir -p $REMOTE_ROOT/$remote_path"
 }
 
 # Push a content directory, keeping the generated landing page in place.
@@ -399,7 +542,9 @@ push_content() {
   rsync -avz --delete -e "$SSH_CMD" \
     --exclude='/index.html' \
     --exclude='index.qmd' \
+    --exclude='schedule.txt' \
     "${PRIVATE[@]}" \
+    "${BULKY[@]}" \
     "$local_dir/" "$REMOTE:$REMOTE_ROOT/$remote_path/"
 }
 
@@ -469,8 +614,7 @@ echo "==> Building DSAN 6600 course landing page..."
 build_course_index \
   "$BUILD_DIR/deep-learning/index.qmd" \
   "$SCRIPT_DIR/deep-learning/index.qmd" \
-  "DSAN 6600: Deep Learning" \
-  "$SCRIPT_DIR/deep-learning/lectures"
+  "DSAN 6600: Deep Learning"
 render_page "$BUILD_DIR/deep-learning/index.qmd"
 
 echo "==> Building DSAN 6600 week pages..."
@@ -484,7 +628,8 @@ build_lectures_index \
   "$SCRIPT_DIR/deep-learning/lectures" \
   "$BUILD_DIR/deep-learning/lectures/index.qmd" \
   "$SCRIPT_DIR/deep-learning/index.qmd" \
-  "DSAN 6600: Deep Learning — Lectures"
+  "DSAN 6600: Deep Learning — Lectures" \
+  "Deck"
 render_page "$BUILD_DIR/deep-learning/lectures/index.qmd"
 
 echo "==> Building DSAN 6600 labs landing page..."
@@ -527,16 +672,24 @@ push_file "$BUILD_DIR/deep-learning/lectures/index.html" "deep-learning/lectures
 push_file "$BUILD_DIR/deep-learning/labs/index.html" "deep-learning/labs/index.html"
 
 echo "==> Syncing DSAN 6600 lecture recordings..."
-while read -r recording_week; do
+# Array (not a while-read loop) so ssh/rsync cannot consume the week list
+# from stdin and skip later recordings.
+recording_weeks=()
+mapfile -t recording_weeks < <(dl_week_numbers)
+for recording_week in "${recording_weeks[@]}"; do
   recording_file="$(week_recording "$recording_week")"
-  [ -n "$recording_file" ] || continue
+  if [ -z "$recording_file" ]; then
+    echo "    week $recording_week: no recording, skipping"
+    continue
+  fi
+  echo "    week $recording_week: $(basename "$recording_file")"
   push_video "$recording_file" \
     "deep-learning/recordings/week-$recording_week/week-$recording_week-recording.mp4"
   player_html="$BUILD_DIR/deep-learning/recordings/week-$recording_week/index.html"
   if [ -f "$player_html" ]; then
     push_file "$player_html" "deep-learning/recordings/week-$recording_week/index.html"
   fi
-done < <(week_numbers "$SCRIPT_DIR/deep-learning/lectures")
+done
 
 echo "==> Syncing DSAN 6600 week pages..."
 for week_index in "$BUILD_DIR"/deep-learning/week-*/index.html; do

@@ -1,0 +1,43 @@
+# Calendar week -> lecture deck(s). Source of truth for the course website.
+#
+# Read by /home/ben/dsan-lecture-content/sync.sh to build the DSAN 6600 landing
+# page and the per-week pages.
+#
+# WHY THIS FILE EXISTS
+# A deck is a unit of content; a class meeting is a slot on the calendar. They
+# are not one-to-one and never reliably will be. Week 3 re-taught the week-2
+# deck and only started backprop, so it used two decks and produced none of its
+# own. The backprop deck then spanned two meetings. Numbering deck folders by
+# week forced a rename every time that happened, and left the deck titles
+# claiming a week they were no longer taught in.
+#
+# So: deck folders under lectures/ are named by TOPIC and carry no week number.
+# This file holds the calendar. When a lecture runs long, you edit a row here
+# and nothing else moves.
+#
+# FORMAT
+# Pipe-delimited, one row per class meeting:
+#
+#     week | date | topic | deck slugs, space separated | lab slug
+#
+# * The deck slug is the folder name under lectures/, which must also be the
+#   basename of the notebook inside it (lectures/03-backpropagation/
+#   contains 03-backpropagation.ipynb). sync.sh relies on that.
+# * List a deck on every week it was actually on screen. Repeating one across
+#   two rows is correct and expected, not a mistake to clean up.
+# * Leave the deck list empty for a week that is announced but not yet taught.
+#   It renders as "Coming soon".
+# * The lab slug is the folder name under labs/ (lab-1, lab-4, ...). Labs are
+#   numbered by assignment, not by calendar week: week 4 had no lab, and Lab 4
+#   was released in week 5. Leave the field empty when there is no lab.
+# * Order does not matter; rows are sorted by week number.
+
+# Topics must match plans/labs-quizzes-schedule.md and plans/canvas-module-map.md.
+# Those two are the human-facing schedule; this is the machine-readable one.
+
+1|Aug 27|Course Introduction and What Deep Learning Is|01-course-intro|lab-1
+2|Sep 3|How Neural Networks Work|02-how-neural-networks-work|lab-2
+3|Sep 10|How Neural Networks Work (continued) + Backpropagation|02-how-neural-networks-work 03-backpropagation|lab-3
+4|Sep 17|Backpropagation|03-backpropagation|
+5|Sep 24|PyTorch and Training|04-pytorch-and-training|lab-4
+6|Oct 1|Convolutional Neural Networks||
