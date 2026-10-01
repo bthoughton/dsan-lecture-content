@@ -40,4 +40,12 @@
 3|Sep 10|How Neural Networks Work (continued) + Backpropagation|02-how-neural-networks-work 03-backpropagation|lab-3
 4|Sep 17|Backpropagation|03-backpropagation|
 5|Sep 24|PyTorch and Training|04-pytorch-and-training|lab-4
-6|Oct 1|Convolutional Neural Networks||
+6|Oct 1|Convolutional Neural Networks|05-convolutional-networks|lab-5
+7|Oct 8|Object Detection and Segmentation|06-detection-and-segmentation|lab-6
+8|Oct 15|Sequence Models and Attention||
+9|Oct 22|Transformers||
+10|Oct 29|Large Language Models||
+11|Nov 5|Generative Modeling I||
+12|Nov 12|Generative Modeling II + Multimodal Begins||
+13|Nov 19|Multimodal Deep Learning + Small Introduction to GNNs||
+14|Dec 3|Project Presentations||

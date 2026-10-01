@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Prof.&nbsp;Ben Houghton">
+<meta name="dcterms.date" content="2026-10-08">
+
+<title>DSAN 6600: Object Detection and Segmentation</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="06-detection-and-segmentation_files/libs/clipboard/clipboard.min.js"></script>
+<script src="06-detection-and-segmentation_files/libs/quarto-html/quarto.js"></script>
+<script src="06-detection-and-segmentation_files/libs/quarto-html/popper.min.js"></script>
+<script src="06-detection-and-segmentation_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="06-detection-and-segmentation_files/libs/quarto-html/anchor.min.js"></script>
+<link href="06-detection-and-segmentation_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="06-detection-and-segmentation_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="06-detection-and-segmentation_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="06-detection-and-segmentation_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="06-detection-and-segmentation_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link rel="icon" type="image/png" href="/icon.png">
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#today" id="toc-today" class="nav-link active" data-scroll-target="#today">Today</a></li>
+  <li><a href="#labs-and-quizzes" id="toc-labs-and-quizzes" class="nav-link" data-scroll-target="#labs-and-quizzes">Labs and quizzes</a></li>
+  <li><a href="#what-a-classifier-cannot-tell-you" id="toc-what-a-classifier-cannot-tell-you" class="nav-link" data-scroll-target="#what-a-classifier-cannot-tell-you">What a classifier cannot tell you</a></li>
+  <li><a href="#transfer-learning" id="toc-transfer-learning" class="nav-link" data-scroll-target="#transfer-learning">Transfer learning</a>
+  <ul class="collapse">
+  <li><a href="#transfer-learning-1" id="toc-transfer-learning-1" class="nav-link" data-scroll-target="#transfer-learning-1">Transfer learning</a></li>
+  <li><a href="#feature-extraction-and-fine-tuning" id="toc-feature-extraction-and-fine-tuning" class="nav-link" data-scroll-target="#feature-extraction-and-fine-tuning">Feature extraction and fine-tuning</a></li>
+  <li><a href="#loading-a-pretrained-model" id="toc-loading-a-pretrained-model" class="nav-link" data-scroll-target="#loading-a-pretrained-model">Loading a pretrained model</a></li>
+  <li><a href="#replacing-the-head" id="toc-replacing-the-head" class="nav-link" data-scroll-target="#replacing-the-head">Replacing the head</a></li>
+  <li><a href="#the-input-contract" id="toc-the-input-contract" class="nav-link" data-scroll-target="#the-input-contract">The input contract</a></li>
+  <li><a href="#transfer-learning-measured" id="toc-transfer-learning-measured" class="nav-link" data-scroll-target="#transfer-learning-measured">Transfer learning, measured</a></li>
+  <li><a href="#when-transfer-learning-does-not-help" id="toc-when-transfer-learning-does-not-help" class="nav-link" data-scroll-target="#when-transfer-learning-does-not-help">When transfer learning does not help</a></li>
+  <li><a href="#backbone-neck-head" id="toc-backbone-neck-head" class="nav-link" data-scroll-target="#backbone-neck-head">Backbone, neck, head</a></li>
+  </ul></li>
+  <li><a href="#the-four-tasks" id="toc-the-four-tasks" class="nav-link" data-scroll-target="#the-four-tasks">The four tasks</a>
+  <ul class="collapse">
+  <li><a href="#classification-detection-segmentation" id="toc-classification-detection-segmentation" class="nav-link" data-scroll-target="#classification-detection-segmentation">Classification, detection, segmentation</a></li>
+  <li><a href="#what-the-label-looks-like" id="toc-what-the-label-looks-like" class="nav-link" data-scroll-target="#what-the-label-looks-like">What the label looks like</a></li>
+  <li><a href="#why-detection-is-harder-than-classification" id="toc-why-detection-is-harder-than-classification" class="nav-link" data-scroll-target="#why-detection-is-harder-than-classification">Why detection is harder than classification</a></li>
+  <li><a href="#intersection-over-union" id="toc-intersection-over-union" class="nav-link" data-scroll-target="#intersection-over-union">Intersection over Union</a></li>
+  <li><a href="#semantic-against-instance-segmentation-measured" id="toc-semantic-against-instance-segmentation-measured" class="nav-link" data-scroll-target="#semantic-against-instance-segmentation-measured">Semantic against instance segmentation, measured</a></li>
+  </ul></li>
+  <li><a href="#two-stage-detection" id="toc-two-stage-detection" class="nav-link" data-scroll-target="#two-stage-detection">Two-stage detection</a>
+  <ul class="collapse">
+  <li><a href="#the-region-proposal-idea" id="toc-the-region-proposal-idea" class="nav-link" data-scroll-target="#the-region-proposal-idea">The region proposal idea</a></li>
+  <li><a href="#r-cnn" id="toc-r-cnn" class="nav-link" data-scroll-target="#r-cnn">R-CNN</a></li>
+  <li><a href="#selective-search" id="toc-selective-search" class="nav-link" data-scroll-target="#selective-search">Selective search</a></li>
+  <li><a href="#non-maximum-suppression" id="toc-non-maximum-suppression" class="nav-link" data-scroll-target="#non-maximum-suppression">Non-maximum suppression</a></li>
+  <li><a href="#running-a-pretrained-detector" id="toc-running-a-pretrained-detector" class="nav-link" data-scroll-target="#running-a-pretrained-detector">Running a pretrained detector</a></li>
+  <li><a href="#what-the-score-threshold-decides" id="toc-what-the-score-threshold-decides" class="nav-link" data-scroll-target="#what-the-score-threshold-decides">What the score threshold decides</a></li>
+  <li><a href="#what-nms-removed" id="toc-what-nms-removed" class="nav-link" data-scroll-target="#what-nms-removed">What NMS removed</a></li>
+  <li><a href="#a-duplicate-that-survived-nms" id="toc-a-duplicate-that-survived-nms" class="nav-link" data-scroll-target="#a-duplicate-that-survived-nms">A duplicate that survived NMS</a></li>
+  <li><a href="#fast-r-cnn" id="toc-fast-r-cnn" class="nav-link" data-scroll-target="#fast-r-cnn">Fast R-CNN</a></li>
+  <li><a href="#roi-pooling" id="toc-roi-pooling" class="nav-link" data-scroll-target="#roi-pooling">ROI pooling</a></li>
+  <li><a href="#training-a-detector" id="toc-training-a-detector" class="nav-link" data-scroll-target="#training-a-detector">Training a detector</a></li>
+  <li><a href="#faster-r-cnn" id="toc-faster-r-cnn" class="nav-link" data-scroll-target="#faster-r-cnn">Faster R-CNN</a></li>
+  <li><a href="#anchors-and-box-offsets" id="toc-anchors-and-box-offsets" class="nav-link" data-scroll-target="#anchors-and-box-offsets">Anchors and box offsets</a></li>
+  </ul></li>
+  <li><a href="#one-stage-detection" id="toc-one-stage-detection" class="nav-link" data-scroll-target="#one-stage-detection">One-stage detection</a>
+  <ul class="collapse">
+  <li><a href="#skipping-the-proposal-stage" id="toc-skipping-the-proposal-stage" class="nav-link" data-scroll-target="#skipping-the-proposal-stage">Skipping the proposal stage</a></li>
+  <li><a href="#yolo" id="toc-yolo" class="nav-link" data-scroll-target="#yolo">YOLO</a></li>
+  <li><a href="#the-yolo-output-tensor" id="toc-the-yolo-output-tensor" class="nav-link" data-scroll-target="#the-yolo-output-tensor">The YOLO output tensor</a></li>
+  <li><a href="#one-stage-against-two" id="toc-one-stage-against-two" class="nav-link" data-scroll-target="#one-stage-against-two">One stage against two</a></li>
+  <li><a href="#feature-pyramid-networks" id="toc-feature-pyramid-networks" class="nav-link" data-scroll-target="#feature-pyramid-networks">Feature pyramid networks</a></li>
+  <li><a href="#detection-in-practice" id="toc-detection-in-practice" class="nav-link" data-scroll-target="#detection-in-practice">Detection in practice</a></li>
+  </ul></li>
+  <li><a href="#segmentation" id="toc-segmentation" class="nav-link" data-scroll-target="#segmentation">Segmentation</a>
+  <ul class="collapse">
+  <li><a href="#semantic-segmentation" id="toc-semantic-segmentation" class="nav-link" data-scroll-target="#semantic-segmentation">Semantic segmentation</a></li>
+  <li><a href="#the-resolution-problem" id="toc-the-resolution-problem" class="nav-link" data-scroll-target="#the-resolution-problem">The resolution problem</a></li>
+  <li><a href="#transposed-convolution" id="toc-transposed-convolution" class="nav-link" data-scroll-target="#transposed-convolution">Transposed convolution</a></li>
+  <li><a href="#three-ways-to-upsample" id="toc-three-ways-to-upsample" class="nav-link" data-scroll-target="#three-ways-to-upsample">Three ways to upsample</a></li>
+  <li><a href="#the-checkerboard-artifact" id="toc-the-checkerboard-artifact" class="nav-link" data-scroll-target="#the-checkerboard-artifact">The checkerboard artifact</a></li>
+  <li><a href="#encoder-and-decoder" id="toc-encoder-and-decoder" class="nav-link" data-scroll-target="#encoder-and-decoder">Encoder and decoder</a></li>
+  <li><a href="#u-net" id="toc-u-net" class="nav-link" data-scroll-target="#u-net">U-Net</a></li>
+  <li><a href="#why-u-net-has-skip-connections" id="toc-why-u-net-has-skip-connections" class="nav-link" data-scroll-target="#why-u-net-has-skip-connections">Why U-Net has skip connections</a></li>
+  <li><a href="#segmentation-losses" id="toc-segmentation-losses" class="nav-link" data-scroll-target="#segmentation-losses">Segmentation losses</a></li>
+  <li><a href="#class-imbalance-measured" id="toc-class-imbalance-measured" class="nav-link" data-scroll-target="#class-imbalance-measured">Class imbalance, measured</a></li>
+  <li><a href="#dice-loss-and-the-combined-loss" id="toc-dice-loss-and-the-combined-loss" class="nav-link" data-scroll-target="#dice-loss-and-the-combined-loss">Dice loss and the combined loss</a></li>
+  <li><a href="#instance-segmentation-and-mask-r-cnn" id="toc-instance-segmentation-and-mask-r-cnn" class="nav-link" data-scroll-target="#instance-segmentation-and-mask-r-cnn">Instance segmentation and Mask R-CNN</a></li>
+  <li><a href="#roi-align" id="toc-roi-align" class="nav-link" data-scroll-target="#roi-align">ROI Align</a></li>
+  </ul></li>
+  <li><a href="#vision-transformers-a-preview" id="toc-vision-transformers-a-preview" class="nav-link" data-scroll-target="#vision-transformers-a-preview">Vision transformers, a preview</a>
+  <ul class="collapse">
+  <li><a href="#what-convolution-assumes" id="toc-what-convolution-assumes" class="nav-link" data-scroll-target="#what-convolution-assumes">What convolution assumes</a></li>
+  <li><a href="#an-image-as-a-sequence-of-patches" id="toc-an-image-as-a-sequence-of-patches" class="nav-link" data-scroll-target="#an-image-as-a-sequence-of-patches">An image as a sequence of patches</a></li>
+  <li><a href="#cnn-and-vit-compared" id="toc-cnn-and-vit-compared" class="nav-link" data-scroll-target="#cnn-and-vit-compared">CNN and ViT compared</a></li>
+  <li><a href="#detr-detection-as-set-prediction" id="toc-detr-detection-as-set-prediction" class="nav-link" data-scroll-target="#detr-detection-as-set-prediction">DETR: detection as set prediction</a></li>
+  <li><a href="#matching-predictions-to-ground-truth" id="toc-matching-predictions-to-ground-truth" class="nav-link" data-scroll-target="#matching-predictions-to-ground-truth">Matching predictions to ground truth</a></li>
+  <li><a href="#what-weeks-8-and-9-fill-in" id="toc-what-weeks-8-and-9-fill-in" class="nav-link" data-scroll-target="#what-weeks-8-and-9-fill-in">What Weeks 8 and 9 fill in</a></li>
+  </ul></li>
+  <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap-up</a>
+  <ul class="collapse">
+  <li><a href="#wrap-up-1" id="toc-wrap-up-1" class="nav-link" data-scroll-target="#wrap-up-1">Wrap-up</a></li>
+  <li><a href="#next-week-sequence-models-and-attention" id="toc-next-week-sequence-models-and-attention" class="nav-link" data-scroll-target="#next-week-sequence-models-and-attention">Next week: sequence models and attention</a></li>
+  <li><a href="#supplemental-content" id="toc-supplemental-content" class="nav-link" data-scroll-target="#supplemental-content">Supplemental content</a></li>
+  <li><a href="#lab-6" id="toc-lab-6" class="nav-link" data-scroll-target="#lab-6">Lab 6</a></li>
+  <li><a href="#quiz-6" id="toc-quiz-6" class="nav-link" data-scroll-target="#quiz-6">Quiz 6</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="presentation.html"><i class="bi bi-file-slides"></i>RevealJS</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title">DSAN 6600: Object Detection and Segmentation</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Prof.&nbsp;Ben Houghton </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 8, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="today" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="today">Today</h2>
+<p>Last week we built convolutional networks that put one label on an image. That is the only question a classifier can answer, and it is usually not the question you have.</p>
+<ol type="1">
+<li><strong>Transfer learning.</strong> Start from a model someone else trained. Every model in the rest of this deck does this, so it comes first.</li>
+<li><strong>The four tasks.</strong> Classification, detection, semantic segmentation, instance segmentation. What each one takes in and what each one gives back.</li>
+<li><strong>Object detection.</strong> Finding and boxing a variable number of objects. The two-stage family, then the one-stage family.</li>
+<li><strong>Segmentation.</strong> Labelling every pixel, and separating objects of the same class.</li>
+</ol>
+<p>At the end, a short preview of vision transformers and DETR, which is where Weeks 8 and 9 pick up.</p>
+</section>
+<section id="labs-and-quizzes" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="labs-and-quizzes">Labs and quizzes</h2>
+<p><strong>Lab 5</strong> was due yesterday. That was the convolutional network against the fully connected model from Lab 4, on the same data.</p>
+<p><strong>Quiz 6</strong> is at the end of class. It covers last week’s material: image data, convolution, and CNN architectures. Nothing from today is on it.</p>
+<p><strong>Lab 6</strong> goes out today and is due Wednesday Oct 14. You will fine-tune a pretrained model and then run a pretrained detector and segmenter, which are the two things sections 1 and 3 of today are about.</p>
+</section>
+<section id="what-a-classifier-cannot-tell-you" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-a-classifier-cannot-tell-you">What a classifier cannot tell you</h2>
+<p>Here is ResNet-50, trained on ImageNet, applied to the photograph we used all of last week. Its single most confident answer is <strong>dingo at 0.126</strong>.</p>
+<p>That is not a bug. The model was built to return one label for the whole image, and this image has three animals in it, so the probability mass is spread thin and the winner is a dog breed.</p>
+<p>Three questions it has no way to answer:</p>
+<ul>
+<li><strong>How many</strong> animals are there?</li>
+<li><strong>Where</strong> is each one?</li>
+<li><strong>Which pixels</strong> belong to the cat and which to the dog?</li>
+</ul>
+<p>Each of those needs a different output format, and a different head on top of the same kind of backbone you built last week. That is today.</p>
+</section>
+<section id="transfer-learning" class="level1">
+<h1>Transfer learning</h1>
+<section id="transfer-learning-1" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="transfer-learning-1">Transfer learning</h2>
+<p><strong>Transfer learning is reusing the weights of a model trained on one task as the starting point for a different task.</strong></p>
+<p>In vision that almost always means: take a network trained on ImageNet, keep most of its weights, and attach a new output layer for your own classes.</p>
+<p>It works because of what the early layers learn. A convolutional network trained on ImageNet spends its first layers detecting edges, corners, colour blobs and textures. None of that is specific to ImageNet’s thousand categories. An edge is an edge whether the photograph is of a dog, a tumour, or a satellite image of a parking lot.</p>
+<p>The later layers are more specialized. They assemble those edges into ImageNet-specific parts, which is why the layers you replace are the last ones.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The practical consequence
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You will almost never train a vision model from random weights. Not as a shortcut, but because starting from pretrained weights is simply better when your dataset is anything short of enormous.</p>
+</div>
+</div>
+</section>
+<section id="feature-extraction-and-fine-tuning" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="feature-extraction-and-fine-tuning">Feature extraction and fine-tuning</h2>
+<p>There are two ways to use pretrained weights, and the difference is which parameters you let the optimizer change.</p>
+<table class="table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Feature extraction</strong></th>
+<th><strong>Fine-tuning</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Backbone</td>
+<td>frozen, <code>requires_grad=False</code></td>
+<td>trainable</td>
+</tr>
+<tr class="even">
+<td>What trains</td>
+<td>the new head only</td>
+<td>the head, and some or all of the backbone</td>
+</tr>
+<tr class="odd">
+<td>Learning rate</td>
+<td>normal, e.g.&nbsp;<code>1e-3</code></td>
+<td>small, e.g.&nbsp;<code>1e-4</code> or lower</td>
+</tr>
+<tr class="even">
+<td>Speed</td>
+<td>fast, no backbone gradients</td>
+<td>slower</td>
+</tr>
+<tr class="odd">
+<td>Needs</td>
+<td>a small dataset is fine</td>
+<td>more data, or it overfits</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Use feature extraction when</strong> your dataset is small and looks like ImageNet photographs. You are treating the backbone as a fixed feature function.</p>
+<p><strong>Use fine-tuning when</strong> you have enough data, or your images do not look like ImageNet. Medical scans and satellite imagery are the standard examples: the edges still transfer, the later layers do not.</p>
+<p>The learning rate matters more than it looks. The pretrained weights are already good. A large learning rate destroys them in the first few steps, before the randomly initialized head has produced a useful gradient. That failure has a name, <strong>catastrophic forgetting</strong>, and the fix is a small learning rate, or freezing the backbone for the first epoch or two.</p>
+</section>
+<section id="loading-a-pretrained-model" class="level2">
+<h2 class="anchored" data-anchor-id="loading-a-pretrained-model">Loading a pretrained model</h2>
+<div id="17ce9e6e" class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.models <span class="im">import</span> ResNet18_Weights, resnet18</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>weights <span class="op">=</span> ResNet18_Weights.IMAGENET1K_V1</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> resnet18(weights<span class="op">=</span>weights)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co"># The Weights enum carries the metadata with it, so you never have to guess.</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"categories      "</span>, <span class="bu">len</span>(weights.meta[<span class="st">"categories"</span>]))</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"parameters      "</span>, <span class="ss">f'</span><span class="sc">{</span>weights<span class="sc">.</span>meta[<span class="st">"num_params"</span>]<span class="sc">:,}</span><span class="ss">'</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"reported top-1  "</span>, weights.meta[<span class="st">"_metrics"</span>][<span class="st">"ImageNet-1K"</span>][<span class="st">"acc@1"</span>])</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"trained on      "</span>, weights.meta[<span class="st">"recipe"</span>])</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the preprocessing that came with the weights:"</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(weights.transforms())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>categories       1000
+parameters       11,689,512
+reported top-1   69.758
+trained on       https://github.com/pytorch/vision/tree/main/references/classification#resnet
+
+the preprocessing that came with the weights:
+ImageClassification(
+    crop_size=[224]
+    resize_size=[256]
+    mean=[0.485, 0.456, 0.406]
+    std=[0.229, 0.224, 0.225]
+    interpolation=InterpolationMode.BILINEAR
+)</code></pre>
+</div>
+</div>
+</section>
+<section id="replacing-the-head" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="replacing-the-head">Replacing the head</h2>
+<p>A <code>torchvision</code> classifier ends in a single <code>nn.Linear</code>. For ResNet it is called <code>fc</code>. Swapping it is one assignment, and the new layer is randomly initialized with <code>requires_grad=True</code> by default.</p>
+<div id="5ca39dd0" class="cell" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"original head:"</span>, model.fc)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Freeze everything, then replace the head. Order matters: the new layer is</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># created after the freeze, so it keeps requires_grad=True.</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> p <span class="kw">in</span> model.parameters():</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    p.requires_grad <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>model.fc <span class="op">=</span> nn.Linear(model.fc.in_features, <span class="dv">10</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"new head:     "</span>, model.fc)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>trainable <span class="op">=</span> [(n, p.numel()) <span class="cf">for</span> n, p <span class="kw">in</span> model.named_parameters()</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>             <span class="cf">if</span> p.requires_grad]</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>total <span class="op">=</span> <span class="bu">sum</span>(p.numel() <span class="cf">for</span> p <span class="kw">in</span> model.parameters())</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"still trainable:"</span>, trainable)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"training </span><span class="sc">{</span><span class="bu">sum</span>(n <span class="cf">for</span> _, n <span class="kw">in</span> trainable)<span class="sc">:,}</span><span class="ss"> of </span><span class="sc">{</span>total<span class="sc">:,}</span><span class="ss"> parameters "</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"(</span><span class="sc">{</span><span class="dv">100</span> <span class="op">*</span> <span class="bu">sum</span>(n <span class="cf">for</span> _, n <span class="kw">in</span> trainable) <span class="op">/</span> total<span class="sc">:.3f}</span><span class="ss">%)"</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Only the trainable ones go to the optimizer. Passing all of them wastes</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co"># memory on optimizer state for parameters that never receive a gradient.</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>opt <span class="op">=</span> torch.optim.AdamW([p <span class="cf">for</span> p <span class="kw">in</span> model.parameters() <span class="cf">if</span> p.requires_grad],</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                        lr<span class="op">=</span><span class="fl">1e-3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>original head: Linear(in_features=512, out_features=1000, bias=True)
+new head:      Linear(in_features=512, out_features=10, bias=True)
+
+still trainable: [('fc.weight', 5120), ('fc.bias', 10)]
+training 5,130 of 11,181,642 parameters (0.046%)</code></pre>
+</div>
+</div>
+</section>
+<section id="the-input-contract" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-input-contract">The input contract</h2>
+<p>A pretrained model has expectations about its input, and it will not tell you when you violate them. The ImageNet contract is: three channels in <strong>RGB</strong> order, resized and cropped to 224x224, converted to float in <code>[0, 1]</code>, then normalized by the ImageNet channel means and standard deviations.</p>
+<p>Below, the same weights and the same photograph through five different pipelines. <strong>All five run without an error.</strong></p>
+<p><a href="images/fig-normalization.png" class="zoom" target="_blank"><img src="images/fig-normalization.png" class="dw100 img-fluid"></a></p>
+<p>Skipping <code>Normalize</code> barely moved the answer, which is why that bug survives for months. Forgetting to divide by 255 is catastrophic, and the model is <strong>certain</strong>: “bolo tie” at 1.000. Input scale matters far more than the exact constants.</p>
+</section>
+<section id="transfer-learning-measured" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="transfer-learning-measured">Transfer learning, measured</h2>
+<p>Two runs on CIFAR-10 with 5,000 training images, 8 epochs, the same optimizer and the same schedule. Both are ResNet-18. One starts from ImageNet weights with the backbone frozen; the other starts from random weights and trains everything.</p>
+<p><a href="images/fig-transfer.png" class="zoom" target="_blank"><img src="images/fig-transfer.png" class="dw100 img-fluid"></a></p>
+<p><strong>77.3% against 64.8%</strong>, a gap of 12.5 points, while training 5,130 parameters instead of 11,181,642.</p>
+<p>The sharper comparison is the first epoch. The frozen model reaches 68.7% after one epoch, which already beats what the from-scratch model reaches after 8.</p>
+</section>
+<section id="when-transfer-learning-does-not-help" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="when-transfer-learning-does-not-help">When transfer learning does not help</h2>
+<p>Three honest limits.</p>
+<p><strong>A large domain gap.</strong> The early layers transfer because edges are universal. If your inputs are not photographs of the natural world, less transfers. Spectrograms, medical scans, and remote sensing imagery all still benefit, but less, and they usually need fine-tuning rather than a frozen backbone.</p>
+<p><strong>Inputs that are not images at all.</strong> Feeding tabular data reshaped into a square, or a one-channel signal stacked three times, sometimes works and often does not. The pretrained filters are looking for spatial structure that may not be there.</p>
+<p><strong>A large enough dataset.</strong> If you have millions of labelled examples in your own domain, training from scratch catches up and then passes a frozen backbone. The curve in the previous slide crosses eventually; it just does not cross at 5,000 images.</p>
+<p>The useful summary: the smaller your dataset, the more transfer learning buys you, and nearly everyone’s dataset is small.</p>
+</section>
+<section id="backbone-neck-head" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="backbone-neck-head">Backbone, neck, head</h2>
+<p>Every model for the rest of this deck is three parts. The vocabulary is worth fixing now because the diagrams all use it.</p>
+<p><strong>Backbone.</strong> The convolutional network that turns an image into feature maps. This is a ResNet or similar, pretrained, exactly what you built last week with the classifier removed.</p>
+<p><strong>Neck.</strong> Optional. Combines or rescales feature maps from several depths of the backbone before they reach the head. The feature pyramid network later in this deck is a neck.</p>
+<p><strong>Head.</strong> The task-specific output layers. This is what changes between tasks: one vector of class scores for classification, boxes and classes for detection, a full-resolution class map for segmentation.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Why this is the right way to see it
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Detection and segmentation are not different kinds of network. They are the same backbone with a different head and a different loss. Once you see that, the model zoo stops looking like a list of unrelated acronyms.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="the-four-tasks" class="level1">
+<h1>The four tasks</h1>
+<section id="classification-detection-segmentation" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="classification-detection-segmentation">Classification, detection, segmentation</h2>
+<p>The same photograph, four tasks, four pretrained <code>torchvision</code> models. Every panel below is real model output.</p>
+<p><a href="images/fig-four-tasks.png" class="zoom" target="_blank"><img src="images/fig-four-tasks.png" class="dw90 img-fluid"></a></p>
+</section>
+<section id="what-the-label-looks-like" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-the-label-looks-like">What the label looks like</h2>
+<p>The pictures show you the output. The part that actually determines the architecture is the <strong>shape of the target</strong>, which is what the loss compares against.</p>
+<table class="table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Task</th>
+<th>Target for one image</th>
+<th>Fixed size?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Classification</strong></td>
+<td>one integer class index</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td><strong>Detection</strong></td>
+<td>a list of <code>(class, x1, y1, x2, y2)</code></td>
+<td><strong>no</strong></td>
+</tr>
+<tr class="odd">
+<td><strong>Semantic segmentation</strong></td>
+<td>an <code>(H, W)</code> integer array, one class per pixel</td>
+<td>yes</td>
+</tr>
+<tr class="even">
+<td><strong>Instance segmentation</strong></td>
+<td>a set of <code>(class, box, (H, W) binary mask)</code></td>
+<td><strong>no</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Read the right-hand column again. Classification and semantic segmentation have targets whose size is known before you see the image. Detection and instance segmentation do not, because the number of objects is a property of the image.</p>
+<p>That one difference is why detection architectures are complicated and segmentation architectures are not.</p>
+</section>
+<section id="why-detection-is-harder-than-classification" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="why-detection-is-harder-than-classification">Why detection is harder than classification</h2>
+<p>A network is a function with a fixed output shape. <code>nn.Linear(512, 10)</code> always produces ten numbers. There is no way to make it produce “however many objects happen to be in this image”.</p>
+<p>So every detector works around it, and there are only a few ways to do that.</p>
+<ol type="1">
+<li><strong>Propose regions, then classify each one.</strong> Turn a variable number of outputs into a variable number of <em>inputs</em>, which a fixed-shape network can handle one at a time. This is the two-stage family: R-CNN, Fast R-CNN, Faster R-CNN.</li>
+<li><strong>Predict a fixed grid, then discard.</strong> Emit a fixed, deliberately too-large number of boxes, give each one a confidence, and throw away the ones that score low or duplicate each other. This is the one-stage family: YOLO, SSD, RetinaNet.</li>
+<li><strong>Predict a fixed-size set and match it.</strong> Emit exactly 100 slots, let each slot be either an object or “nothing”, and solve the pairing problem in the loss. This is DETR, previewed at the end of today.</li>
+</ol>
+<p>Each one also needs a way to measure whether two boxes are the same box, which is the next slide.</p>
+</section>
+<section id="intersection-over-union" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="intersection-over-union">Intersection over Union</h2>
+<div class="columns">
+<div class="column" style="width:34%;">
+<p><a href="images/iou.png" class="zoom" target="_blank"><img src="images/iou.png" class="dh440 img-fluid"></a></p>
+</div><div class="column" style="width:66%;">
+<p><strong>Intersection over Union is the area two boxes share divided by the area they cover together.</strong></p>
+<p><span class="math display">\text{IoU} = \frac{|A \cap B|}{|A \cup B|}</span></p>
+<p>It runs from 0, no overlap at all, to 1, exactly the same box, and it is scale-free: a value means the same thing for a large box and a small one.</p>
+<p>The boxes in the figure are <strong>made up</strong>, with sides in grid cells rather than pixels, so that 34.4% says nothing about this photograph. Later today we run the same arithmetic on two real detections.</p>
+<p>IoU does three different jobs today, and it helps to keep them apart:</p>
+<ul>
+<li>deciding whether a prediction <strong>counts as correct</strong> (usually IoU &gt; 0.5)</li>
+<li>deciding whether two predictions are <strong>duplicates</strong>, in NMS</li>
+<li>deciding which anchor box is <strong>responsible</strong> for which object, during training</li>
+</ul>
+</div>
+</div>
+<div id="8b9a4289" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.ops <span class="im">import</span> box_iou</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Two boxes the detector really produced on this image, in (x1, y1, x2, y2).</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>dog <span class="op">=</span> torch.tensor([[<span class="dv">602</span>, <span class="dv">295</span>, <span class="dv">1778</span>, <span class="dv">1181</span>]], dtype<span class="op">=</span>torch.<span class="bu">float</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>cat <span class="op">=</span> torch.tensor([[<span class="dv">437</span>, <span class="dv">297</span>, <span class="dv">1730</span>, <span class="dv">1185</span>]], dtype<span class="op">=</span>torch.<span class="bu">float</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>inter_w <span class="op">=</span> <span class="bu">min</span>(dog[<span class="dv">0</span>, <span class="dv">2</span>], cat[<span class="dv">0</span>, <span class="dv">2</span>]) <span class="op">-</span> <span class="bu">max</span>(dog[<span class="dv">0</span>, <span class="dv">0</span>], cat[<span class="dv">0</span>, <span class="dv">0</span>])</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>inter_h <span class="op">=</span> <span class="bu">min</span>(dog[<span class="dv">0</span>, <span class="dv">3</span>], cat[<span class="dv">0</span>, <span class="dv">3</span>]) <span class="op">-</span> <span class="bu">max</span>(dog[<span class="dv">0</span>, <span class="dv">1</span>], cat[<span class="dv">0</span>, <span class="dv">1</span>])</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>inter <span class="op">=</span> (inter_w <span class="op">*</span> inter_h).item()</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>areas <span class="op">=</span> [((b[<span class="dv">0</span>, <span class="dv">2</span>] <span class="op">-</span> b[<span class="dv">0</span>, <span class="dv">0</span>]) <span class="op">*</span> (b[<span class="dv">0</span>, <span class="dv">3</span>] <span class="op">-</span> b[<span class="dv">0</span>, <span class="dv">1</span>])).item() <span class="cf">for</span> b <span class="kw">in</span> (dog, cat)]</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"intersection </span><span class="sc">{</span>inter<span class="sc">:&gt;12,.0f}</span><span class="ss"> px"</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"union        </span><span class="sc">{</span><span class="bu">sum</span>(areas) <span class="op">-</span> inter<span class="sc">:&gt;12,.0f}</span><span class="ss"> px"</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"IoU          </span><span class="sc">{</span>inter <span class="op">/</span> (<span class="bu">sum</span>(areas) <span class="op">-</span> inter)<span class="sc">:&gt;12.3f}</span><span class="ss">"</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"box_iou      </span><span class="sc">{</span>box_iou(dog, cat)<span class="sc">.</span>item()<span class="sc">:&gt;12.3f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>intersection      997,152 px
+union           1,192,968 px
+IoU                 0.836
+box_iou             0.836</code></pre>
+</div>
+</div>
+</section>
+<section id="semantic-against-instance-segmentation-measured" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="semantic-against-instance-segmentation-measured">Semantic against instance segmentation, measured</h2>
+<p>Real output on the same photograph: DeepLabV3 left, Mask R-CNN right.</p>
+<p><a href="images/fig-semantic-instance.png" class="zoom" target="_blank"><img src="images/fig-semantic-instance.png" class="dw92 img-fluid"></a></p>
+<p>DeepLabV3 labels 17.2% of the pixels <code>cat</code> and 15.5% <code>dog</code>, and the cat pixels come back as <strong>one region of 82,579 pixels</strong>. Both cats are the same colour in the left panel, because semantic segmentation has no concept of a cat. It has a concept of cat-ness per pixel.</p>
+<p>Mask R-CNN returns <strong>two separate cat masks</strong>, of 302,574 and 229,834 pixels. It also found the bed, which DeepLabV3 could not, because <code>bed</code> is not one of its 21 classes.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+The distinction in one sentence
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Semantic segmentation asks “what class is this pixel”; instance segmentation asks “which object does this pixel belong to”.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="two-stage-detection" class="level1">
+<h1>Two-stage detection</h1>
+<section id="the-region-proposal-idea" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-region-proposal-idea">The region proposal idea</h2>
+<p>The fixed-output-shape problem has an obvious workaround: if a network can only classify one thing at a time, then give it one thing at a time.</p>
+<ol type="1">
+<li><strong>Propose</strong> a set of rectangular regions that might contain an object.</li>
+<li><strong>Classify</strong> each region independently, with a normal CNN classifier. Add a “background” class so a region containing nothing can say so.</li>
+<li><strong>Refine</strong> each box, because the proposal was approximate.</li>
+<li><strong>Suppress</strong> duplicates, because many proposals cover the same object.</li>
+</ol>
+<p>This is called <strong>two-stage detection</strong>: stage one proposes, stage two classifies and refines. Everything in this section is a different answer to “how do we do step 1, and how do we avoid doing step 2 two thousand times”.</p>
+</section>
+<section id="r-cnn" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="r-cnn">R-CNN</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p><a href="images/r-cnn.png" class="zoom" target="_blank"><img src="images/r-cnn.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:45%;">
+<p><strong>R-CNN</strong>, 2014, was the first version of this idea that worked well.</p>
+<ol type="1">
+<li>Selective search produces about <strong>2,000 region proposals</strong>.</li>
+<li>Each proposal is <strong>cropped out of the image</strong> and warped to 227x227.</li>
+<li>Each warped crop runs through AlexNet to get a feature vector.</li>
+<li>An SVM per class scores the vector, and a separate regressor refines the box.</li>
+</ol>
+<p>Say the cost out loud: that is <strong>2,000 full CNN forward passes for one image</strong>. R-CNN took roughly 47 seconds per image at inference.</p>
+<p>It also could not be trained end to end. The CNN, the SVMs and the box regressors were three separate training stages.</p>
+</div>
+</div>
+</section>
+<section id="selective-search" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="selective-search">Selective search</h2>
+<p><strong>Selective search</strong> is the algorithm R-CNN used to produce its proposals, and it is not a neural network at all. It over-segments the image into small regions by colour and texture, then repeatedly merges the most similar neighbouring regions, and emits a bounding box for every region it produced along the way.</p>
+<p>That gives a few thousand boxes that are likely to align with object boundaries, which is far better than sliding a window at every position and scale.</p>
+<p>Two things to know about it:</p>
+<ul>
+<li>It is <strong>not learned</strong>. The similarity measures are hand-designed, so the proposals cannot improve from your data.</li>
+<li>It is <strong>slow</strong>, roughly two seconds per image on a CPU, and it does not run on a GPU.</li>
+</ul>
+<p>Selective search is the bottleneck that Faster R-CNN removes, which is the point of the region proposal network a few slides from now.</p>
+</section>
+<section id="non-maximum-suppression" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="non-maximum-suppression">Non-maximum suppression</h2>
+<div class="columns">
+<div class="column" style="width:46%;">
+<p><a href="images/non-max-suppression.png" class="zoom" target="_blank"><img src="images/non-max-suppression.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:54%;">
+<p><strong>Non-maximum suppression, or NMS, is the step that removes duplicate detections of the same object.</strong></p>
+<p>It is needed because many proposals overlap one object, and each of them produces its own confident box.</p>
+<p>The algorithm, for one class:</p>
+<ol type="1">
+<li>Discard every box whose score is below a <strong>score threshold</strong>.</li>
+<li>Take the highest-scoring box that is left and <strong>keep</strong> it.</li>
+<li>Delete every remaining box whose <strong>IoU with the kept box</strong> is above an <strong>NMS threshold</strong>, typically 0.5.</li>
+<li>Repeat from step 2 until no boxes are left.</li>
+</ol>
+<p>Two thresholds, and they do different jobs. The score threshold controls how confident a detection has to be. The NMS threshold controls how much overlap counts as a duplicate.</p>
+</div>
+</div>
+</section>
+<section id="running-a-pretrained-detector" class="level2">
+<h2 class="anchored" data-anchor-id="running-a-pretrained-detector">Running a pretrained detector</h2>
+<div id="1c7ae3d5" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.models.detection <span class="im">import</span> (FasterRCNN_ResNet50_FPN_Weights,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                                          fasterrcnn_resnet50_fpn)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.io <span class="im">import</span> read_image</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>dw <span class="op">=</span> FasterRCNN_ResNet50_FPN_Weights.DEFAULT</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>det_model <span class="op">=</span> fasterrcnn_resnet50_fpn(weights<span class="op">=</span>dw).<span class="bu">eval</span>()</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> dw.meta[<span class="st">"categories"</span>]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>img_u8 <span class="op">=</span> read_image(<span class="st">"images/cats-dog.jpg"</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> torch.no_grad():</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    pred <span class="op">=</span> det_model([dw.transforms()(img_u8)])[<span class="dv">0</span>]</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="bu">len</span>(pred[<span class="st">'scores'</span>])<span class="sc">}</span><span class="ss"> raw detections after the model's own NMS"</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> b, l, s <span class="kw">in</span> <span class="bu">zip</span>(pred[<span class="st">"boxes"</span>], pred[<span class="st">"labels"</span>], pred[<span class="st">"scores"</span>]):</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> s <span class="op">&gt;</span> <span class="fl">0.3</span>:</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>names[l]<span class="sc">:8s}</span><span class="ss"> </span><span class="sc">{</span>s<span class="sc">:.3f}</span><span class="ss">  "</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>              <span class="ss">f"[</span><span class="sc">{</span><span class="st">', '</span><span class="sc">.</span>join(<span class="ss">f'</span><span class="sc">{</span>v<span class="sc">:.0f}</span><span class="ss">'</span> <span class="cf">for</span> v <span class="kw">in</span> b)<span class="sc">}</span><span class="ss">]"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>18 raw detections after the model's own NMS
+
+  cat      0.998  [1493, 312, 1996, 1077]
+  cat      0.979  [164, 564, 954, 1151]
+  dog      0.959  [602, 295, 1778, 1181]
+  bed      0.729  [0, 634, 1881, 1299]
+  cat      0.589  [437, 297, 1730, 1185]
+  bed      0.488  [5, 955, 2238, 1299]
+  couch    0.442  [36, 278, 1740, 1227]
+  cat      0.394  [1129, 310, 1873, 1115]</code></pre>
+</div>
+</div>
+</section>
+<section id="what-the-score-threshold-decides" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-the-score-threshold-decides">What the score threshold decides</h2>
+<p>The model already ran NMS internally. Those 18 boxes are what survived it. Everything below is the same output, unchanged, viewed at three score thresholds.</p>
+<p><a href="images/fig-threshold.png" class="zoom" target="_blank"><img src="images/fig-threshold.png" class="dw100 img-fluid"></a></p>
+<p>8 detections, then 5, then 4. <strong>The network did not change.</strong> The only thing that changed is a number you picked after the forward pass.</p>
+<p>This is why a detector’s reported accuracy is meaningless without its threshold, and it is why mAP exists. More on that at the end of the next section.</p>
+</section>
+<section id="what-nms-removed" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-nms-removed">What NMS removed</h2>
+<p><a href="images/fig-nms.png" class="zoom" target="_blank"><img src="images/fig-nms.png" class="dw100 img-fluid"></a></p>
+<p>On the left, every one of the 18 boxes the model emitted. That is the clutter a detector produces before anything is filtered, and it is why NMS is not optional.</p>
+<p>In the middle, what survives NMS per class plus a 0.5 score threshold: 5 boxes. On the right, the same NMS run <strong>ignoring the class label</strong>: 4 boxes. One box is in the middle panel and not the right one, and the next slide is about that box.</p>
+</section>
+<section id="a-duplicate-that-survived-nms" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="a-duplicate-that-survived-nms">A duplicate that survived NMS</h2>
+<p>At a 0.5 threshold, 5 boxes survive. One of them is wrong in an interesting way.</p>
+<p><a href="images/fig-iou.png" class="zoom" target="_blank"><img src="images/fig-iou.png" class="dw65 img-fluid"></a></p>
+<p>A <code>cat</code> box at 0.589 sits almost exactly on the <code>dog</code> box at 0.959. Their IoU is <strong>997,152 / 1,192,968 = 0.836</strong>, which is well above the usual 0.5 duplicate threshold.</p>
+<p>NMS did not remove it because <strong>torchvision applies NMS per class</strong>. The dog box and the cat box never compete, because they are not the same class. That is the difference between the last two panels on the previous slide.</p>
+<p>Per-class is usually the right default. A person standing in front of a car genuinely produces two heavily overlapping boxes of different classes, and you want both. The cost of that default is this slide.</p>
+</section>
+<section id="fast-r-cnn" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="fast-r-cnn">Fast R-CNN</h2>
+<div class="columns">
+<div class="column" style="width:56%;">
+<p><a href="images/fast-r-cnn-diagram.png" class="zoom" target="_blank"><img src="images/fast-r-cnn-diagram.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:44%;">
+<p><strong>Fast R-CNN</strong>, 2015, fixed the 2,000-forward-passes problem with one observation: convolution is position-preserving, so a region of the <em>image</em> corresponds to a region of the <em>feature map</em>.</p>
+<p>So run the backbone <strong>once</strong> over the whole image, then crop the feature map instead of the pixels.</p>
+<ul>
+<li>one CNN forward pass per image, not 2,000</li>
+<li>the SVMs and separate regressors are replaced by two output heads, so it trains end to end with one loss</li>
+<li>inference went from about 47 seconds to about 2 seconds per image</li>
+</ul>
+<p>Selective search is still there, and now it is the slow part. Of those two seconds, nearly all of it is proposal generation.</p>
+</div>
+</div>
+</section>
+<section id="roi-pooling" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="roi-pooling">ROI pooling</h2>
+<div class="columns">
+<div class="column" style="width:44%;">
+<p><a href="images/roi-pooling.png" class="zoom" target="_blank"><img src="images/roi-pooling.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:56%;">
+<p>Cropping the feature map gives you a region of a different size for every proposal, and the head after it is an <code>nn.Linear</code>, which needs a fixed size.</p>
+<p><strong>ROI pooling turns a region of any size into a fixed-size feature map.</strong></p>
+<ol type="1">
+<li>Take the proposal’s box and project it onto the feature map by dividing the coordinates by the backbone’s total stride.</li>
+<li>Divide that region into a fixed grid, usually 7x7.</li>
+<li>Max-pool within each cell.</li>
+</ol>
+<p>Out comes a 7x7 feature map per proposal regardless of the proposal’s size, so the head’s input shape is fixed again.</p>
+<p>Note step 1 and step 2 both <strong>round to integers</strong>. That rounding is fine for predicting a box and is a real problem for predicting a mask, which is what ROI Align fixes at the end of the segmentation section.</p>
+</div>
+</div>
+</section>
+<section id="training-a-detector" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="training-a-detector">Training a detector</h2>
+<p>A detector has two outputs per region, so it has two losses, added together.</p>
+<p><span class="math display">\mathcal{L} = \mathcal{L}_{\text{cls}} + \lambda \, \mathcal{L}_{\text{box}}</span></p>
+<p><strong>The classification loss</strong> is ordinary cross entropy over the classes plus a background class. Every proposal gets a label, and most proposals are background.</p>
+<p><strong>The box regression loss</strong> is a smooth L1 on the box offsets, and it is applied <strong>only to proposals that were matched to a real object</strong>. Regressing the box of a background region is meaningless, so those terms are masked out.</p>
+<p>Matching is done with IoU. A proposal with IoU above 0.5 against some ground truth box is assigned to that object; below 0.3 it is background; in between it is usually ignored, because the supervision is ambiguous.</p>
+<p>This is called a <strong>multi-task loss</strong>, and the pattern recurs. Mask R-CNN adds a third term for masks. The parts are trained together, and <code>\lambda</code> balances them.</p>
+</section>
+<section id="faster-r-cnn" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="faster-r-cnn">Faster R-CNN</h2>
+<div class="columns">
+<div class="column" style="width:42%;">
+<p><a href="images/faster-r-cnn-overview.png" class="zoom" target="_blank"><img src="images/faster-r-cnn-overview.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:58%;">
+<p><strong>Faster R-CNN</strong>, 2015, replaced selective search with a small convolutional network that proposes regions: the <strong>region proposal network</strong>, or RPN.</p>
+<p>The RPN slides over the same feature map the detection head uses and, at every position, predicts two things:</p>
+<ul>
+<li>an <strong>objectness score</strong>: is there an object here at all, regardless of class</li>
+<li><strong>box offsets</strong> that refine a set of predefined anchor boxes</li>
+</ul>
+<p>Because the RPN reads the backbone’s feature map, proposals cost almost nothing on top of a forward pass the network was doing anyway. Inference dropped to about 0.2 seconds per image.</p>
+<p>More importantly, the proposals are now <strong>learned</strong>. They improve with your data, which hand-designed selective search could never do, and the whole detector is one network trained with one loss.</p>
+<p>This is the model that produced every box in today’s deck.</p>
+</div>
+</div>
+</section>
+<section id="anchors-and-box-offsets" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="anchors-and-box-offsets">Anchors and box offsets</h2>
+<div class="columns">
+<div class="column" style="width:38%;">
+<p><a href="images/anchor-boxes.png" class="zoom" target="_blank"><img src="images/anchor-boxes.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:62%;">
+<p><strong>An anchor box is a box of fixed size and shape, placed at a fixed position on the feature map, that a prediction is made relative to.</strong></p>
+<p>At each feature map position the RPN places several anchors, typically three scales times three aspect ratios, so nine. A 50x38 feature map then carries about 17,000 anchors.</p>
+<p>The network does not predict coordinates. It predicts four <strong>offsets</strong> from the anchor:</p>
+<p><span class="math display">t_x = \frac{x - x_a}{w_a}, \quad t_y = \frac{y - y_a}{h_a}, \quad
+t_w = \log\frac{w}{w_a}, \quad t_h = \log\frac{h}{h_a}</span></p>
+<p>Two reasons this parameterization is used rather than raw pixels. Dividing by the anchor’s width and height makes the targets <strong>scale-free</strong>, so the same output range works for a small object and a large one. The <code>log</code> on width and height keeps the predicted size <strong>positive</strong> no matter what the network outputs, and makes equal ratios equally far apart.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="one-stage-detection" class="level1">
+<h1>One-stage detection</h1>
+<section id="skipping-the-proposal-stage" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="skipping-the-proposal-stage">Skipping the proposal stage</h2>
+<p>Two-stage detectors are accurate and they do real work twice: once to propose, once to classify.</p>
+<p><strong>One-stage detectors predict class and box directly from the feature map, in a single pass, with no proposal step.</strong></p>
+<p>The trick is to fix the output shape in advance. Divide the image into a grid. Every cell predicts a fixed number of boxes, each with a confidence and a class distribution, whether or not anything is there. The output tensor’s shape then depends only on the architecture, never on the image.</p>
+<p>The cost is a severe class imbalance. Almost every cell contains no object, so almost every prediction should be “nothing”. Early one-stage detectors were noticeably less accurate than two-stage ones for exactly this reason, and the fix was a loss function, <strong>focal loss</strong>, that down-weights the easy background predictions.</p>
+</section>
+<section id="yolo" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="yolo">YOLO</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p><a href="images/yolo-overview.png" class="zoom" target="_blank"><img src="images/yolo-overview.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:45%;">
+<p><strong>YOLO</strong>, “You Only Look Once”, 2016, was the first one-stage detector to be both fast and good.</p>
+<p>One CNN, one forward pass, boxes and classes straight out of the last layer. The original ran at 45 frames per second, against Faster R-CNN’s 5.</p>
+<p>Each grid cell is <strong>responsible</strong> for any object whose centre falls inside it. That cell predicts the boxes, the confidences, and the class probabilities for that object.</p>
+<p>Its weaknesses came from the same design. A cell could only claim a limited number of objects, so crowds and small clustered objects were missed, and the coarse grid made its boxes less precise than a two-stage detector’s.</p>
+<p>Later versions, and there are many, mostly kept the structure and fixed these: anchor boxes, multi-scale prediction, and better loss functions.</p>
+</div>
+</div>
+</section>
+<section id="the-yolo-output-tensor" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-yolo-output-tensor">The YOLO output tensor</h2>
+<div class="columns">
+<div class="column" style="width:40%;">
+<p><a href="images/yolo-detection-head.png" class="zoom" target="_blank"><img src="images/yolo-detection-head.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:60%;">
+<p>The whole output is one tensor of shape</p>
+<p><span class="math display">S \times S \times (B \cdot 5 + C)</span></p>
+<ul>
+<li><code>S x S</code> is the grid, 7x7 in the original</li>
+<li><code>B</code> is boxes per cell, 2 in the original</li>
+<li>the <strong>5</strong> is <code>x, y, w, h, confidence</code> for each box</li>
+<li><code>C</code> is the number of classes, 20 for PASCAL VOC</li>
+</ul>
+<p>The <code>x, y</code> are the box centre <strong>relative to the cell</strong>, and <code>w, h</code> are relative to the whole image, which is why the numbers all land in <code>[0, 1]</code>.</p>
+</div>
+</div>
+<div id="4953e974" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>S, B, C <span class="op">=</span> <span class="dv">7</span>, <span class="dv">2</span>, <span class="dv">20</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>per_cell <span class="op">=</span> B <span class="op">*</span> <span class="dv">5</span> <span class="op">+</span> C</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"per cell   : </span><span class="sc">{</span>B<span class="sc">}</span><span class="ss"> boxes x 5 + </span><span class="sc">{</span>C<span class="sc">}</span><span class="ss"> classes = </span><span class="sc">{</span>per_cell<span class="sc">}</span><span class="ss"> numbers"</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"output     : </span><span class="sc">{</span>S<span class="sc">}</span><span class="ss"> x </span><span class="sc">{</span>S<span class="sc">}</span><span class="ss"> x </span><span class="sc">{</span>per_cell<span class="sc">}</span><span class="ss"> = </span><span class="sc">{</span>S <span class="op">*</span> S <span class="op">*</span> per_cell<span class="sc">:,}</span><span class="ss"> numbers"</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"total boxes: </span><span class="sc">{</span>S <span class="op">*</span> S <span class="op">*</span> B<span class="sc">}</span><span class="ss"> predicted for every image, always"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the same shape, as the last layer sees it:"</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">" "</span>, <span class="bu">tuple</span>(torch.zeros(<span class="dv">1</span>, S, S, per_cell).shape))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>per cell   : 2 boxes x 5 + 20 classes = 30 numbers
+output     : 7 x 7 x 30 = 1,470 numbers
+total boxes: 98 predicted for every image, always
+
+the same shape, as the last layer sees it:
+  (1, 7, 7, 30)</code></pre>
+</div>
+</div>
+</section>
+<section id="one-stage-against-two" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="one-stage-against-two">One stage against two</h2>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th><strong>Two-stage</strong></th>
+<th><strong>One-stage</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Example</td>
+<td>Faster R-CNN</td>
+<td>YOLO, SSD, RetinaNet</td>
+</tr>
+<tr class="even">
+<td>Passes</td>
+<td>propose, then classify</td>
+<td>one</td>
+</tr>
+<tr class="odd">
+<td>Speed</td>
+<td>slower</td>
+<td>faster, real time</td>
+</tr>
+<tr class="even">
+<td>Small objects</td>
+<td>better</td>
+<td>worse, historically</td>
+</tr>
+<tr class="odd">
+<td>Localization</td>
+<td>more precise boxes</td>
+<td>less precise boxes</td>
+</tr>
+<tr class="even">
+<td>Class imbalance</td>
+<td>handled by proposal filtering</td>
+<td>needs focal loss</td>
+</tr>
+</tbody>
+</table>
+<p>The gap has narrowed a lot. Modern one-stage detectors with a feature pyramid and focal loss are competitive on accuracy, and they are the default choice unless you have a specific reason otherwise.</p>
+<p><strong>Choose one-stage</strong> when you have a latency budget: video, anything on a phone or embedded device, anything live.</p>
+<p><strong>Choose two-stage</strong> when accuracy on small or crowded objects matters more than speed, and you can afford the compute.</p>
+</section>
+<section id="feature-pyramid-networks" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="feature-pyramid-networks">Feature pyramid networks</h2>
+<div class="columns">
+<div class="column" style="width:52%;">
+<p><a href="images/feature-pyramid-network.png" class="zoom" target="_blank"><img src="images/feature-pyramid-network.png" class="dw92 img-fluid"></a></p>
+</div><div class="column" style="width:48%;">
+<p>A backbone’s feature maps shrink with depth. That creates a problem for detection that classification never had.</p>
+<ul>
+<li><strong>Early layers</strong> are high resolution and semantically weak. Good spatial precision, poor idea of what the object is.</li>
+<li><strong>Late layers</strong> are low resolution and semantically strong. They know it is a dog, and at 7x7 they cannot say precisely where.</li>
+</ul>
+<p>A small object may occupy a few pixels of a late feature map, or none.</p>
+<p><strong>A feature pyramid network builds a set of feature maps that are all semantically strong, at several resolutions.</strong> It upsamples the deep map and adds it to the shallower one, repeating up the pyramid.</p>
+<p>The head then runs at <strong>every level</strong>: small objects on the high-resolution levels, large ones on the low-resolution levels. This is the “neck”, and it is in nearly every modern detector including today’s Faster R-CNN.</p>
+</div>
+</div>
+</section>
+<section id="detection-in-practice" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="detection-in-practice">Detection in practice</h2>
+<p><strong>What to reach for.</strong> A pretrained detector from <code>torchvision.models.detection</code> or from the <code>ultralytics</code> package, fine-tuned on your data. Training a detector from scratch is a research project, not a step in a pipeline.</p>
+<p><strong>The API, which you saw a few slides ago.</strong> <code>fasterrcnn_resnet50_fpn(weights=...)</code> in <code>eval()</code> mode takes a <strong>list</strong> of image tensors, each one allowed to be a different size, and returns a <strong>list</strong> of dicts with keys <code>boxes</code>, <code>labels</code> and <code>scores</code>. In <code>train()</code> mode the same model takes images and targets and returns the loss dict instead.</p>
+<p><strong>mAP, in one paragraph.</strong> Mean average precision is the standard score. For one class, sweep the score threshold, record precision at each recall level, and average: that is average precision. Then average over IoU thresholds from 0.5 to 0.95, and finally over classes. The averaging over score thresholds is the point: it is what makes mAP independent of the threshold choice that the slide earlier showed changing the answer from 8 detections to 4. The cost is that one number now hides which threshold you would actually ship.</p>
+</section>
+</section>
+<section id="segmentation" class="level1">
+<h1>Segmentation</h1>
+<section id="semantic-segmentation" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="semantic-segmentation">Semantic segmentation</h2>
+<p><strong>Semantic segmentation is assigning a class label to every pixel.</strong></p>
+<p><a href="images/semantic-segmentation.png" class="zoom" target="_blank"><img src="images/semantic-segmentation.png" class="dw92 img-fluid"></a></p>
+<p>The input is an image of shape <code>(3, H, W)</code>. The output is an array of shape <code>(H, W)</code> where each entry is a class index. The network actually emits <code>(num_classes, H, W)</code> logits and you take the <code>argmax</code> over the class axis, exactly like classification, run <code>H * W</code> times.</p>
+<p>So the loss is also exactly classification’s loss: cross entropy, averaged over pixels instead of over a batch of images. The task is not conceptually new.</p>
+<p>The <strong>architecture</strong> is new, and for one reason: the output has to be the same size as the input, and a classifier backbone spends all its effort making things smaller.</p>
+</section>
+<section id="the-resolution-problem" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-resolution-problem">The resolution problem</h2>
+<p>Last week every architecture we looked at did the same thing: shrink the spatial dimensions, grow the channels. That is the right design for classification, because the answer is one label and spatial detail is noise.</p>
+<p>For ResNet-18 on a 224x224 input, the feature map shapes were:</p>
+<table class="table">
+<thead>
+<tr class="header">
+<th>Stage</th>
+<th>Shape</th>
+<th>Spatial size</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>after <code>conv1</code> and pool</td>
+<td><code>(64, 56, 56)</code></td>
+<td>1/4</td>
+</tr>
+<tr class="even">
+<td>layer2</td>
+<td><code>(128, 28, 28)</code></td>
+<td>1/8</td>
+</tr>
+<tr class="odd">
+<td>layer3</td>
+<td><code>(256, 14, 14)</code></td>
+<td>1/16</td>
+</tr>
+<tr class="even">
+<td>layer4</td>
+<td><code>(512, 7, 7)</code></td>
+<td>1/32</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A segmentation head needs 224x224 back out of a 7x7 feature map.</strong> Each of those 49 positions is semantically rich and spatially vague; it covers a 32x32 patch of the input and cannot say where within that patch anything was.</p>
+<p>Two things are needed. A way to <strong>increase</strong> spatial size inside a network, and a way to <strong>recover</strong> the fine detail that pooling discarded. The next few slides are those two things.</p>
+</section>
+<section id="transposed-convolution" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="transposed-convolution">Transposed convolution</h2>
+<p><strong>A transposed convolution is a layer that increases spatial size, with learned weights.</strong></p>
+<p>It works by scattering rather than gathering. An ordinary convolution reads a patch of the input and writes one output value. A transposed convolution reads one input value, multiplies the whole kernel by it, and <strong>adds</strong> that into a patch of the output. Where the patches overlap, contributions sum.</p>
+<p><a href="images/transposed-convolution.gif" class="zoom" target="_blank"><img src="images/transposed-convolution.gif" class="dw65 img-fluid"></a></p>
+<p>It is sometimes called “deconvolution”. That name is wrong and worth un-learning: it does not invert a convolution and does not recover a convolution’s input. It is a convolution whose stride applies to the output instead of the input, which is where the “transposed” comes from.</p>
+</section>
+<section id="three-ways-to-upsample" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="three-ways-to-upsample">Three ways to upsample</h2>
+<p><a href="images/fig-upsampling.png" class="zoom" target="_blank"><img src="images/fig-upsampling.png" class="dw95 img-fluid"></a></p>
+<p><strong>Nearest neighbour</strong> copies each value into a block. No parameters, no smoothing, blocky.</p>
+<p><strong>Bilinear</strong> interpolates between neighbours. No parameters, smooth, and it can never produce a value outside the range of its inputs.</p>
+<p><strong><code>ConvTranspose2d</code></strong> has weights, so it learns what the upsampled detail should look like. Here the four kernel weights were set by hand to make the arithmetic visible; in a real network they are trained.</p>
+<p>The output size, which you should be able to predict before running it:</p>
+<p><span class="math display">H_{\text{out}} = (H_{\text{in}} - 1) \cdot s - 2p + k</span></p>
+<div id="ccfbf309" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.tensor([[[[<span class="fl">1.</span>, <span class="fl">2.</span>], [<span class="fl">3.</span>, <span class="fl">4.</span>]]]])          <span class="co"># (1, 1, 2, 2)</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"nearest   "</span>, <span class="bu">tuple</span>(F.interpolate(x, scale_factor<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                                        mode<span class="op">=</span><span class="st">"nearest"</span>).shape))</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"bilinear  "</span>, <span class="bu">tuple</span>(F.interpolate(x, scale_factor<span class="op">=</span><span class="dv">2</span>, mode<span class="op">=</span><span class="st">"bilinear"</span>,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                                        align_corners<span class="op">=</span><span class="va">False</span>).shape))</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>up <span class="op">=</span> nn.ConvTranspose2d(<span class="dv">1</span>, <span class="dv">1</span>, kernel_size<span class="op">=</span><span class="dv">2</span>, stride<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"transposed"</span>, <span class="bu">tuple</span>(up(x).shape), <span class="ss">f"(</span><span class="sc">{</span><span class="bu">sum</span>(p.numel() <span class="cf">for</span> p <span class="kw">in</span> up.parameters())<span class="sc">}</span><span class="ss"> parameters)"</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># (H_in - 1) * s - 2p + k, checked against the layer itself.</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> h, k, s, p <span class="kw">in</span> [(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">0</span>), (<span class="dv">7</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">1</span>), (<span class="dv">7</span>, <span class="dv">4</span>, <span class="dv">2</span>, <span class="dv">1</span>), (<span class="dv">28</span>, <span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">0</span>)]:</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    formula <span class="op">=</span> (h <span class="op">-</span> <span class="dv">1</span>) <span class="op">*</span> s <span class="op">-</span> <span class="dv">2</span> <span class="op">*</span> p <span class="op">+</span> k</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    actual <span class="op">=</span> nn.ConvTranspose2d(<span class="dv">1</span>, <span class="dv">1</span>, k, stride<span class="op">=</span>s, padding<span class="op">=</span>p)(</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        torch.zeros(<span class="dv">1</span>, <span class="dv">1</span>, h, h)).shape[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"H=</span><span class="sc">{</span>h<span class="sc">:3d}</span><span class="ss"> k=</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss"> s=</span><span class="sc">{</span>s<span class="sc">}</span><span class="ss"> p=</span><span class="sc">{</span>p<span class="sc">}</span><span class="ss">  -&gt;  formula </span><span class="sc">{</span>formula<span class="sc">:3d}</span><span class="ss">  "</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"actual </span><span class="sc">{</span>actual<span class="sc">:3d}</span><span class="ss">  </span><span class="sc">{</span><span class="st">'ok'</span> <span class="cf">if</span> formula <span class="op">==</span> actual <span class="cf">else</span> <span class="st">'MISMATCH'</span><span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>nearest    (1, 1, 4, 4)
+bilinear   (1, 1, 4, 4)
+transposed (1, 1, 4, 4) (5 parameters)
+H=  2 k=2 s=2 p=0  -&gt;  formula   4  actual   4  ok
+H=  7 k=3 s=2 p=1  -&gt;  formula  13  actual  13  ok
+H=  7 k=4 s=2 p=1  -&gt;  formula  14  actual  14  ok
+H= 28 k=2 s=2 p=0  -&gt;  formula  56  actual  56  ok</code></pre>
+</div>
+</div>
+</section>
+<section id="the-checkerboard-artifact" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-checkerboard-artifact">The checkerboard artifact</h2>
+<p>A transposed convolution adds overlapping copies of its kernel into the output. When the <strong>kernel size is not a multiple of the stride</strong>, different output pixels receive a different number of contributions, so some are systematically brighter than others.</p>
+<p><a href="images/fig-checkerboard.png" class="zoom" target="_blank"><img src="images/fig-checkerboard.png" class="dw92 img-fluid"></a></p>
+<p>Each panel above is a constant input through an all-ones kernel, so a correct upsampler would give a constant output. Kernel 3 with stride 2 does not: the output ranges from 1 to 4 in a regular grid pattern. That pattern shows up in generated images and in segmentation masks as a visible checkerboard.</p>
+<p>Two fixes, both common. Use <strong>kernel size divisible by the stride</strong>, which is why <code>ConvTranspose2d(k=4, stride=2)</code> and <code>(k=2, stride=2)</code> are the pairs you see in real code. Or avoid the layer entirely: <strong>bilinear upsample, then a normal 3x3 convolution</strong>, which gets you learned weights without the uneven overlap.</p>
+</section>
+<section id="encoder-and-decoder" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="encoder-and-decoder">Encoder and decoder</h2>
+<p>The architecture that solves the resolution problem is two halves.</p>
+<p><strong>The encoder</strong> is a normal convolutional backbone. Downsample, grow channels, discard spatial detail, end up with a small feature map that knows <strong>what</strong> is in the image. This is a ResNet, and it is pretrained.</p>
+<p><strong>The decoder</strong> reverses the spatial path. Upsample, shrink channels, end up at the input resolution with one score per class per pixel. This is where the transposed convolutions live, and it is trained from scratch.</p>
+<p>That alone is not enough, and the reason is worth being precise about. The encoder genuinely <strong>destroyed</strong> the information the decoder needs. After five pooling stages, the exact position of a boundary within a 32x32 patch is not in the feature map in any form, so no decoder, however deep, can recover it. The output comes out correct in its classes and mushy at its edges.</p>
+<p>The fix is to give the decoder a second source of information, which is the next slide.</p>
+</section>
+<section id="u-net" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="u-net">U-Net</h2>
+<p><a href="images/unet-diagram.png" class="zoom" target="_blank"><img src="images/unet-diagram.png" class="dw75 img-fluid"></a></p>
+<p><strong>U-Net</strong>, 2015, was built for biomedical image segmentation and its shape is the standard encoder-decoder with one addition: the grey horizontal arrows. Each decoder level receives the feature map from the encoder level at the same resolution, concatenated onto its own upsampled input.</p>
+</section>
+<section id="why-u-net-has-skip-connections" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="why-u-net-has-skip-connections">Why U-Net has skip connections</h2>
+<p>A skip connection carries the encoder’s feature map at some resolution directly across to the decoder level at that same resolution.</p>
+<p><strong>The deep path knows what. The skipped path knows where.</strong> The decoder level receives a semantically strong but spatially vague feature map from below, and a spatially precise but semantically weak feature map from across. Concatenating them gives the next convolution both, and it learns to combine them.</p>
+<p>Without the skips the class predictions are roughly right and the boundaries are mush, because boundary information was destroyed by pooling and is only present in the early layers.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Not the same as a residual connection
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A <strong>residual</strong> connection, from ResNet last week, <strong>adds</strong> a tensor to the output of a block a couple of layers later. Its job is to make gradients flow through a deep network.</p>
+<p>A <strong>skip</strong> connection in U-Net <strong>concatenates</strong> across the whole network, from encoder to decoder. Its job is to restore spatial detail. Same picture, different operation, different purpose.</p>
+</div>
+</div>
+</section>
+<section id="segmentation-losses" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="segmentation-losses">Segmentation losses</h2>
+<p>The default loss is <strong>per-pixel cross entropy</strong>. The network outputs <code>(num_classes, H, W)</code> logits, the target is <code>(H, W)</code> class indices, and <code>nn.CrossEntropyLoss</code> handles exactly that shape with no reshaping needed. It averages the per-pixel loss over all <code>H * W</code> positions.</p>
+<p>For two-class segmentation, foreground against background, the usual choice is one output channel with <code>nn.BCEWithLogitsLoss</code> instead.</p>
+<p>That is the whole loss, and for balanced problems it is all you need. It has one failure mode, and it is the common case rather than an edge case: <strong>the average over pixels is dominated by whatever class has the most pixels.</strong></p>
+<p>A tumour in a scan, a road in a satellite image, a defect on a manufactured part: the thing you care about is a small fraction of the image, and the loss barely notices whether you found it. The next slide measures that.</p>
+</section>
+<section id="class-imbalance-measured" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="class-imbalance-measured">Class imbalance, measured</h2>
+<p>A synthetic example, because it makes the arithmetic checkable. One object occupying <strong>3.22%</strong> of the image, and two predictions.</p>
+<p><a href="images/fig-dice.png" class="zoom" target="_blank"><img src="images/fig-dice.png" class="dw85 img-fluid"></a></p>
+<p>The middle panel is a model that found <strong>nothing</strong>. It scores <strong>96.8% pixel accuracy</strong>, because 96.8% of the pixels really are background. Its per-pixel cross entropy is <strong>0.142</strong>, which does not look like failure either.</p>
+<p>Its IoU is <strong>0.000</strong>.</p>
+<p>Pixel accuracy is not a useful metric for segmentation, and a per-pixel loss gives a weak gradient signal when the object is small. The fix for the metric is to report IoU. The fix for the loss is the next slide.</p>
+</section>
+<section id="dice-loss-and-the-combined-loss" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="dice-loss-and-the-combined-loss">Dice loss and the combined loss</h2>
+<p><strong>The Dice coefficient measures overlap between a predicted region and a true region</strong>, and is the segmentation equivalent of IoU.</p>
+<p><span class="math display">\text{Dice} = \frac{2 |P \cap T|}{|P| + |T|}
+= \frac{2 \sum_i p_i t_i}{\sum_i p_i + \sum_i t_i},
+\qquad \mathcal{L}_{\text{Dice}} = 1 - \text{Dice}</span></p>
+<p>The middle form is the one you implement: multiply the predicted probabilities by the target elementwise and sum. That form is <strong>differentiable</strong>, which the set-intersection form is not, so it can be used as a loss directly.</p>
+<p>Both Dice and IoU count the same intersection and differ in the denominator, and they are monotonically related: <span class="math inline">\text{Dice} = 2\,\text{IoU} / (1 +
+\text{IoU})</span>. The good prediction above scores Dice 0.918 and IoU 0.848.</p>
+<p>Crucially, <strong>neither one contains a term for correctly-predicted background</strong>. Doing nothing scores 0, no matter how much background there is.</p>
+<p>In practice you add them: <code>loss = BCE + Dice</code>. Cross entropy gives well-behaved per-pixel gradients early in training, when the predictions are near 0.5 everywhere and Dice is flat. Dice targets the overlap you are actually scored on.</p>
+<div id="74c770b6" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dice_loss(logits, target, eps<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Soft Dice. Note what is NOT here: any term for true negatives."""</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> torch.sigmoid(logits).flatten(<span class="dv">1</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> target.flatten(<span class="dv">1</span>).<span class="bu">float</span>()</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    inter <span class="op">=</span> (p <span class="op">*</span> t).<span class="bu">sum</span>(<span class="dv">1</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (<span class="dv">1</span> <span class="op">-</span> (<span class="dv">2</span> <span class="op">*</span> inter <span class="op">+</span> eps) <span class="op">/</span> (p.<span class="bu">sum</span>(<span class="dv">1</span>) <span class="op">+</span> t.<span class="bu">sum</span>(<span class="dv">1</span>) <span class="op">+</span> eps)).mean()</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a><span class="co"># One 64x64 target with a small object.</span></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> torch.zeros(<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">64</span>, <span class="dv">64</span>)</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>target[:, :, <span class="dv">30</span>:<span class="dv">41</span>, <span class="dv">30</span>:<span class="dv">41</span>] <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"object is </span><span class="sc">{</span><span class="dv">100</span> <span class="op">*</span> target<span class="sc">.</span>mean()<span class="sc">:.1f}</span><span class="ss">% of the image"</span>)</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>bce <span class="op">=</span> nn.BCEWithLogitsLoss()</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, logits <span class="kw">in</span> [(<span class="st">"finds nothing   "</span>, torch.full((<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">64</span>, <span class="dv">64</span>), <span class="op">-</span><span class="fl">6.0</span>)),</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>                     (<span class="st">"finds the object"</span>, torch.where(target <span class="op">&gt;</span> <span class="dv">0</span>, <span class="fl">6.0</span>, <span class="op">-</span><span class="fl">6.0</span>))]:</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">  BCE </span><span class="sc">{</span>bce(logits, target)<span class="sc">:.4f}</span><span class="ss">   "</span></span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"Dice loss </span><span class="sc">{</span>dice_loss(logits, target)<span class="sc">:.4f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>object is 3.0% of the image
+
+finds nothing     BCE 0.1797   Dice loss 0.9879
+finds the object  BCE 0.0025   Dice loss 0.0401</code></pre>
+</div>
+</div>
+</section>
+<section id="instance-segmentation-and-mask-r-cnn" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="instance-segmentation-and-mask-r-cnn">Instance segmentation and Mask R-CNN</h2>
+<div class="columns">
+<div class="column" style="width:55%;">
+<p><a href="images/mask-r-cnn-overview.png" class="zoom" target="_blank"><img src="images/mask-r-cnn-overview.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:45%;">
+<p><strong>Instance segmentation is detection plus a mask for each detected object.</strong></p>
+<p><strong>Mask R-CNN</strong>, 2017, is Faster R-CNN with a third head. For every region the detector keeps, a small fully convolutional branch predicts a binary mask, usually 28x28, which is then resized onto the box.</p>
+<p>So the multi-task loss gains a term:</p>
+<p><span class="math display">\mathcal{L} = \mathcal{L}_{\text{cls}} + \mathcal{L}_{\text{box}} +
+\mathcal{L}_{\text{mask}}</span></p>
+<p>One design detail that matters. The mask branch predicts <strong>one mask per class</strong> and only the mask for the predicted class contributes to the loss. Masks and classes do not compete, so the mask branch never has to decide what the object is. It only has to decide which pixels in this box belong to the object.</p>
+<p>This is the model that produced the right-hand panel of the earlier segmentation slide, with two separate cat masks.</p>
+</div>
+</div>
+</section>
+<section id="roi-align" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="roi-align">ROI Align</h2>
+<p>ROI pooling <strong>rounds</strong> the projected box coordinates to the feature grid. At a stride of 32, a box edge can move by half a cell, which is 16 input pixels. The box regression head can correct that. A <strong>mask</strong> cannot be corrected, because the mask <em>is</em> the boundary.</p>
+<p><strong>ROI Align removes the rounding.</strong> It keeps the coordinates as floats, places fixed sample points in each output cell, and reads the feature map at those exact positions with <strong>bilinear interpolation</strong> between the four surrounding values. No quantization anywhere. It is worth several points of mask accuracy, and it is what <code>torchvision</code> uses in its detectors and instance segmenters.</p>
+<p><a href="images/fig-roi-align.png" class="zoom" target="_blank"><img src="images/fig-roi-align.png" class="dw100 img-fluid"></a></p>
+</section>
+</section>
+<section id="vision-transformers-a-preview" class="level1">
+<h1>Vision transformers, a preview</h1>
+<section id="what-convolution-assumes" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-convolution-assumes">What convolution assumes</h2>
+<p>Convolution is built on two assumptions. They are usually right, which is why everything so far has worked, and it is worth naming them as assumptions.</p>
+<p><strong>Locality.</strong> A pixel’s meaning depends on its neighbours. A 3x3 kernel can only see 3x3, so information from distant parts of the image can only combine after many layers of stacking.</p>
+<p><strong>Weight sharing, which gives translation equivariance.</strong> The same filter is applied everywhere, so an edge detector learned at the top left works at the bottom right. This is what made convolution so much more parameter-efficient than a fully connected layer last week.</p>
+<p>These assumptions are a <strong>prior</strong>: knowledge about images built into the architecture rather than learned from data. A strong prior is what lets a CNN learn from a modest dataset.</p>
+<p>The question the next few slides preview is what happens if you remove the prior and let the model learn the relationships instead. The answer: it needs much more data, and given that data it does better.</p>
+</section>
+<section id="an-image-as-a-sequence-of-patches" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="an-image-as-a-sequence-of-patches">An image as a sequence of patches</h2>
+<p><a href="images/vit-paper-diagram.png" class="zoom" target="_blank"><img src="images/vit-paper-diagram.png" class="dw60 img-fluid"></a></p>
+<p>A <strong>Vision Transformer</strong>, or ViT, cuts the image into fixed-size square patches, flattens each one into a vector, and treats the result as a sequence.</p>
+<p>The arithmetic is just reshaping, and it needs no new ideas. A 224x224 image at patch size 16 gives <code>(224/16)^2 = 196</code> patches, each one <code>16 * 16 * 3 = 768</code> numbers. A linear layer projects each patch to the model’s width, a learned <strong>position embedding</strong> is added so the model knows where each patch came from, and the sequence goes into a standard transformer encoder.</p>
+<p>The figure is from the paper and is schematic: it draws nine large patches so the arrows stay readable, not the 196 a real ViT-Base has.</p>
+<p>Nothing above is specific to images except the patching step.</p>
+</section>
+<section id="cnn-and-vit-compared" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="cnn-and-vit-compared">CNN and ViT compared</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><a href="images/cnn-vs-vit.png" class="zoom" target="_blank"><img src="images/cnn-vs-vit.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:50%;">
+<p>The difference is where the spatial structure comes from.</p>
+<p>A <strong>CNN</strong> has locality and weight sharing in the architecture. It cannot help but respect them.</p>
+<p>A <strong>ViT</strong> has neither. Every patch can attend to every other patch from the first layer, so long-range relationships are available immediately. The cost is that nothing tells it neighbouring patches are related; it has to learn that, from data.</p>
+<p>That trade shows up as a data requirement. On ImageNet-scale data alone, ViTs underperform comparable CNNs. Pretrained on a much larger dataset first, they match or beat them.</p>
+<p><strong>What this means for you.</strong> Use a pretrained ViT or fine-tune one. Training one from scratch on your own dataset is almost always the wrong call, for exactly the reason in the paragraph above.</p>
+</div>
+</div>
+</section>
+<section id="detr-detection-as-set-prediction" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="detr-detection-as-set-prediction">DETR: detection as set prediction</h2>
+<p><a href="images/detr-paper-diagram.png" class="zoom" target="_blank"><img src="images/detr-paper-diagram.png" class="dw92 img-fluid"></a></p>
+<p>Go back to the three ways of handling a variable number of outputs. <strong>DETR</strong>, 2020, is the third one.</p>
+<p>A CNN backbone produces feature maps, a transformer encoder-decoder processes them, and the decoder takes a fixed set of <strong>100 learned object queries</strong>. Each query outputs one class, including a “no object” class, and one box. Always 100 predictions, for every image.</p>
+<p>What is gone is as important as what is there. <strong>No anchor boxes. No NMS.</strong> Both existed to manage a variable output count, and a fixed set of 100 slots with a “nothing” option removes the need for either.</p>
+</section>
+<section id="matching-predictions-to-ground-truth" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="matching-predictions-to-ground-truth">Matching predictions to ground truth</h2>
+<div class="columns">
+<div class="column" style="width:40%;">
+<p><a href="images/bipartite-matching.png" class="zoom" target="_blank"><img src="images/bipartite-matching.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:60%;">
+<p>Removing NMS creates a new problem. The 100 predictions come out in no particular order, and the image has, say, 3 real objects. Which prediction should be compared against which object?</p>
+<p>Pairing them by index would be arbitrary, and would train the network to care about slot order, which is meaningless.</p>
+<p><strong>DETR pairs predictions with ground truth objects before computing the loss</strong>, choosing the pairing that minimizes total cost over all possible pairings. The cost combines class probability and box similarity. This is the assignment problem, and the <strong>Hungarian algorithm</strong> solves it exactly.</p>
+<p>The matched pairs get a classification and box loss. The other 97 predictions are trained toward “no object”.</p>
+<p>Because exactly one prediction is responsible for each object, duplicates are penalized during training rather than removed afterwards. That is why there is no NMS.</p>
+</div>
+</div>
+</section>
+<section id="what-weeks-8-and-9-fill-in" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-weeks-8-and-9-fill-in">What Weeks 8 and 9 fill in</h2>
+<p>Be clear about what just happened. The last four slides used the words <strong>transformer</strong>, <strong>attention</strong>, <strong>encoder-decoder</strong> and <strong>query</strong> without defining any of them.</p>
+<p>That was on purpose. The <em>architectural ideas</em> here, an image as a sequence of patches and detection as set prediction, do not require knowing how attention computes anything. The mechanism does, and it is the next two weeks.</p>
+<p><strong>Week 8</strong> introduces sequence models and attention: what a query, a key and a value are, and what the attention operation actually computes.</p>
+<p><strong>Week 9</strong> builds the transformer from those parts, which is the architecture a ViT and DETR both use.</p>
+<p>When you get there, come back to these four slides. They should read differently.</p>
+</section>
+</section>
+<section id="wrap-up" class="level1">
+<h1>Wrap-up</h1>
+<section id="wrap-up-1" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="wrap-up-1">Wrap-up</h2>
+<p><strong>Transfer learning.</strong> Start from pretrained weights, nearly always. Freeze the backbone and train a new head when your data is small; fine-tune with a small learning rate when it is not. Measured: 77.3% against 64.8% on the same architecture and budget.</p>
+<p><strong>The four tasks</strong> differ in the shape of their target, and detection is harder than classification because its target has no fixed size.</p>
+<p><strong>IoU</strong> does three jobs: scoring a prediction, finding duplicates, and assigning anchors during training.</p>
+<p><strong>Two-stage detection</strong> proposes regions then classifies them. R-CNN to Fast R-CNN to Faster R-CNN is one idea being made cheaper three times, ending with learned proposals from the RPN.</p>
+<p><strong>One-stage detection</strong> predicts a fixed grid in one pass. Faster, and it needs focal loss to cope with the background imbalance.</p>
+<p><strong>Thresholds are yours, not the model’s.</strong> The same output gave 8 detections or 4 depending on a number chosen after the forward pass.</p>
+<p><strong>Segmentation</strong> is classification per pixel. The architecture problem is getting resolution back, which encoder-decoder plus skip connections solves. Per-pixel cross entropy fails on small objects; add a Dice term.</p>
+<p><strong>Instance segmentation</strong> is detection plus a mask head, and the mask needs ROI Align rather than ROI pooling because a boundary cannot survive rounding.</p>
+</section>
+<section id="next-week-sequence-models-and-attention" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="next-week-sequence-models-and-attention">Next week: sequence models and attention</h2>
+<p>Everything in these two weeks assumed a <strong>fixed-size grid</strong> of inputs with <strong>local</strong> structure. Images are the best case for that assumption.</p>
+<p>Next week the input is a <strong>sequence</strong>: text, audio, a time series. Three things change.</p>
+<ol type="1">
+<li>The length varies from example to example, and the model has to handle that.</li>
+<li>Position matters, but so does distance. Two words twenty tokens apart can be the ones that determine the meaning, and a 3x3 kernel will never see both.</li>
+<li>The useful relationships are <strong>content-dependent</strong> rather than positional. Which earlier word matters depends on what the words are, not on how far away they sit.</li>
+</ol>
+<p>That last point is what attention is for, and it is where the ViT and DETR preview from today gets filled in.</p>
+</section>
+<section id="supplemental-content" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="supplemental-content">Supplemental content</h2>
+<p>These are <strong>optional</strong>. No graded work assumes you read them. Today condensed four weeks of a computer vision course, so this is where the detail went.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>My DSAN 6500 computer vision course</strong></p>
+<ul>
+<li><a href="https://benjaminhoughton.georgetown.domains/computer-vision/week-5/week-5.html">Object detection fundamentals</a></li>
+<li><a href="https://benjaminhoughton.georgetown.domains/computer-vision/week-6/week-6.html">Advanced object detection</a></li>
+<li><a href="https://benjaminhoughton.georgetown.domains/computer-vision/week-7/week-7.html">Image segmentation</a></li>
+<li><a href="https://benjaminhoughton.georgetown.domains/computer-vision/week-8/week-8.html">Vision transformers</a></li>
+</ul>
+<p>Week 5 and 6 go much further on anchor assignment, mAP and the YOLO versions. Week 7 has the loss function variants and the panoptic segmentation material we skipped entirely.</p>
+</div><div class="column" style="width:50%;">
+<p><strong>Prof.&nbsp;Hickman’s centralized lecture content</strong></p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/object-detection/introduction-to-object-detection/notes.html">Introduction to object detection</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/object-detection/advanced-object-detection/notes.html">Advanced object detection</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/image-segmentation/introduction-to-image-segmentation/notes.html">Introduction to image segmentation</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/convolutional-neural-networks/UNet-summary/notes.html">U-Net summary</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/modern-cnn-architectures/transfer-learning/notes.html">Transfer learning</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/torch-vision/pretrained-models/notes.html">Pretrained models in torchvision</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/vision-transformers/introduction-to-vision-transformers/notes.html">Introduction to vision transformers</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/vision-transformers/detection-transformers/notes.html">Detection transformers</a></li>
+</ul>
+</div>
+</div>
+<p><sup>The R-CNN, Fast and Faster R-CNN, ROI pooling, anchor box, YOLO, U-Net, Mask R-CNN diagrams in this deck are from my DSAN 6500 weeks 5 to 7. The ViT, DETR and bipartite matching diagrams are from my DSAN 6500 week 8 and the original papers. Every figure labelled with measured numbers was produced by running pretrained torchvision models on this deck’s photograph.</sup></p>
+</section>
+<section id="lab-6" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="lab-6">Lab 6</h2>
+<p><strong>Due Wednesday Oct 14.</strong></p>
+<p>Three parts, and the first one is the one that will teach you the most.</p>
+<ol type="1">
+<li><strong>Fine-tune a pretrained model.</strong> Take a ResNet-18, replace the head, and compare a frozen backbone against fine-tuning the whole thing against training from scratch, on the same small dataset. You are reproducing the measurement from the transfer learning slide.</li>
+<li><strong>Run a pretrained detector.</strong> Faster R-CNN on your own images. Sweep the score threshold and see the count change, and find at least one detection that is wrong in an interesting way.</li>
+<li><strong>Run a pretrained segmenter.</strong> DeepLabV3 and Mask R-CNN on the same image, and report the pixel counts that show the semantic against instance difference.</li>
+</ol>
+<p>No training a detector from scratch. That is deliberate and it is also what you would do in practice.</p>
+</section>
+<section id="quiz-6" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="quiz-6">Quiz 6</h2>
+<p><strong>At the end of class today.</strong></p>
+<p>It covers <strong>last week</strong>: image data, the convolution operation, building a CNN, and the architecture families.</p>
+<p>Same four-part format as Quiz 5: true or false, multiple choice, fill in the blank, and find the bugs in a short script. Twenty-five points, about fifteen minutes.</p>
+<p>Nothing from today is on it. Today’s material is on Quiz 7.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

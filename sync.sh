@@ -190,6 +190,10 @@ lab_topic() {
 
 # Local path of a week's recording, or empty. Takes the first mp4 in the week
 # directory so Zoom's own filenames can be left alone.
+#
+# One-off: if this week's class was not recorded, drop a prior-semester file
+# in week-N-old-version/. That path is labeled on the site so students can
+# tell it is not this term's lecture.
 week_recording() {
   local num="$1" mp4
   # Always return 0: under set -e, a failed $(week_recording) assignment
@@ -199,7 +203,27 @@ week_recording() {
     printf '%s\n' "$mp4"
     return 0
   done
+  for mp4 in "$DL_RECORDING_DIR/week-$num-old-version"/*.mp4; do
+    [ -f "$mp4" ] || continue
+    printf '%s\n' "$mp4"
+    return 0
+  done
   return 0
+}
+
+recording_is_prior_semester() {
+  local path="$1"
+  [[ "$path" == *"-old-version"* ]]
+}
+
+recording_link_label() {
+  local num="$1" path
+  path=$(week_recording "$num")
+  if recording_is_prior_semester "$path"; then
+    echo "Lecture Recording (previous semester)"
+  else
+    echo "Lecture Recording"
+  fi
 }
 
 week_numbers() {
@@ -380,14 +404,14 @@ build_week_pages() {
         echo "| Lecture notes: $lec_title | $links |" >> "$out_qmd"
       else
         if [ -n "$(week_recording "$num")" ]; then
-          links="$links · [Lecture Recording](../recordings/$week_name/)"
+          links="$links · [$(recording_link_label "$num")](../recordings/$week_name/)"
         fi
         echo "| Lecture | $links |" >> "$out_qmd"
       fi
       lecture_rows=$((lecture_rows + 1))
     done
     if [ "$deck_count" -gt 1 ] && [ -n "$(week_recording "$num")" ]; then
-      echo "| Lecture Recording | [Lecture Recording](../recordings/$week_name/) |" >> "$out_qmd"
+      echo "| $(recording_link_label "$num") | [$(recording_link_label "$num")](../recordings/$week_name/) |" >> "$out_qmd"
       lecture_rows=$((lecture_rows + 1))
     fi
     if [ "$lecture_rows" -eq 0 ]; then
@@ -450,8 +474,15 @@ build_recording_player() {
   local out_dir="$BUILD_DIR/deep-learning/recordings/$week_name"
   local out_html="$out_dir/index.html"
   local src="$week_name-recording.mp4"
-  local page_title week_href
-  page_title=$(printf 'Week %s Lecture Recording' "$num")
+  local page_title week_href rec_path note
+  rec_path=$(week_recording "$num")
+  if recording_is_prior_semester "$rec_path"; then
+    page_title=$(printf 'Week %s Lecture Recording (previous semester)' "$num")
+    note="This recording is from a previous semester. This week's class was not recorded. Starts at 1.25×."
+  else
+    page_title=$(printf 'Week %s Lecture Recording' "$num")
+    note="Starts at 1.25×. Use the player controls to change speed."
+  fi
   topic=$(printf '%s' "$topic" | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g')
   week_href="../../$week_name/"
 
@@ -497,7 +528,7 @@ build_recording_player() {
       </video>
     </div>
     <p class="meta">
-      <span>Starts at 1.25×. Use the player controls to change speed.</span>
+      <span>$note</span>
       <a href="$week_href">Back to week $num</a>
     </p>
     <script>
@@ -682,7 +713,11 @@ for recording_week in "${recording_weeks[@]}"; do
     echo "    week $recording_week: no recording, skipping"
     continue
   fi
-  echo "    week $recording_week: $(basename "$recording_file")"
+  if recording_is_prior_semester "$recording_file"; then
+    echo "    week $recording_week: $(basename "$recording_file") (previous semester)"
+  else
+    echo "    week $recording_week: $(basename "$recording_file")"
+  fi
   push_video "$recording_file" \
     "deep-learning/recordings/week-$recording_week/week-$recording_week-recording.mp4"
   player_html="$BUILD_DIR/deep-learning/recordings/week-$recording_week/index.html"
