@@ -70,6 +70,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="04-pytorch-and-training_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="04-pytorch-and-training_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <link rel="icon" type="image/png" href="/icon.png">
+<style>
+/* HTML handout only; the RevealJS decks are styled by custom.scss.
+ * Quarto lays .column out as flush inline-blocks, so prose in adjacent
+ * columns ends up 3px apart and reads as one sentence across the gutter.
+ * The columns are border-box, so this padding cannot push the pair past
+ * 100% and wrap it. build-notebook.py inlines this file into the head.
+ */
+.columns > .column {
+  padding-right: 1.75rem;
+}
+
+.columns > .column:last-child {
+  padding-right: 0;
+}
+</style>
 
   <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
   <script>document.addEventListener("DOMContentLoaded", function () {
@@ -265,7 +280,7 @@ window.Quarto = {
 </header>
 
 
-<div id="2df121c6" class="cell" data-execution_count="1">
+<div id="7a0174b0" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> time</span>
@@ -487,7 +502,7 @@ Initialization is the one to remember
 <section id="tensors-and-numpy-arrays" class="level2">
 <h2 class="anchored" data-anchor-id="tensors-and-numpy-arrays">Tensors and NumPy arrays</h2>
 <p>The arithmetic is the same. <code>torch.from_numpy</code> even shares memory on CPU, so writing through one view changes the other.</p>
-<div id="e00cf6ba" class="cell" data-execution_count="2">
+<div id="7cba2e09" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>A_np <span class="op">=</span> np.arange(<span class="dv">6</span>).reshape(<span class="dv">2</span>, <span class="dv">3</span>)</span>
@@ -596,7 +611,7 @@ The most common shape bug
 <section id="reading-the-shape-bug" class="level2 codetight">
 <h2 class="codetight anchored" data-anchor-id="reading-the-shape-bug">Reading the shape bug</h2>
 <p>Nothing raises. The cost comes out <span class="math inline">9.7\times</span> too large and still looks exactly like a cost.</p>
-<div id="c996a840" class="cell" data-execution_count="3">
+<div id="80c55ab1" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> torch.tensor([[<span class="fl">0.9</span>], [<span class="fl">0.2</span>], [<span class="fl">0.7</span>], [<span class="fl">0.1</span>]])   <span class="co"># (4, 1)  model output</span></span>
@@ -653,7 +668,7 @@ Check the shapes
 <section id="reading-gradients-out-of-.grad" class="level2 codetight">
 <h2 class="codetight anchored" data-anchor-id="reading-gradients-out-of-.grad">Reading gradients out of <code>.grad</code></h2>
 <p>The graph from <strong>Lab 3, part 2c</strong>, handed to autograd instead of to your <code>Value</code> class. Same three inputs, same expected answers.</p>
-<div id="2b6def96" class="cell" data-execution_count="4">
+<div id="1ab1d3b8" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>A <span class="op">=</span> torch.tensor([<span class="fl">2.0</span>], requires_grad<span class="op">=</span><span class="va">True</span>)</span>
@@ -690,7 +705,7 @@ Check the shapes
 <h2 class="anchored" data-anchor-id="gradient-accumulation-into-.grad">Gradient accumulation into <code>.grad</code></h2>
 <p><code>.grad</code> is a <strong>running sum</strong>, for exactly the reason we saw at the fork in the graph: a node may be reached along more than one path, so the backward pass adds rather than overwrites.</p>
 <p>Here is the failure mode rather than a warning about it.</p>
-<div id="610e1e9b" class="cell" data-execution_count="5">
+<div id="a9412f0c" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>w <span class="op">=</span> torch.tensor([<span class="fl">2.0</span>], requires_grad<span class="op">=</span><span class="va">True</span>)</span>
@@ -748,7 +763,7 @@ The accumulation is a feature too
 <section id="nn.linear-and-the-shape-convention" class="level2">
 <h2 class="anchored" data-anchor-id="nn.linear-and-the-shape-convention"><code>nn.Linear</code> and the shape convention</h2>
 <p><code>nn.Linear(in_features, out_features)</code> stores <span class="math inline">\mathbf{W}</span> as <code>(out_features, in_features)</code> and <span class="math inline">\mathbf{b}</span> as <code>(out_features,)</code>. That is the <code>(units, inputs)</code> convention from Week 2, unchanged, which is why the batched form carries a transpose.</p>
-<div id="e37c2d40" class="cell" data-execution_count="6">
+<div id="6ccdc044" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">6600</span>)</span>
@@ -777,7 +792,7 @@ nn.Linear is that line, plus the gradient tape</code></pre>
 <section id="nn.module" class="level2">
 <h2 class="anchored" data-anchor-id="nn.module"><code>nn.Module</code></h2>
 <p>A model is a class with two jobs: declare the layers in <code>__init__</code>, and write the forward pass in <code>forward</code>. Subclassing <code>nn.Module</code> is what <strong>registers</strong> the parameters, so the optimizer, <code>.to(device)</code> and saving all find them.</p>
-<div id="033869f5" class="cell" data-execution_count="7">
+<div id="d560c586" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> MLP(nn.Module):</span>
@@ -920,7 +935,7 @@ Read the gradient
 <section id="lab-2s-network-trained-with-autograd" class="level2 codetight">
 <h2 class="codetight anchored" data-anchor-id="lab-2s-network-trained-with-autograd">Lab 2’s network, trained with autograd</h2>
 <p>Same seed, same weights, same 400 steps, same learning rate. Source code for your reference. The printed costs should match Lab 2 to four decimals; the work per step should not.</p>
-<div id="ba70fc45" class="cell" data-execution_count="8">
+<div id="e0187d51" class="cell" data-execution_count="8">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>SEED, HIDDEN, STEPS, LR <span class="op">=</span> <span class="dv">6600</span>, <span class="dv">16</span>, <span class="dv">400</span>, <span class="fl">0.1</span></span>
@@ -974,7 +989,7 @@ Read the gradient
 <pre><code>parameters      49
 cost at start   1.3256      (Lab 2: 1.3256)
 cost at end     0.0190      (Lab 2: 0.0190)
-wall time       0.18 s for 400 steps
+wall time       0.15 s for 400 steps
 work per step   1 forward + 1 backward, not 50 forwards</code></pre>
 </div>
 </div>
@@ -1102,7 +1117,7 @@ How to pick a batch size
 </table>
 <p><code>__getitem__</code> is the important one, and it is not a lookup. It is the recipe for turning example <span class="math inline">i</span> into tensors, and it runs <strong>every time that example is used</strong>. For a real dataset that means: open the file on disk, decode the JPEG or parse the audio, apply the crop and flip, convert to a tensor, return it.</p>
 <p>Below, the data is small enough to sit in memory, so <code>__getitem__</code> really is just an index. That is the exception, not the rule.</p>
-<div id="250ea72f" class="cell" data-execution_count="9">
+<div id="ecc85bdf" class="cell" data-execution_count="9">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader, Dataset, random_split</span>
@@ -1139,7 +1154,7 @@ data[7]       x (1,) -0.9296   y (1,) -0.4883</code></pre>
 <p>A <code>DataLoader</code> wraps a <code>Dataset</code> and hands you batches. Shuffling and the short final batch are the easy part. The reason the class exists is <strong>speed</strong>.</p>
 <p>One training step on a GPU takes a few milliseconds. Reading and decoding one JPEG takes around ten. Do both in one process and the GPU sits idle most of the run, waiting for the CPU to feed it. <strong>Most slow training runs in practice are slow for this reason</strong>, not because the model is large.</p>
 <p>A <code>DataLoader</code> avoids that by building the next batch <strong>while the GPU is still working on the current one</strong>, in several processes at once.</p>
-<div id="102221c0" class="cell" data-execution_count="10">
+<div id="286139bd" class="cell" data-execution_count="10">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>loader <span class="op">=</span> DataLoader(data, batch_size<span class="op">=</span><span class="dv">32</span>, shuffle<span class="op">=</span><span class="va">True</span>, drop_last<span class="op">=</span><span class="va">False</span>)</span>

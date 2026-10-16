@@ -1,0 +1,13 @@
+/* HTML handout only; the RevealJS decks are styled by custom.scss.
+ * Quarto lays .column out as flush inline-blocks, so prose in adjacent
+ * columns ends up 3px apart and reads as one sentence across the gutter.
+ * The columns are border-box, so this padding cannot push the pair past
+ * 100% and wrap it. build-notebook.py inlines this file into the head.
+ */
+.columns > .column {
+  padding-right: 1.75rem;
+}
+
+.columns > .column:last-child {
+  padding-right: 0;
+}

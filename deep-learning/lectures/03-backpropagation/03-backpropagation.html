@@ -70,6 +70,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="03-backpropagation_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="03-backpropagation_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <link rel="icon" type="image/png" href="/icon.png">
+<style>
+/* HTML handout only; the RevealJS decks are styled by custom.scss.
+ * Quarto lays .column out as flush inline-blocks, so prose in adjacent
+ * columns ends up 3px apart and reads as one sentence across the gutter.
+ * The columns are border-box, so this padding cannot push the pair past
+ * 100% and wrap it. build-notebook.py inlines this file into the head.
+ */
+.columns > .column {
+  padding-right: 1.75rem;
+}
+
+.columns > .column:last-child {
+  padding-right: 0;
+}
+</style>
 
   <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
   <script>document.addEventListener("DOMContentLoaded", function () {
@@ -685,7 +700,7 @@ else:
 <section id="scalar-example-verified-against-autograd" class="level2">
 <h2 class="anchored" data-anchor-id="scalar-example-verified-against-autograd">Scalar example, verified against autograd</h2>
 <p>Two lines of setup, so the check is readable. <code>requires_grad=True</code> tells the engine to record; <code>retain_grad()</code> asks it to keep the gradient at an intermediate node, which it normally discards. <strong>The API itself is next week</strong>, so read this as a second opinion on the numbers you just derived.</p>
-<div id="5bb7625d" class="cell" data-execution_count="1">
+<div id="575f1755" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
@@ -765,7 +780,7 @@ Optimizing the input instead of the weights
 <section id="classification-example-verified-against-autograd" class="level2">
 <h2 class="anchored" data-anchor-id="classification-example-verified-against-autograd">Classification example, verified against autograd</h2>
 <p>Watch <span class="math inline">\partial \ell / \partial z_2</span> in the output and compare it to <span class="math inline">\hat{y} - y</span>.</p>
-<div id="f242e99d" class="cell" data-execution_count="2">
+<div id="615f69fa" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.tensor([<span class="fl">2.0</span>], requires_grad<span class="op">=</span><span class="va">True</span>)</span>
@@ -948,7 +963,7 @@ Optimizing the input instead of the weights
 <section id="layer-backward-pass-verified-against-autograd" class="level2 codetight">
 <h2 class="codetight anchored" data-anchor-id="layer-backward-pass-verified-against-autograd">Layer backward pass, verified against autograd</h2>
 <p>Lab 2’s 2-3-2-1 network, same seed. The whole backward pass written out in NumPy, then checked against <code>loss.backward()</code>. Source code for your reference; the numbers are the point.</p>
-<div id="d904c50c" class="cell" data-execution_count="3">
+<div id="5b076752" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>

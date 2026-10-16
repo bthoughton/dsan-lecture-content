@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="07-sequence-models_files/libs/clipboard/clipboard.min.js"></script>
+<script src="07-sequence-models_files/libs/quarto-html/tabby.min.js"></script>
+<script src="07-sequence-models_files/libs/quarto-html/popper.min.js"></script>
+<script src="07-sequence-models_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="07-sequence-models_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="07-sequence-models_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="07-sequence-models_files/libs/quarto-html/quarto-html.min.css" rel="stylesheet" data-mode="light">
+<link href="07-sequence-models_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.4.549">
+
+  <meta name="author" content="Prof.&nbsp;Ben Houghton">
+  <meta name="dcterms.date" content="2026-10-15">
+  <title>DSAN 6600: Sequence Models</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="07-sequence-models_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="07-sequence-models_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="07-sequence-models_files/libs/revealjs/dist/theme/quarto.css">
+  <link href="07-sequence-models_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="07-sequence-models_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="07-sequence-models_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="07-sequence-models_files/libs/revealjs/plugin/reveal-chalkboard/font-awesome/css/all.css" rel="stylesheet">
+  <link href="07-sequence-models_files/libs/revealjs/plugin/reveal-chalkboard/style.css" rel="stylesheet">
+  <link href="07-sequence-models_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+
+  .callout {
+    margin-top: 1em;
+    margin-bottom: 1em;  
+    border-radius: .25rem;
+  }
+
+  .callout.callout-style-simple { 
+    padding: 0em 0.5em;
+    border-left: solid #acacac .3rem;
+    border-right: solid 1px silver;
+    border-top: solid 1px silver;
+    border-bottom: solid 1px silver;
+    display: flex;
+  }
+
+  .callout.callout-style-default {
+    border-left: solid #acacac .3rem;
+    border-right: solid 1px silver;
+    border-top: solid 1px silver;
+    border-bottom: solid 1px silver;
+  }
+
+  .callout .callout-body-container {
+    flex-grow: 1;
+  }
+
+  .callout.callout-style-simple .callout-body {
+    font-size: 1rem;
+    font-weight: 400;
+  }
+
+  .callout.callout-style-default .callout-body {
+    font-size: 0.9rem;
+    font-weight: 400;
+  }
+
+  .callout.callout-titled.callout-style-simple .callout-body {
+    margin-top: 0.2em;
+  }
+
+  .callout:not(.callout-titled) .callout-body {
+      display: flex;
+  }
+
+  .callout:not(.no-icon).callout-titled.callout-style-simple .callout-content {
+    padding-left: 1.6em;
+  }
+
+  .callout.callout-titled .callout-header {
+    padding-top: 0.2em;
+    margin-bottom: -0.2em;
+  }
+
+  .callout.callout-titled .callout-title  p {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+    
+  .callout.callout-titled.callout-style-simple .callout-content  p {
+    margin-top: 0;
+  }
+
+  .callout.callout-titled.callout-style-default .callout-content  p {
+    margin-top: 0.7em;
+  }
+
+  .callout.callout-style-simple div.callout-title {
+    border-bottom: none;
+    font-size: .9rem;
+    font-weight: 600;
+    opacity: 75%;
+  }
+
+  .callout.callout-style-default  div.callout-title {
+    border-bottom: none;
+    font-weight: 600;
+    opacity: 85%;
+    font-size: 0.9rem;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+
+  .callout.callout-style-default div.callout-content {
+    padding-left: 0.5em;
+    padding-right: 0.5em;
+  }
+
+  .callout.callout-style-simple .callout-icon::before {
+    height: 1rem;
+    width: 1rem;
+    display: inline-block;
+    content: "";
+    background-repeat: no-repeat;
+    background-size: 1rem 1rem;
+  }
+
+  .callout.callout-style-default .callout-icon::before {
+    height: 0.9rem;
+    width: 0.9rem;
+    display: inline-block;
+    content: "";
+    background-repeat: no-repeat;
+    background-size: 0.9rem 0.9rem;
+  }
+
+  .callout-title {
+    display: flex
+  }
+    
+  .callout-icon::before {
+    margin-top: 1rem;
+    padding-right: .5rem;
+  }
+
+  .callout.no-icon::before {
+    display: none !important;
+  }
+
+  .callout.callout-titled .callout-body > .callout-content > :last-child {
+    padding-bottom: 0.5rem;
+    margin-bottom: 0;
+  }
+
+  .callout.callout-titled .callout-icon::before {
+    margin-top: .5rem;
+    padding-right: .5rem;
+  }
+
+  .callout:not(.callout-titled) .callout-icon::before {
+    margin-top: 1rem;
+    padding-right: .5rem;
+  }
+
+  /* Callout Types */
+
+  div.callout-note {
+    border-left-color: #4582ec !important;
+  }
+
+  div.callout-note .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAEU0lEQVRYCcVXTWhcVRQ+586kSUMMxkyaElstCto2SIhitS5Ek8xUKV2poatCcVHtUlFQk8mbaaziwpWgglJwVaquitBOfhQXFlqlzSJpFSpIYyXNjBNiTCck7x2/8/LeNDOZxDuEkgOXe++553zfefee+/OYLOXFk3+1LLrRdiO81yNqZ6K9cG0P3MeFaMIQjXssE8Z1JzLO9ls20MBZX7oG8w9GxB0goaPrW5aNMp1yOZIa7Wv6o2ykpLtmAPs/vrG14Z+6d4jpbSKuhdcSyq9wGMPXjonwmESXrriLzFGOdDBLB8Y6MNYBu0dRokSygMA/mrun8MGFN3behm6VVAwg4WR3i6FvYK1T7MHo9BK7ydH+1uurECoouk5MPRyVSBrBHMYwVobG2aOXM07sWrn5qgB60rc6mcwIDJtQrnrEr44kmy+UO9r0u9O5/YbkS9juQckLed3DyW2XV/qWBBB3ptvI8EUY3I9p/67OW+g967TNr3Sotn3IuVlfMLVnsBwH4fsnebJvyGm5GeIUA3jljERmrv49SizPYuq+z7c2H/jlGC+Ghhupn/hcapqmcudB9jwJ/3jvnvu6vu5lVzF1fXyZuZZ7U8nRmVzytvT+H3kilYvH09mLWrQdwFSsFEsxFVs5fK7A0g8gMZjbif4ACpKbjv7gNGaD8bUrlk8x+KRflttr22JEMRUbTUwwDQScyzPgedQHZT0xnx7ujw2jfVfExwYHwOsDTjLdJ2ebmeQIlJ7neo41s/DrsL3kl+W2lWvAga0tR3zueGr6GL78M3ifH0rGXrBC2aAR8uYcIA5gwV8zIE8onoh8u0Fca/ciF7j1uOzEnqcIm59sEXoGc0+z6+H45V1CvAvHcD7THztu669cnp+L0okAeIc6zjbM/24LgGM1gZk7jnRu1aQWoU9sfUOuhrmtaPIO3YY1KLLWZaEO5TKUbMY5zx8W9UJ6elpLwKXbsaZ4EFl7B4bMtDv0iRipKoDQT2sNQI9b1utXFdYisi+wzZ/ri/1m7QfDgEuvgUUEIJPq3DhX/5DWNqIXDOweC2wvIR90Oq3lDpdMIgD2r0dXvGdsEW5H6x6HLRJYU7C69VefO1x8Gde1ZFSJLfWS1jbCnhtOPxmpfv2LXOA2Xk2tvnwKKPFuZ/oRmwBwqRQDcKNeVQkYcOjtWVBuM/JuYw5b6isojIkYxyYAFn5K7ZBF10fea52y8QltAg6jnMqNHFBmGkQ1j+U43HMi2xMar1Nv0zGsf1s8nUsmUtPOOrbFIR8bHFDMB5zL13Gmr/kGlCkUzedTzzmzsaJXhYawnA3UmARpiYj5ooJZiUoxFRtK3X6pgNPv+IZVPcnwbOl6f+aBaO1CNvPW9n9LmCp01nuSaTRF2YxHqZ8DYQT6WsXT+RD6eUztwYLZ8rM+rcPxamv1VQzFUkzFXvkiVrySGQgJNvXHJAxiU3/NwiC03rSf05VBaPtu/Z7/B8Yn/w7eguloAAAAAElFTkSuQmCC');
+  }
+
+  div.callout-note.callout-style-default .callout-title {
+    background-color: #dae6fb
+  }
+
+  div.callout-important {
+    border-left-color: #d9534f !important;
+  }
+
+  div.callout-important .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAEKklEQVRYCcVXTWhcVRS+575MJym48A+hSRFr00ySRQhURRfd2HYjk2SSTokuBCkU2o0LoSKKraKIBTcuFCoidGFD08nkBzdREbpQ1EDNIv8qSGMFUboImMSZd4/f9zJv8ibJMC8xJQfO3HPPPef7zrvvvnvviIkpC9nsw0UttFunbUhpFzFtarSd6WJkStVMw5xyVqYTvkwfzuf/5FgtkVoB0729j1rjXwThS7Vio+Mo6DNnvLfahoZ+i/o32lULuJ3NNiz7q6+pyAUkJaFF6JwaM2lUJlV0MlnQn5aTRbEu0SEqHUa0A4AdiGuB1kFXRfVyg5d87+Dg4DL6m2TLAub60ilj7A1Ec4odSAc8X95sHh7+ZRPCFo6Fnp7HfU/fBng/hi10CjCnWnJjsxvDNxWw0NfV6Rv5GgP3I3jGWXumdTD/3cbEOP2ZbOZp69yniG3FQ9z1jD7bnBu9Fc2tKGC2q+uAJOQHBDRiZX1x36o7fWBs7J9ownbtO+n0/qWkvW7UPIfc37WgT6ZGR++EOJyeQDSb9UB+DZ1G6DdLDzyS+b/kBCYGsYgJbSQHuThGKRcw5xdeQf8YdNHsc6ePXrlSYMBuSIAFTGAtQo+VuALo4BX83N190NWZWbynBjhOHsmNfFWLeL6v+ynsA58zDvvAC8j5PkbOcXCMg2PZFk3q8MjI7WAG/Dp9AwP7jdGBOOQkAvlFUB+irtm16I1Zw9YBcpGTGXYmk3kQIC/Cds55l+iMI3jqhjAuaoe+am2Jw5GT3Nbz3CkE12NavmzN5+erJW7046n/CH1RO/RVa8lBLozXk9uqykkGAyRXLWlLv5jyp4RFsG5vGVzpDLnIjTWgnRy2Rr+tDKvRc7Y8AyZq10jj8DqXdnIRNtFZb+t/ZRtXcDiVnzpqx8mPcDWxgARUqx0W1QB9MeUZiNrV4qP+Ehc+BpNgATsTX8ozYKL2NtFYAHc84fG7ndxUPr+AR/iQSns7uSUufAymwDOb2+NjK27lEFocm/EE2WpyIy/Hi66MWuMKJn8RvxIcj87IM5Vh9663ziW36kR0HNenXuxmfaD8JC7tfKbrhFr7LiZCrMjrzTeGx+PmkosrkNzW94ObzwocJ7A1HokLolY+AvkTiD/q1H0cN48c5EL8Crkttsa/AXQVDmutfyku0E7jShx49XqV3MFK8IryDhYVbj7Sj2P2eBxwcXoe8T8idsKKPRcnZw1b+slFTubwUwhktrfnAt7J++jwQtLZcm3sr9LQrjRzz6cfMv9aLvgmnAGvpoaGLxM4mAEaLV7iAzQ3oU0IvD5x9ix3yF2RAAuYAOO2f7PEFWCXZ4C9Pb2UsgDeVnFSpbFK7/IWu7TPTvBqzbGdCHOJQSxiEjt6IyZmxQyEJHv6xyQsYk//moVFsN2zP6fRImjfq7/n/wFDguUQFNEwugAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-important.callout-style-default .callout-title {
+    background-color: #f7dddc
+  }
+
+  div.callout-warning {
+    border-left-color: #f0ad4e !important;
+  }
+
+  div.callout-warning .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAAETklEQVRYCeVWW2gcVRg+58yaTUnizqbipZeX4uWhBEniBaoUX1Ioze52t7sRq6APio9V9MEaoWlVsFasRq0gltaAPuxms8lu0gcviE/FFOstVbSIxgcv6SU7EZqmdc7v9+9mJtNks51NTUH84ed889/PP+cmxP+d5FIbMJmNbpREu4WUkiTtCicKny0l1pIKmBzovF2S+hIJHX8iEu3hZJ5lNZGqyRrGSIQpq15AzF28jgpeY6yk6GVdrfFqdrD6Iw+QlB8g0YS2g7dyQmXM/IDhBhT0UCiRf59lfqmmDvzRt6kByV/m4JjtzuaujMUM2c5Z2d6JdKrRb3K2q6mA+oYVz8JnDdKPmmNthzkAk/lN63sYPgevrguc72aZX/L9C6x09GYyxBgCX4NlvyGUHOKELlm5rXeR1kchuChJt4SSwyddZRXgvwMGvYo4QSlk3/zkHD8UHxwVJA6zjZZqP8v8kK8OWLnIZtLyCAJagYC4rTGW/9Pqj92N/c+LUaAj27movwbi19tk/whRCIE7Q9vyI6yvRpftAKVTdUjOW40X3h5OXsKCdmFcx0xlLJoSuQngnrJe7Kcjm4OMq9FlC7CMmScQANuNvjfP3PjGXDBaUQmbp296S5L4DrpbrHN1T87ZVEZVCzg1FF0Ft+dKrlLukI+/c9ENo+TvlTDbYFvuKPtQ9+l052rXrgKoWkDAFnvh0wTOmYn8R5f4k/jN/fZiCM1tQx9jQQ4ANhqG4hiL0qIFTGViG9DKB7GYzgubnpofgYRwO+DFjh0Zin2m4b/97EDkXkc+f6xYAPX0KK2I/7fUQuwzuwo/L3AkcjugPNixC8cHf0FyPjWlItmLxWw4Ou9YsQCr5fijMGoD/zpdRy95HRysyXA74MWOnscpO4j2y3HAVisw85hX5+AFBRSHt4ShfLFkIMXTqyKFc46xdzQM6XbAi702a7sy04J0+feReMFKp5q9esYLCqAZYw/k14E/xcLLsFElaornTuJB0svMuJINy8xkIYuL+xPAlWRceH6+HX7THJ0djLUom46zREu7tTkxwmf/FdOZ/sh6Q8qvEAiHpm4PJ4a/doJe0gH1t+aHRgCzOvBvJedEK5OFE5jpm4AGP2a8Dxe3gGJ/pAutug9Gp6he92CsSsWBaEcxGx0FHytmIpuqGkOpldqNYQK8cSoXvd+xLxXADw0kf6UkJNFtdo5MOgaLjiQOQHcn+A6h5NuL2s0qsC2LOM75PcF3yr5STuBSAcGG+meA14K/CI21HcS4LBT6tv0QAh8Dr5l93AhZzG5ZJ4VxAqdZUEl9z7WJ4aN+svMvwHHL21UKTd1mqvChH7/Za5xzXBBKrUcB0TQ+Ulgkfbi/H/YT5EptrGzsEK7tR1B7ln9BBwckYfMiuSqklSznIuoIIOM42MQO+QnduCoFCI0bpkzjCjddHPN/F+2Yu+sd9bKNpVwHhbS3LluK/0zgfwD0xYI5dXuzlQAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-warning.callout-style-default .callout-title {
+    background-color: #fcefdc
+  }
+
+  div.callout-tip {
+    border-left-color: #02b875 !important;
+  }
+
+  div.callout-tip .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAADr0lEQVRYCe1XTWgTQRj9ZjZV8a9SPIkKgj8I1bMHsUWrqYLVg4Ue6v9BwZOxSYsIerFao7UiUryIqJcqgtpimhbBXoSCVxUFe9CTiogUrUp2Pt+3aUI2u5vdNh4dmMzOzHvvezuz8xNFM0mjnbXaNu1MvFWRXkXEyE6aYOYJpdW4IXuA4r0fo8qqSMDBU0v1HJUgVieAXxzCsdE/YJTdFcVIZQNMyhruOMJKXYFoLfIfIvVIMWdsrd+Rpd86ZmyzzjJmLStqRn0v8lzkb4rVIXvnpScOJuAn2ACC65FkPzEdEy4TPWRLJ2h7z4cArXzzaOdKlbOvKKX25Wl00jSnrwVxAg3o4dRxhO13RBSdNvH0xSARv3adTXbBdTf64IWO2vH0LT+cv4GR1DJt+DUItaQogeBX/chhbTBxEiZ6gftlDNXTrvT7co4ub5A6gp9HIcHvzTa46OS5fBeP87Qm0fQkr4FsYgVQ7Qg+ZayaDg9jhg1GkWj8RG6lkeSacrrHgDaxdoBiZPg+NXV/KifMuB6//JmYH4CntVEHy/keA6x4h4CU5oFy8GzrBS18cLJMXcljAKB6INjWsRcuZBWVaS3GDrqB7rdapVIeA+isQ57Eev9eCqzqOa81CY05VLd6SamW2wA2H3SiTbnbSxmzfp7WtKZkqy4mdyAlGx7ennghYf8voqp9cLSgKdqNfa6RdRsAAkPwRuJZNbpByn+RrJi1RXTwdi8RQF6ymDwGMAtZ6TVE+4uoKh+MYkcLsT0Hk8eAienbiGdjJHZTpmNjlbFJNKDVAp2fJlYju6IreQxQ08UJDNYdoLSl6AadO+fFuCQqVMB1NJwPm69T04Wv5WhfcWyfXQB+wXRs1pt+nCknRa0LVzSA/2B+a9+zQJadb7IyyV24YAxKp2Jqs3emZTuNnKxsah+uabKbMk7CbTgJx/zIgQYErIeTKRQ9yD9wxVof5YolPHqaWo7TD6tJlh7jQnK5z2n3+fGdggIOx2kaa2YI9QWarc5Ce1ipNWMKeSG4DysFF52KBmTNMmn5HqCFkwy34rDg05gDwgH3bBi+sgFhN/e8QvRn8kbamCOhgrZ9GJhFDgfcMHzFb6BAtjKpFhzTjwv1KCVuxHvCbsSiEz4CANnj84cwHdFXAbAOJ4LTSAawGWFn5tDhLMYz6nWeU2wJfIhmIJBefcd/A5FWQWGgrWzyORZ3Q6HuV+Jf0Bj+BTX69fm1zWgK7By1YTXchFDORywnfQ7GpzOo6S+qECrsx2ifVQAAAABJRU5ErkJggg==');
+  }
+
+  div.callout-tip.callout-style-default .callout-title {
+    background-color: #ccf1e3
+  }
+
+  div.callout-caution {
+    border-left-color: #fd7e14 !important;
+  }
+
+  div.callout-caution .callout-icon::before {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAIKADAAQAAAABAAAAIAAAAACshmLzAAACV0lEQVRYCdVWzWoUQRCuqp2ICBLJXgITZL1EfQDBW/bkzUMUD7klD+ATSHBEfAIfQO+iXsWDxJsHL96EHAwhgzlkg8nBg25XWb0zIb0zs9muYYWkoKeru+vn664fBqElyZNuyh167NXJ8Ut8McjbmEraKHkd7uAnAFku+VWdb3reSmRV8PKSLfZ0Gjn3a6Xlcq9YGb6tADjn+lUfTXtVmaZ1KwBIvFI11rRXlWlatwIAAv2asaa9mlB9wwygiDX26qaw1yYPzFXg2N1GgG0FMF8Oj+VIx7E/03lHx8UhvYyNZLN7BwSPgekXXLribw7w5/c8EF+DBK5idvDVYtEEwMeYefjjLAdEyQ3M9nfOkgnPTEkYU+sxMq0BxNR6jExrAI31H1rzvLEfRIdgcv1XEdj6QTQAS2wtstEALLG1yEZ3QhH6oDX7ExBSFEkFINXH98NTrme5IOaaA7kIfiu2L8A3qhH9zRbukdCqdsA98TdElyeMe5BI8Rs2xHRIsoTSSVFfCFCWGPn9XHb4cdobRIWABNf0add9jakDjQJpJ1bTXOJXnnRXHRf+dNL1ZV1MBRCXhMbaHqGI1JkKIL7+i8uffuP6wVQAzO7+qVEbF6NbS0LJureYcWXUUhH66nLR5rYmva+2tjRFtojkM2aD76HEGAD3tPtKM309FJg5j/K682ywcWJ3PASCcycH/22u+Bh7Aa0ehM2Fu4z0SAE81HF9RkB21c5bEn4Dzw+/qNOyXr3DCTQDMBOdhi4nAgiFDGCinIa2owCEChUwD8qzd03PG+qdW/4fDzjUMcE1ZpIAAAAASUVORK5CYII=');
+  }
+
+  div.callout-caution.callout-style-default .callout-title {
+    background-color: #ffe5d0
+  }
+
+  </style>
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+  <link rel="icon" type="image/png" href="/icon.png">
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" class="quarto-title-block center">
+  <h1 class="title">DSAN 6600: Sequence Models</h1>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Prof.&nbsp;Ben Houghton 
+</div>
+</div>
+</div>
+
+  <p class="date">2026-10-15</p>
+</section>
+<section id="today" class="slide level2 smaller">
+<h2>Today</h2>
+<p>The first half of today finished computer vision. This is the second half.</p>
+<p>Everything so far assumed a <strong>fixed-size grid</strong> where <strong>nearby things are related</strong>. Text has neither property.</p>
+<ul>
+<li><strong>Sequence data.</strong> Tokens, embeddings, padding, masking. You will use this every week from here on.</li>
+<li><strong>1D convolution</strong>, then <strong>recurrent networks</strong>: the two ways to process a sequence before attention existed.</li>
+<li><strong>Why that breaks.</strong> Two measured failures, and they are why the field moved on.</li>
+<li><strong>LSTM</strong>, briefly, as the patch that helped.</li>
+</ul>
+</section>
+<section id="labs-and-quizzes" class="slide level2 smaller">
+<h2>Labs and quizzes</h2>
+<p><strong>Lab 6 was due yesterday.</strong> That was transfer learning, then a pretrained detector and a pretrained segmenter on the course photograph.</p>
+<p><strong>Quiz 7 is at the end of class.</strong> It covers the Oct 8 lecture: the back half of the CNN deck through to non-maximum suppression. Nothing from today is on it, and nothing past NMS is on it either. The study guide lists the scope exactly.</p>
+<p><strong>Lab 7 goes out today</strong>, due Wednesday Oct 21. It is sequence data mechanics: tokenizing text, building a vocabulary, padding a ragged batch and masking it correctly. Deliberately not about LSTM architecture, because padding and masking are what Weeks 9 and 10 need and the gates are not.</p>
+</section>
+<section id="what-a-convolution-assumes" class="slide level2 smaller">
+<h2>What a convolution assumes</h2>
+<p><strong>A fixed-size input.</strong> Every image is resized to <span class="math inline">\(224 \times 224\)</span> before it goes in. You cannot resize a sentence.</p>
+<p><strong>Locality.</strong> A <span class="math inline">\(3 \times 3\)</span> kernel looks at a pixel and its neighbours, because in an image the neighbours are the context. In text they often are not.</p>
+<p><a href="images/fig-dependency.png" class="zoom" target="_blank"><img data-src="images/fig-dependency.png" class="dw95"></a></p>
+</section>
+<section>
+<section id="sequence-data" class="title-slide slide level1 center">
+<h1>Sequence data</h1>
+
+</section>
+<section id="what-makes-data-sequential" class="slide level2 smaller">
+<h2>What makes data sequential</h2>
+<p><strong>Sequence data is data where the order of the elements carries meaning and the number of elements is not fixed.</strong></p>
+<p><a href="images/seq-applications.png" class="zoom" target="_blank"><img data-src="images/seq-applications.png" class="dw80"></a></p>
+<p>Both halves of the definition matter. A bag of pixels in random order is no longer an image, so images care about order too, but an image’s size is fixed by resizing and a sentence’s is not. Notice that the input and the output are different shapes in almost every row: one label from a sequence, a sequence from one label, a sequence from a sequence.</p>
+</section>
+<section id="tokenization" class="slide level2 smaller">
+<h2>Tokenization</h2>
+<p>A network takes numbers. Text is characters. <strong>Tokenization is the step that splits text into pieces, and a vocabulary is the lookup from those pieces to integer ids.</strong></p>
+<p><a href="images/fig-tokenize.png" class="zoom" target="_blank"><img data-src="images/fig-tokenize.png" class="dw95"></a></p>
+<p>The same sentence is 37 tokens as characters, 8 as words, and 11 as subwords. The trade is between sequence length and vocabulary size, and subword tokenization is what every modern model uses because it gets most of both: a small fixed vocabulary that can still spell anything.</p>
+</section>
+<section id="why-subword-tokenization-won" class="slide level2 smaller">
+<h2>Why subword tokenization won</h2>
+<div class="columns">
+<div class="column" style="width:33%;">
+<p><strong>Characters</strong> spell anything with a few hundred tokens. The cost is long sequences, and work grows with length.</p>
+</div><div class="column" style="width:33%;">
+<p><strong>Words</strong> give short sequences and a vocabulary that never stops growing. Anything missing becomes <code>&lt;unk&gt;</code>, meaning gone.</p>
+</div><div class="column" style="width:33%;">
+<p><strong>Subwords</strong> keep frequent words whole and split rare ones. Fixed vocabulary, nothing unspellable.</p>
+</div>
+</div>
+<p>In the figure, <code>unhappier</code> became <code>un</code> + <code>happ</code> + <code>ier</code>. A model that has never seen the word has seen <code>un</code> on <code>unlikely</code> and <code>ier</code> on <code>easier</code>, so the morphology survives instead of collapsing to <code>&lt;unk&gt;</code>.</p>
+</section>
+<section id="one-hot-encoding" class="slide level2 smaller">
+<h2>One-hot encoding</h2>
+<p>The first thing you would try. <strong>A one-hot vector is all zeros with a single 1, at the index of the token.</strong> A sequence of <span class="math inline">\(s\)</span> tokens over a vocabulary of <span class="math inline">\(n\)</span> becomes an <span class="math inline">\(s \times n\)</span> matrix <span class="math inline">\(\mathbf{O}\)</span>, almost all of it zeros.</p>
+<p><a href="images/onehot-to-embedding.png" class="zoom" target="_blank"><img data-src="images/onehot-to-embedding.png" class="dw92"></a></p>
+<p>Multiply <span class="math inline">\(\mathbf{O}\)</span> by a weight matrix <span class="math inline">\(\mathbf{W_E}\)</span> and you get a dense <span class="math inline">\(s \times m\)</span> matrix <span class="math inline">\(\mathbf{E}\)</span>, with <span class="math inline">\(m\)</span> in the hundreds rather than tens of thousands. <strong>That multiply is the embedding</strong>, and it is the next slide.</p>
+</section>
+<section id="embeddings" class="slide level2 smaller">
+<h2>Embeddings</h2>
+<p>Multiplying a one-hot row by <span class="math inline">\(\mathbf{W_E}\)</span> just selects a row of <span class="math inline">\(\mathbf{W_E}\)</span>, so you may as well index it. <strong>An embedding is that lookup table: one learned row per token.</strong></p>
+<p><a href="images/embedding-vectors.png" class="zoom" target="_blank"><img data-src="images/embedding-vectors.png" class="dw85"></a></p>
+<p>The rows are parameters, so the model learns them, and tokens that behave alike end up near each other. One-hot cannot do that: every token sits exactly as far from every other as it started, forever.</p>
+</section>
+<section id="how-an-embedding-is-read-and-updated" class="slide level2 smaller">
+<h2>How an embedding is read and updated</h2>
+<p><a href="images/fig-embed.png" class="zoom" target="_blank"><img data-src="images/fig-embed.png" class="dw92"></a></p>
+</section>
+<section id="embedding-a-batch-of-ids" class="slide level2 smaller codetight">
+<h2>Embedding a batch of ids</h2>
+<div id="a52fa923" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href=""></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href=""></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb1-3"><a href=""></a></span>
+<span id="cb1-4"><a href=""></a>torch.manual_seed(<span class="dv">6600</span>)</span>
+<span id="cb1-5"><a href=""></a>vocab_size, d_model <span class="op">=</span> <span class="dv">50_000</span>, <span class="dv">256</span></span>
+<span id="cb1-6"><a href=""></a>emb <span class="op">=</span> nn.Embedding(vocab_size, d_model)</span>
+<span id="cb1-7"><a href=""></a></span>
+<span id="cb1-8"><a href=""></a>ids <span class="op">=</span> torch.randint(<span class="dv">0</span>, vocab_size, (<span class="dv">4</span>, <span class="dv">12</span>))      <span class="co"># 4 sequences, 12 tokens each</span></span>
+<span id="cb1-9"><a href=""></a><span class="bu">print</span>(<span class="ss">f"ids      </span><span class="sc">{</span><span class="bu">tuple</span>(ids.shape)<span class="sc">}</span><span class="ss">  dtype </span><span class="sc">{</span>ids<span class="sc">.</span>dtype<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-10"><a href=""></a><span class="bu">print</span>(<span class="ss">f"embedded </span><span class="sc">{</span><span class="bu">tuple</span>(emb(ids).shape)<span class="sc">}</span><span class="ss">  dtype </span><span class="sc">{</span>emb(ids)<span class="sc">.</span>dtype<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-11"><a href=""></a><span class="bu">print</span>(<span class="ss">f"parameters in the table: </span><span class="sc">{</span>emb<span class="sc">.</span>weight<span class="sc">.</span>numel()<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb1-12"><a href=""></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">forward, the row IS the lookup, no matrix multiply:"</span>)</span>
+<span id="cb1-13"><a href=""></a><span class="bu">print</span>(<span class="ss">f"  emb(tensor(7)) == emb.weight[7]  -&gt;  "</span></span>
+<span id="cb1-14"><a href=""></a>      <span class="ss">f"</span><span class="sc">{</span>torch<span class="sc">.</span>equal(emb(torch.tensor(<span class="dv">7</span>)), emb.weight[<span class="dv">7</span>])<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-15"><a href=""></a></span>
+<span id="cb1-16"><a href=""></a><span class="co"># backward: token 7 appears three times, token 3 once, nothing else appears</span></span>
+<span id="cb1-17"><a href=""></a>small <span class="op">=</span> nn.Embedding(<span class="dv">10</span>, <span class="dv">4</span>)</span>
+<span id="cb1-18"><a href=""></a>small(torch.tensor([[<span class="dv">7</span>, <span class="dv">3</span>, <span class="dv">7</span>], [<span class="dv">7</span>, <span class="dv">2</span>, <span class="dv">2</span>]])).<span class="bu">sum</span>().backward()</span>
+<span id="cb1-19"><a href=""></a>g <span class="op">=</span> small.weight.grad.norm(dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb1-20"><a href=""></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">backward, gradient reaching each row:"</span>)</span>
+<span id="cb1-21"><a href=""></a><span class="cf">for</span> row <span class="kw">in</span> (<span class="dv">7</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">5</span>):</span>
+<span id="cb1-22"><a href=""></a>    <span class="bu">print</span>(<span class="ss">f"  row </span><span class="sc">{</span>row<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>g[row]<span class="sc">:.1f}</span><span class="ss">"</span>, end<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb1-23"><a href=""></a>    <span class="bu">print</span>(<span class="st">"   &lt;- appeared 3 times"</span> <span class="cf">if</span> row <span class="op">==</span> <span class="dv">7</span> <span class="cf">else</span></span>
+<span id="cb1-24"><a href=""></a>          (<span class="st">"   &lt;- never appeared"</span> <span class="cf">if</span> g[row] <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="st">""</span>))</span>
+<span id="cb1-25"><a href=""></a><span class="bu">print</span>(<span class="ss">f"  rows with any gradient at all: "</span></span>
+<span id="cb1-26"><a href=""></a>      <span class="ss">f"</span><span class="sc">{</span>torch<span class="sc">.</span>nonzero(g)<span class="sc">.</span>flatten()<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss"> of 10"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ids      (4, 12)  dtype torch.int64
+embedded (4, 12, 256)  dtype torch.float32
+parameters in the table: 12,800,000
+
+forward, the row IS the lookup, no matrix multiply:
+  emb(tensor(7)) == emb.weight[7]  -&gt;  True
+
+backward, gradient reaching each row:
+  row 7: 6.0   &lt;- appeared 3 times
+  row 3: 2.0
+  row 2: 4.0
+  row 5: 0.0   &lt;- never appeared
+  rows with any gradient at all: [2, 3, 7] of 10</code></pre>
+</div>
+</div>
+</section>
+<section id="padding" class="slide level2 smaller">
+<h2>Padding</h2>
+<p>A batch has to be a rectangle. Sentences are not the same length. <strong>Padding means appending a reserved token to every sequence in the batch until they all reach the length of the longest one.</strong></p>
+<p><a href="images/fig-padding.png" class="zoom" target="_blank"><img data-src="images/fig-padding.png" class="dw92"></a></p>
+<p>Four sentences, padded to 7, and 14 of the 28 cells are padding. The pad id is reserved, conventionally 0, and it means “nothing here.”</p>
+</section>
+<section id="masking" class="slide level2 smaller">
+<h2>Masking</h2>
+<p><strong>A mask is a boolean tensor, the same shape as the batch, marking which positions are real.</strong> Without one the model reads <code>PAD</code> as a word.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p>The previous figure measured the cost: up to <strong>86%</strong> error in a pooled vector, worst for the shortest sentence and zero for the one that needed no padding. <strong>A masking bug damages short examples and leaves long ones alone</strong>, so it hides in the average.</p>
+</div><div class="column" style="width:50%;">
+<p>Three places it must be applied, and forgetting any one is silent:</p>
+<ul>
+<li><strong>Pooling.</strong> Divide by the real count, not <span class="math inline">\(T\)</span>.</li>
+<li><strong>The loss.</strong> <code>ignore_index=0</code>.</li>
+<li><strong>Attention</strong>, next week. Pad positions go to <span class="math inline">\(-\infty\)</span> before the softmax.</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="pooling-a-padded-batch" class="slide level2 smaller codetight">
+<h2>Pooling a padded batch</h2>
+<div id="232ea56f" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href=""></a><span class="co"># One ragged batch, done correctly, in the six lines it actually takes.</span></span>
+<span id="cb3-2"><a href=""></a><span class="im">from</span> torch.nn.utils.rnn <span class="im">import</span> pad_sequence</span>
+<span id="cb3-3"><a href=""></a></span>
+<span id="cb3-4"><a href=""></a>seqs <span class="op">=</span> [torch.tensor([<span class="dv">5</span>, <span class="dv">9</span>, <span class="dv">2</span>]),</span>
+<span id="cb3-5"><a href=""></a>        torch.tensor([<span class="dv">7</span>, <span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">2</span>]),</span>
+<span id="cb3-6"><a href=""></a>        torch.tensor([<span class="dv">4</span>]),</span>
+<span id="cb3-7"><a href=""></a>        torch.tensor([<span class="dv">9</span>, <span class="dv">9</span>, <span class="dv">1</span>])]</span>
+<span id="cb3-8"><a href=""></a></span>
+<span id="cb3-9"><a href=""></a>ids <span class="op">=</span> pad_sequence(seqs, batch_first<span class="op">=</span><span class="va">True</span>, padding_value<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb3-10"><a href=""></a>mask <span class="op">=</span> (ids <span class="op">!=</span> <span class="dv">0</span>)</span>
+<span id="cb3-11"><a href=""></a></span>
+<span id="cb3-12"><a href=""></a>e <span class="op">=</span> nn.Embedding(<span class="dv">10</span>, <span class="dv">16</span>, padding_idx<span class="op">=</span><span class="dv">0</span>)(ids)</span>
+<span id="cb3-13"><a href=""></a>naive <span class="op">=</span> e.mean(dim<span class="op">=</span><span class="dv">1</span>)                                        <span class="co"># wrong</span></span>
+<span id="cb3-14"><a href=""></a>pooled <span class="op">=</span> (e <span class="op">*</span> mask.unsqueeze(<span class="op">-</span><span class="dv">1</span>)).<span class="bu">sum</span>(<span class="dv">1</span>) <span class="op">/</span> mask.<span class="bu">sum</span>(<span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-15"><a href=""></a></span>
+<span id="cb3-16"><a href=""></a><span class="bu">print</span>(<span class="ss">f"padded ids   </span><span class="sc">{</span><span class="bu">tuple</span>(ids.shape)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-17"><a href=""></a><span class="bu">print</span>(<span class="ss">f"real tokens  </span><span class="sc">{</span>mask<span class="sc">.</span><span class="bu">sum</span>(<span class="dv">1</span>)<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss">   of </span><span class="sc">{</span>ids<span class="sc">.</span>shape[<span class="dv">1</span>]<span class="sc">}</span><span class="ss"> columns"</span>)</span>
+<span id="cb3-18"><a href=""></a><span class="bu">print</span>(<span class="ss">f"pooled       </span><span class="sc">{</span><span class="bu">tuple</span>(pooled.shape)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-19"><a href=""></a><span class="bu">print</span>()</span>
+<span id="cb3-20"><a href=""></a>err <span class="op">=</span> (naive <span class="op">-</span> pooled).norm(dim<span class="op">=</span><span class="dv">1</span>) <span class="op">/</span> pooled.norm(dim<span class="op">=</span><span class="dv">1</span>) <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb3-21"><a href=""></a><span class="bu">print</span>(<span class="st">"error from pooling without the mask, per sequence:"</span>)</span>
+<span id="cb3-22"><a href=""></a><span class="cf">for</span> n, pct <span class="kw">in</span> <span class="bu">zip</span>(mask.<span class="bu">sum</span>(<span class="dv">1</span>).tolist(), err.tolist()):</span>
+<span id="cb3-23"><a href=""></a>    <span class="bu">print</span>(<span class="ss">f"  length </span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">:  </span><span class="sc">{</span>pct<span class="sc">:5.1f}</span><span class="ss">%"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>padded ids   (4, 7)
+real tokens  [3, 7, 1, 3]   of 7 columns
+pooled       (4, 16)
+
+error from pooling without the mask, per sequence:
+  length 3:   57.1%
+  length 7:    0.0%
+  length 1:   85.7%
+  length 3:   57.1%</code></pre>
+</div>
+</div>
+</section>
+<section id="building-the-batch" class="slide level2 smaller">
+<h2>Building the batch</h2>
+<p>A <code>Dataset</code> returns one example; the default collation stacks them and needs matching shapes. Ragged sequences do not have them, so you pass a <strong><code>collate_fn</code></strong> and pad there, to each batch’s own longest member.</p>
+<p><a href="images/fig-bucketing.png" class="zoom" target="_blank"><img data-src="images/fig-bucketing.png" class="dw92"></a></p>
+<p>Sorting by length first is called <strong>bucketing</strong>. <strong>For a time series, split on time, not at random</strong>: train on the past, validate on the future, or you have leaked the answer.</p>
+</section>
+<section id="collating-a-ragged-batch" class="slide level2 smaller codetight">
+<h2>Collating a ragged batch</h2>
+<div id="2b00bdfd" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href=""></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader, Dataset</span>
+<span id="cb5-2"><a href=""></a></span>
+<span id="cb5-3"><a href=""></a><span class="kw">class</span> Sentences(Dataset):</span>
+<span id="cb5-4"><a href=""></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, seqs, labels):</span>
+<span id="cb5-5"><a href=""></a>        <span class="va">self</span>.seqs, <span class="va">self</span>.labels <span class="op">=</span> seqs, labels</span>
+<span id="cb5-6"><a href=""></a>    <span class="kw">def</span> <span class="fu">__len__</span>(<span class="va">self</span>):</span>
+<span id="cb5-7"><a href=""></a>        <span class="cf">return</span> <span class="bu">len</span>(<span class="va">self</span>.seqs)</span>
+<span id="cb5-8"><a href=""></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, i):</span>
+<span id="cb5-9"><a href=""></a>        <span class="cf">return</span> <span class="va">self</span>.seqs[i], <span class="va">self</span>.labels[i]</span>
+<span id="cb5-10"><a href=""></a></span>
+<span id="cb5-11"><a href=""></a><span class="kw">def</span> collate(batch):</span>
+<span id="cb5-12"><a href=""></a>    <span class="co">"""Pad to the longest member of THIS batch, and return the mask with it."""</span></span>
+<span id="cb5-13"><a href=""></a>    seqs, labels <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>batch)</span>
+<span id="cb5-14"><a href=""></a>    ids <span class="op">=</span> pad_sequence(seqs, batch_first<span class="op">=</span><span class="va">True</span>, padding_value<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb5-15"><a href=""></a>    <span class="cf">return</span> ids, (ids <span class="op">!=</span> <span class="dv">0</span>), torch.tensor(labels)</span>
+<span id="cb5-16"><a href=""></a></span>
+<span id="cb5-17"><a href=""></a>loader <span class="op">=</span> DataLoader(Sentences(seqs, [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>]), batch_size<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb5-18"><a href=""></a>                    shuffle<span class="op">=</span><span class="va">False</span>, collate_fn<span class="op">=</span>collate)</span>
+<span id="cb5-19"><a href=""></a></span>
+<span id="cb5-20"><a href=""></a><span class="cf">for</span> ids, mask, y <span class="kw">in</span> loader:</span>
+<span id="cb5-21"><a href=""></a>    <span class="bu">print</span>(<span class="ss">f"batch </span><span class="sc">{</span><span class="bu">tuple</span>(ids.shape)<span class="sc">}</span><span class="ss">   real tokens </span><span class="sc">{</span>mask<span class="sc">.</span><span class="bu">sum</span>(<span class="dv">1</span>)<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss">   y </span><span class="sc">{</span>y<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>batch (2, 7)   real tokens [3, 7]   y [0, 1]
+batch (2, 3)   real tokens [1, 3]   y [1, 0]</code></pre>
+</div>
+</div>
+</section></section>
+<section>
+<section id="recurrent-networks" class="title-slide slide level1 center">
+<h1>Recurrent networks</h1>
+
+</section>
+<section id="d-convolution" class="slide level2 smaller">
+<h2>1D convolution</h2>
+<p>Slide a kernel along the sequence instead of across an image. <code>nn.Conv1d</code> takes <span class="math inline">\((N, C, T)\)</span> and accepts any <span class="math inline">\(T\)</span>, so <strong>variable length was never the real objection</strong>. Locality is.</p>
+<p><a href="images/fig-conv1d.png" class="zoom" target="_blank"><img data-src="images/fig-conv1d.png" class="dw95"></a></p>
+<p>A <span class="math inline">\(k\)</span>-wide kernel widens the receptive field by <span class="math inline">\(k - 1\)</span> per layer, measured above by gradient tracing, so two tokens 100 apart need <strong>50 layers</strong> where attention needs one.</p>
+<p><strong>This is current practice, not history.</strong> Speech models put a convolutional front end before the transformer, Conformer blocks run convolution and attention side by side, and dilated causal convolutions are a strong, cheap baseline for time series. Use them where the pattern is local; reach for attention when it is not.</p>
+</section>
+<section id="the-recurrence-idea" class="slide level2 smaller">
+<h2>The recurrence idea</h2>
+<p><strong>A recurrent network keeps a hidden state <span class="math inline">\(h_t\)</span> that it updates at every step from the current input and the previous state.</strong></p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><a href="images/unrolled-rnn.png" class="zoom" target="_blank"><img data-src="images/unrolled-rnn.png" class="dw95"></a></p>
+</div><div class="column" style="width:50%;">
+<p><span class="math display">\[h_t = \tanh\!\left(W_x\,x_t + W_h\,h_{t-1} + b\right)\]</span></p>
+<p><span class="math inline">\(h_0\)</span> is zeros. <strong>The same weights run at every step</strong>, which is weight sharing, the same idea as a kernel sliding over an image, except over time. It is what lets one model take any length.</p>
+</div>
+</div>
+<p><strong>The only route from <code>THE</code> to <code>DOG</code> is along the <span class="math inline">\(W_h\)</span> arrows</strong>, eight multiplications, with no other path.</p>
+</section>
+<section id="what-an-rnn-layer-returns" class="slide level2 smaller codetight">
+<h2>What an RNN layer returns</h2>
+<div id="c0c6aa90" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href=""></a>rnn <span class="op">=</span> nn.RNN(input_size<span class="op">=</span><span class="dv">16</span>, hidden_size<span class="op">=</span><span class="dv">32</span>, batch_first<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb7-2"><a href=""></a></span>
+<span id="cb7-3"><a href=""></a>x <span class="op">=</span> torch.randn(<span class="dv">4</span>, <span class="dv">12</span>, <span class="dv">16</span>)              <span class="co"># 4 sequences, 12 steps, 16 features</span></span>
+<span id="cb7-4"><a href=""></a>out, h_T <span class="op">=</span> rnn(x)</span>
+<span id="cb7-5"><a href=""></a></span>
+<span id="cb7-6"><a href=""></a><span class="bu">print</span>(<span class="ss">f"input          </span><span class="sc">{</span><span class="bu">tuple</span>(x.shape)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-7"><a href=""></a><span class="bu">print</span>(<span class="ss">f"out            </span><span class="sc">{</span><span class="bu">tuple</span>(out.shape)<span class="sc">}</span><span class="ss">   the hidden state at EVERY step"</span>)</span>
+<span id="cb7-8"><a href=""></a><span class="bu">print</span>(<span class="ss">f"h_T            </span><span class="sc">{</span><span class="bu">tuple</span>(h_T.shape)<span class="sc">}</span><span class="ss">   the hidden state at the LAST step"</span>)</span>
+<span id="cb7-9"><a href=""></a><span class="bu">print</span>(<span class="ss">f"and they agree: </span><span class="sc">{</span>torch<span class="sc">.</span>allclose(out[:, <span class="op">-</span><span class="dv">1</span>], h_T[<span class="dv">0</span>], atol<span class="op">=</span><span class="fl">1e-6</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-10"><a href=""></a><span class="bu">print</span>()</span>
+<span id="cb7-11"><a href=""></a><span class="bu">print</span>(<span class="st">"the same weights at every step, so the count does not depend on T:"</span>)</span>
+<span id="cb7-12"><a href=""></a><span class="cf">for</span> name, p <span class="kw">in</span> rnn.named_parameters():</span>
+<span id="cb7-13"><a href=""></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>name<span class="sc">:12s}</span><span class="ss"> </span><span class="sc">{</span><span class="bu">tuple</span>(p.shape)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>input          (4, 12, 16)
+out            (4, 12, 32)   the hidden state at EVERY step
+h_T            (1, 4, 32)   the hidden state at the LAST step
+and they agree: True
+
+the same weights at every step, so the count does not depend on T:
+  weight_ih_l0 (32, 16)
+  weight_hh_l0 (32, 32)
+  bias_ih_l0   (32,)
+  bias_hh_l0   (32,)</code></pre>
+</div>
+</div>
+</section>
+<section id="reading-the-output" class="slide level2 smaller">
+<h2>Reading the output</h2>
+<p>A recurrent layer returns the hidden state at every step. Which part you read is what makes it a different task.</p>
+<p><a href="images/sequence-mappings.png" class="zoom" target="_blank"><img data-src="images/sequence-mappings.png" class="dw85"></a></p>
+<p><strong>Translation</strong> is where attention came from: the whole input is squeezed into <strong>one</strong> hidden state and the decoder works from that alone, whether the sentence is 4 words or 400. With padding, <code>out[:, -1]</code> is the state after the padding, not after the sentence.</p>
+</section>
+<section id="generating-one-token-at-a-time" class="slide level2 smaller">
+<h2>Generating one token at a time</h2>
+<p><a href="images/autoregressive-steps.png" class="zoom" target="_blank"><img data-src="images/autoregressive-steps.png" class="dw85"></a></p>
+<p>Predict one token, append it to the input, run again. <strong>This is how every text generation model you have used produces output</strong>, one token per forward pass, and attention does not change it.</p>
+<p>Training does not work this way. Feeding the model its own early predictions compounds the errors, so you feed it the true previous token instead. That is <strong>teacher forcing</strong>, and it is why training is parallel over positions while generation is not.</p>
+</section>
+<section id="backpropagation-through-time" class="slide level2 smaller">
+<h2>Backpropagation through time</h2>
+<p>Unroll it: <span class="math inline">\(T\)</span> steps become <span class="math inline">\(T\)</span> copies of the same layer, an ordinary feedforward network <span class="math inline">\(T\)</span> deep, and you backpropagate through that. The name <strong>backpropagation through time</strong> is the only new part.</p>
+<p>The weights are shared, so <span class="math inline">\(W_h\)</span> collects a gradient from every one of those steps, and every step on the way back multiplies by the same Jacobian.</p>
+<p>Week 6 hit this same wall with depth in CNNs: “the gradients just never make it back.” There the fix was a residual connection, a path with gradient 1 running alongside the layers. <strong>Recurrence has no such path, because the recurrence is the path.</strong></p>
+</section>
+<section id="how-far-back-the-gradient-reaches" class="slide level2 smaller">
+<h2>How far back the gradient reaches</h2>
+<p><a href="images/fig-decay.png" class="zoom" target="_blank"><img data-src="images/fig-decay.png" class="dw95"></a></p>
+<p>A loss at the final step, 20 random initializations, sequence length 120. Both lines are straight on a log axis, which means both decay geometrically. The vanilla RNN keeps 0.53 of the gradient per step and has nothing left after 20 steps; the LSTM keeps 0.62 and lasts 28. Gating changed the slope. It did not change the shape.</p>
+</section>
+<section id="why-it-is-exponential" class="slide level2 smaller">
+<h2>Why it is exponential</h2>
+<p><span class="math display">\[\frac{\partial h_T}{\partial h_t}
+  = \prod_{k=t+1}^{T} \frac{\partial h_k}{\partial h_{k-1}}\]</span></p>
+<p><a href="images/fig-bptt.png" class="zoom" target="_blank"><img data-src="images/fig-bptt.png" class="dw95"></a></p>
+<p>A product of <span class="math inline">\(T - t\)</span> terms, so it either goes to zero or it explodes. No choice of weights makes a product of many terms behave like a sum. Exploding is the easy half, because you can clip the norm; vanishing is the hard half, because there is nothing to clip.</p>
+<p><strong>The cost is not that the model is wrong about long sequences. It is that it cannot learn anything that depends on one</strong>, because the signal that would teach it never arrives. Training longer does not help, and nor does a bigger hidden state.</p>
+</section>
+<section id="one-step-per-token" class="slide level2 smaller">
+<h2>One step per token</h2>
+<p><a href="images/fig-parallel.png" class="zoom" target="_blank"><img data-src="images/fig-parallel.png" class="dw95"></a></p>
+<p><span class="math inline">\(h_t\)</span> needs <span class="math inline">\(h_{t-1}\)</span>, so the steps cannot run together. The LSTM’s cost per token is flat: a fixed price per token, because it takes one sequential step per token. At 1024 tokens that is 16 ms against 7.6 ms on one RTX 3080.</p>
+<p><strong>The win is parallelism, not less work.</strong> Attention compares every position with every other, so its total work grows with the <em>square</em> of the length. You can watch the quadratic term arrive on the right, where its per-token cost turns upward past 256. That is also why long context windows are expensive.</p>
+</section></section>
+<section>
+<section id="gated-recurrence" class="title-slide slide level1 center">
+<h1>Gated recurrence</h1>
+
+</section>
+<section id="lstm" class="slide level2 smaller">
+<h2>LSTM</h2>
+<p>An <strong>LSTM</strong> is a recurrent network with a second state that information travels along without being multiplied by a weight matrix at every step.</p>
+<div class="columns">
+<div class="column" style="width:42%;">
+<p><a href="images/lstm-cell.png" class="zoom" target="_blank"><img data-src="images/lstm-cell.png" class="dw95"></a></p>
+<p><a href="images/gate-symbols.png" class="zoom" target="_blank"><img data-src="images/gate-symbols.png" class="dw100"></a></p>
+</div><div class="column" style="width:58%;">
+<p>The <strong>cell state</strong> <span class="math inline">\(c_t\)</span> is the track across the top, updated almost additively:</p>
+<p><span class="math display">\[c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t\]</span></p>
+<p>The circled regions are <strong>gates</strong>, each a learned function of <span class="math inline">\(x_t\)</span> and <span class="math inline">\(h_{t-1}\)</span> squashed to <span class="math inline">\([0, 1]\)</span>, so each is a soft switch: what to <strong>forget</strong>, what to <strong>write</strong>, what to <strong>expose</strong>.</p>
+<p>When <span class="math inline">\(f_t\)</span> is near 1, <span class="math inline">\(c_t \approx c_{t-1} + \text{something}\)</span>, so the gradient along that track is multiplied by roughly 1 instead of a weight matrix. <strong>That is the residual connection’s trick, eight years early.</strong> A GRU does the same with two gates.</p>
+</div>
+</div>
+</section>
+<section id="what-gating-fixed-and-what-it-did-not" class="slide level2 smaller">
+<h2>What gating fixed, and what it did not</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Fixed.</strong> An LSTM holds information far longer, and for a decade it was the default for translation, speech and captioning. Measured reach 28 steps against 20, and more than that once the forget gate is initialized well.</p>
+</div><div class="column" style="width:50%;">
+<p><strong>Not fixed.</strong> The decay is still exponential, because the path is still a path. And gating does nothing at all about the second failure: still one sequential step per token.</p>
+</div>
+</div>
+<p>Gating bought a decade without changing either of the two things that needed changing. That is why this section is five minutes.</p>
+</section></section>
+<section>
+<section id="next-week-attention" class="title-slide slide level1 center">
+<h1>Next week: attention</h1>
+
+</section>
+<section id="the-bottleneck-attention-removes" class="slide level2 smaller">
+<h2>The bottleneck attention removes</h2>
+<p>A recurrent encoder-decoder squeezes the whole input into one fixed-size vector, so early positions must survive to the end and every step waits for the last.</p>
+<p><a href="images/attention-matrix.png" class="zoom" target="_blank"><img data-src="images/attention-matrix.png" class="dw85"></a></p>
+<p><strong>Attention stops compressing.</strong> Every position reads every other position directly, in one hop, with weights computed from the content. Position 100 reaches position 1 without 99 multiplications, and since there is no order to the computation it is one large matrix multiply. Hence <em>Attention Is All You Need</em>, 2017: once you have this, the recurrence can go.</p>
+</section>
+<section id="what-carries-forward" class="slide level2 smaller">
+<h2>What carries forward</h2>
+<p>Most of the first half of today is not about recurrent networks and does not expire with them.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Used unchanged next week</strong></p>
+<ul>
+<li>Tokenization and the vocabulary</li>
+<li>Embeddings as a learned lookup table</li>
+<li>Padding a batch to its longest member</li>
+<li>Masking, including the attention mask</li>
+<li><code>collate_fn</code> and bucketing by length</li>
+<li>Reading <code>(N, T, d)</code> shapes</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Of historical interest</strong></p>
+<ul>
+<li>The recurrence <span class="math inline">\(h_t = \tanh(W_x x_t + W_h h_{t-1} + b)\)</span></li>
+<li>Backpropagation through time</li>
+<li>LSTM and GRU gates</li>
+</ul>
+<p>You should recognize these, know what problem each was solving, and be able to say why the field left them. You will not be asked to build one from scratch.</p>
+</div>
+</div>
+</section></section>
+<section>
+<section id="wrap-up" class="title-slide slide level1 center">
+<h1>Wrap-up</h1>
+
+</section>
+<section id="wrap-up-1" class="slide level2 smaller">
+<h2>Wrap-up</h2>
+<ul>
+<li><strong>Sequence data</strong> has variable length and meaningful order, the two properties convolution assumes away.</li>
+<li><strong>Subword tokenization</strong> keeps a fixed vocabulary that can still spell anything.</li>
+<li><strong>Embeddings</strong> are a learned lookup table, one row per token.</li>
+<li><strong>Padding</strong> makes a batch rectangular; <strong>masking</strong> keeps it from being read as data, and forgetting it is silent.</li>
+<li><strong>1D convolution</strong> handles any length but reaches only <span class="math inline">\(k - 1\)</span> further per layer. <strong>Recurrent networks</strong> share weights across time instead.</li>
+<li><strong>Two failures.</strong> The gradient reaching back decays exponentially, so long dependencies cannot be learned, and each step waits for the previous one.</li>
+<li><strong>Gating</strong> slowed the first and did nothing about the second.</li>
+<li><strong>Attention</strong> fixes both, next week.</li>
+</ul>
+</section>
+<section id="supplemental-content" class="slide level2 smaller">
+<h2>Supplemental content</h2>
+<p>Optional. Prof.&nbsp;Hickman’s <a href="https://jfh.georgetown.domains/centralized-lecture-content/">centralized lecture content</a> covers this material with different examples, and a second pass rarely hurts:</p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/deep-learning/rnn/">Recurrent neural networks</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/deep-learning/nlp/">Text preprocessing and embeddings</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/deep-learning/transformers/">Attention and transformers</a>, which is next week</li>
+</ul>
+<p>Also optional, and worth the time if you want the primary sources: Hochreiter and Schmidhuber’s LSTM paper (1997), Bahdanau et al.&nbsp;on attention for translation (2014), and Vaswani et al., <em>Attention Is All You Need</em> (2017).</p>
+</section>
+<section id="lab-7-and-quiz-7" class="slide level2 smaller">
+<h2>Lab 7 and Quiz 7</h2>
+<p><strong>Lab 7</strong> is out today and due Wednesday Oct 21. Tokenize a corpus, build a vocabulary, pad and mask a ragged batch, and pool it correctly, then confirm by measurement that the unmasked version is wrong. Short, and entirely mechanics.</p>
+<p><strong>Quiz 7</strong> is now. Scope is the Oct 8 lecture only: the back half of the CNN deck and detection as far as non-maximum suppression. A formula sheet comes with it.</p>
+<p>Next week is <strong>Transformers</strong>: self-attention, multi-head attention, positional encoding, and the encoder-decoder architecture that the rest of the course is built on.</p>
+<div class="quarto-auto-generated-content">
+<div class="footer footer-default">
+
+</div>
+</div>
+</section></section>
+    </div>
+  </div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="07-sequence-models_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="07-sequence-models_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="07-sequence-models_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="07-sequence-models_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="07-sequence-models_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="07-sequence-models_files/libs/revealjs/plugin/reveal-chalkboard/plugin.js"></script>
+  <script src="07-sequence-models_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="07-sequence-models_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="07-sequence-models_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="07-sequence-models_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script src="07-sequence-models_files/libs/revealjs/plugin/math/math.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': true,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleChalkboard(event)\"><kbd>b</kbd> Toggle Chalkboard</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleNotesCanvas(event)\"><kbd>c</kbd> Toggle Notes Canvas</a></li>\n<li class=\"slide-tool-item\" data-item=\"6\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.downloadDrawings(event)\"><kbd>d</kbd> Download Drawings</a></li>\n<li class=\"slide-tool-item\" data-item=\"7\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'chalkboard': {"buttons":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1050,
+
+        height: 700,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 5.0e-2,
+
+        math: {
+          mathjax: 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js',
+          config: 'TeX-AMS_HTML-full',
+          tex2jax: {
+            inlineMath: [['\\(','\\)']],
+            displayMath: [['\\[','\\]']],
+            balanceBraces: true,
+            processEscapes: false,
+            processRefs: true,
+            processEnvironments: true,
+            preview: 'TeX',
+            skipTags: ['script','noscript','style','textarea','pre','code'],
+            ignoreClass: 'tex2jax_ignore',
+            processClass: 'tex2jax_process'
+          },
+        },
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, RevealChalkboard, QuartoSupport,
+
+          RevealMath,
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    <script id="quarto-html-after-body" type="application/javascript">
+    window.document.addEventListener("DOMContentLoaded", function (event) {
+      const toggleBodyColorMode = (bsSheetEl) => {
+        const mode = bsSheetEl.getAttribute("data-mode");
+        const bodyEl = window.document.querySelector("body");
+        if (mode === "dark") {
+          bodyEl.classList.add("quarto-dark");
+          bodyEl.classList.remove("quarto-light");
+        } else {
+          bodyEl.classList.add("quarto-light");
+          bodyEl.classList.remove("quarto-dark");
+        }
+      }
+      const toggleBodyColorPrimary = () => {
+        const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+        if (bsSheetEl) {
+          toggleBodyColorMode(bsSheetEl);
+        }
+      }
+      toggleBodyColorPrimary();  
+      const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+      tabsets.forEach(function(tabset) {
+        const tabby = new Tabby('#' + tabset.id);
+      });
+      const isCodeAnnotation = (el) => {
+        for (const clz of el.classList) {
+          if (clz.startsWith('code-annotation-')) {                     
+            return true;
+          }
+        }
+        return false;
+      }
+      const clipboard = new window.ClipboardJS('.code-copy-button', {
+        text: function(trigger) {
+          const codeEl = trigger.previousElementSibling.cloneNode(true);
+          for (const childEl of codeEl.children) {
+            if (isCodeAnnotation(childEl)) {
+              childEl.remove();
+            }
+          }
+          return codeEl.innerText;
+        }
+      });
+      clipboard.on('success', function(e) {
+        // button target
+        const button = e.trigger;
+        // don't keep focus
+        button.blur();
+        // flash "checked"
+        button.classList.add('code-copy-button-checked');
+        var currentTitle = button.getAttribute("title");
+        button.setAttribute("title", "Copied!");
+        let tooltip;
+        if (window.bootstrap) {
+          button.setAttribute("data-bs-toggle", "tooltip");
+          button.setAttribute("data-bs-placement", "left");
+          button.setAttribute("data-bs-title", "Copied!");
+          tooltip = new bootstrap.Tooltip(button, 
+            { trigger: "manual", 
+              customClass: "code-copy-button-tooltip",
+              offset: [0, -8]});
+          tooltip.show();    
+        }
+        setTimeout(function() {
+          if (tooltip) {
+            tooltip.hide();
+            button.removeAttribute("data-bs-title");
+            button.removeAttribute("data-bs-toggle");
+            button.removeAttribute("data-bs-placement");
+          }
+          button.setAttribute("title", currentTitle);
+          button.classList.remove('code-copy-button-checked');
+        }, 1000);
+        // clear code selection
+        e.clearSelection();
+      });
+      function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+        const config = {
+          allowHTML: true,
+          maxWidth: 500,
+          delay: 100,
+          arrow: false,
+          appendTo: function(el) {
+              return el.closest('section.slide') || el.parentElement;
+          },
+          interactive: true,
+          interactiveBorder: 10,
+          theme: 'light-border',
+          placement: 'bottom-start',
+        };
+        if (contentFn) {
+          config.content = contentFn;
+        }
+        if (onTriggerFn) {
+          config.onTrigger = onTriggerFn;
+        }
+        if (onUntriggerFn) {
+          config.onUntrigger = onUntriggerFn;
+        }
+          config['offset'] = [0,0];
+          config['maxWidth'] = 700;
+        window.tippy(el, config); 
+      }
+      const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+      for (var i=0; i<noterefs.length; i++) {
+        const ref = noterefs[i];
+        tippyHover(ref, function() {
+          // use id or data attribute instead here
+          let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+          try { href = new URL(href).hash; } catch {}
+          const id = href.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          return note.innerHTML;
+        });
+      }
+      const findCites = (el) => {
+        const parentEl = el.parentElement;
+        if (parentEl) {
+          const cites = parentEl.dataset.cites;
+          if (cites) {
+            return {
+              el,
+              cites: cites.split(' ')
+            };
+          } else {
+            return findCites(el.parentElement)
+          }
+        } else {
+          return undefined;
+        }
+      };
+      var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+      for (var i=0; i<bibliorefs.length; i++) {
+        const ref = bibliorefs[i];
+        const citeInfo = findCites(ref);
+        if (citeInfo) {
+          tippyHover(citeInfo.el, function() {
+            var popup = window.document.createElement('div');
+            citeInfo.cites.forEach(function(cite) {
+              var citeDiv = window.document.createElement('div');
+              citeDiv.classList.add('hanging-indent');
+              citeDiv.classList.add('csl-entry');
+              var biblioDiv = window.document.getElementById('ref-' + cite);
+              if (biblioDiv) {
+                citeDiv.innerHTML = biblioDiv.innerHTML;
+              }
+              popup.appendChild(citeDiv);
+            });
+            return popup.innerHTML;
+          });
+        }
+      }
+    });
+    </script>
+    
+
+</body></html>

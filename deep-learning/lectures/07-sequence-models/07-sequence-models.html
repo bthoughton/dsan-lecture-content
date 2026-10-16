@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Prof.&nbsp;Ben Houghton">
+<meta name="dcterms.date" content="2026-10-15">
+
+<title>DSAN 6600: Sequence Models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="07-sequence-models_files/libs/clipboard/clipboard.min.js"></script>
+<script src="07-sequence-models_files/libs/quarto-html/quarto.js"></script>
+<script src="07-sequence-models_files/libs/quarto-html/popper.min.js"></script>
+<script src="07-sequence-models_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="07-sequence-models_files/libs/quarto-html/anchor.min.js"></script>
+<link href="07-sequence-models_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="07-sequence-models_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="07-sequence-models_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="07-sequence-models_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="07-sequence-models_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link rel="icon" type="image/png" href="/icon.png">
+<style>
+/* HTML handout only; the RevealJS decks are styled by custom.scss.
+ * Quarto lays .column out as flush inline-blocks, so prose in adjacent
+ * columns ends up 3px apart and reads as one sentence across the gutter.
+ * The columns are border-box, so this padding cannot push the pair past
+ * 100% and wrap it. build-notebook.py inlines this file into the head.
+ */
+.columns > .column {
+  padding-right: 1.75rem;
+}
+
+.columns > .column:last-child {
+  padding-right: 0;
+}
+</style>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#today" id="toc-today" class="nav-link active" data-scroll-target="#today">Today</a></li>
+  <li><a href="#labs-and-quizzes" id="toc-labs-and-quizzes" class="nav-link" data-scroll-target="#labs-and-quizzes">Labs and quizzes</a></li>
+  <li><a href="#what-a-convolution-assumes" id="toc-what-a-convolution-assumes" class="nav-link" data-scroll-target="#what-a-convolution-assumes">What a convolution assumes</a></li>
+  <li><a href="#sequence-data" id="toc-sequence-data" class="nav-link" data-scroll-target="#sequence-data">Sequence data</a>
+  <ul class="collapse">
+  <li><a href="#what-makes-data-sequential" id="toc-what-makes-data-sequential" class="nav-link" data-scroll-target="#what-makes-data-sequential">What makes data sequential</a></li>
+  <li><a href="#tokenization" id="toc-tokenization" class="nav-link" data-scroll-target="#tokenization">Tokenization</a></li>
+  <li><a href="#why-subword-tokenization-won" id="toc-why-subword-tokenization-won" class="nav-link" data-scroll-target="#why-subword-tokenization-won">Why subword tokenization won</a></li>
+  <li><a href="#one-hot-encoding" id="toc-one-hot-encoding" class="nav-link" data-scroll-target="#one-hot-encoding">One-hot encoding</a></li>
+  <li><a href="#embeddings" id="toc-embeddings" class="nav-link" data-scroll-target="#embeddings">Embeddings</a></li>
+  <li><a href="#how-an-embedding-is-read-and-updated" id="toc-how-an-embedding-is-read-and-updated" class="nav-link" data-scroll-target="#how-an-embedding-is-read-and-updated">How an embedding is read and updated</a></li>
+  <li><a href="#embedding-a-batch-of-ids" id="toc-embedding-a-batch-of-ids" class="nav-link" data-scroll-target="#embedding-a-batch-of-ids">Embedding a batch of ids</a></li>
+  <li><a href="#padding" id="toc-padding" class="nav-link" data-scroll-target="#padding">Padding</a></li>
+  <li><a href="#masking" id="toc-masking" class="nav-link" data-scroll-target="#masking">Masking</a></li>
+  <li><a href="#pooling-a-padded-batch" id="toc-pooling-a-padded-batch" class="nav-link" data-scroll-target="#pooling-a-padded-batch">Pooling a padded batch</a></li>
+  <li><a href="#building-the-batch" id="toc-building-the-batch" class="nav-link" data-scroll-target="#building-the-batch">Building the batch</a></li>
+  <li><a href="#collating-a-ragged-batch" id="toc-collating-a-ragged-batch" class="nav-link" data-scroll-target="#collating-a-ragged-batch">Collating a ragged batch</a></li>
+  </ul></li>
+  <li><a href="#recurrent-networks" id="toc-recurrent-networks" class="nav-link" data-scroll-target="#recurrent-networks">Recurrent networks</a>
+  <ul class="collapse">
+  <li><a href="#d-convolution" id="toc-d-convolution" class="nav-link" data-scroll-target="#d-convolution">1D convolution</a></li>
+  <li><a href="#the-recurrence-idea" id="toc-the-recurrence-idea" class="nav-link" data-scroll-target="#the-recurrence-idea">The recurrence idea</a></li>
+  <li><a href="#what-an-rnn-layer-returns" id="toc-what-an-rnn-layer-returns" class="nav-link" data-scroll-target="#what-an-rnn-layer-returns">What an RNN layer returns</a></li>
+  <li><a href="#reading-the-output" id="toc-reading-the-output" class="nav-link" data-scroll-target="#reading-the-output">Reading the output</a></li>
+  <li><a href="#generating-one-token-at-a-time" id="toc-generating-one-token-at-a-time" class="nav-link" data-scroll-target="#generating-one-token-at-a-time">Generating one token at a time</a></li>
+  <li><a href="#backpropagation-through-time" id="toc-backpropagation-through-time" class="nav-link" data-scroll-target="#backpropagation-through-time">Backpropagation through time</a></li>
+  <li><a href="#how-far-back-the-gradient-reaches" id="toc-how-far-back-the-gradient-reaches" class="nav-link" data-scroll-target="#how-far-back-the-gradient-reaches">How far back the gradient reaches</a></li>
+  <li><a href="#why-it-is-exponential" id="toc-why-it-is-exponential" class="nav-link" data-scroll-target="#why-it-is-exponential">Why it is exponential</a></li>
+  <li><a href="#one-step-per-token" id="toc-one-step-per-token" class="nav-link" data-scroll-target="#one-step-per-token">One step per token</a></li>
+  </ul></li>
+  <li><a href="#gated-recurrence" id="toc-gated-recurrence" class="nav-link" data-scroll-target="#gated-recurrence">Gated recurrence</a>
+  <ul class="collapse">
+  <li><a href="#lstm" id="toc-lstm" class="nav-link" data-scroll-target="#lstm">LSTM</a></li>
+  <li><a href="#what-gating-fixed-and-what-it-did-not" id="toc-what-gating-fixed-and-what-it-did-not" class="nav-link" data-scroll-target="#what-gating-fixed-and-what-it-did-not">What gating fixed, and what it did not</a></li>
+  </ul></li>
+  <li><a href="#next-week-attention" id="toc-next-week-attention" class="nav-link" data-scroll-target="#next-week-attention">Next week: attention</a>
+  <ul class="collapse">
+  <li><a href="#the-bottleneck-attention-removes" id="toc-the-bottleneck-attention-removes" class="nav-link" data-scroll-target="#the-bottleneck-attention-removes">The bottleneck attention removes</a></li>
+  <li><a href="#what-carries-forward" id="toc-what-carries-forward" class="nav-link" data-scroll-target="#what-carries-forward">What carries forward</a></li>
+  </ul></li>
+  <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap-up</a>
+  <ul class="collapse">
+  <li><a href="#wrap-up-1" id="toc-wrap-up-1" class="nav-link" data-scroll-target="#wrap-up-1">Wrap-up</a></li>
+  <li><a href="#supplemental-content" id="toc-supplemental-content" class="nav-link" data-scroll-target="#supplemental-content">Supplemental content</a></li>
+  <li><a href="#lab-7-and-quiz-7" id="toc-lab-7-and-quiz-7" class="nav-link" data-scroll-target="#lab-7-and-quiz-7">Lab 7 and Quiz 7</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="presentation.html"><i class="bi bi-file-slides"></i>RevealJS</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DSAN 6600: Sequence Models</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Prof.&nbsp;Ben Houghton </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 15, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="today" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="today">Today</h2>
+<p>The first half of today finished computer vision. This is the second half.</p>
+<p>Everything so far assumed a <strong>fixed-size grid</strong> where <strong>nearby things are related</strong>. Text has neither property.</p>
+<ul>
+<li><strong>Sequence data.</strong> Tokens, embeddings, padding, masking. You will use this every week from here on.</li>
+<li><strong>1D convolution</strong>, then <strong>recurrent networks</strong>: the two ways to process a sequence before attention existed.</li>
+<li><strong>Why that breaks.</strong> Two measured failures, and they are why the field moved on.</li>
+<li><strong>LSTM</strong>, briefly, as the patch that helped.</li>
+</ul>
+</section>
+<section id="labs-and-quizzes" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="labs-and-quizzes">Labs and quizzes</h2>
+<p><strong>Lab 6 was due yesterday.</strong> That was transfer learning, then a pretrained detector and a pretrained segmenter on the course photograph.</p>
+<p><strong>Quiz 7 is at the end of class.</strong> It covers the Oct 8 lecture: the back half of the CNN deck through to non-maximum suppression. Nothing from today is on it, and nothing past NMS is on it either. The study guide lists the scope exactly.</p>
+<p><strong>Lab 7 goes out today</strong>, due Wednesday Oct 21. It is sequence data mechanics: tokenizing text, building a vocabulary, padding a ragged batch and masking it correctly. Deliberately not about LSTM architecture, because padding and masking are what Weeks 9 and 10 need and the gates are not.</p>
+</section>
+<section id="what-a-convolution-assumes" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-a-convolution-assumes">What a convolution assumes</h2>
+<p><strong>A fixed-size input.</strong> Every image is resized to <span class="math inline">224 \times 224</span> before it goes in. You cannot resize a sentence.</p>
+<p><strong>Locality.</strong> A <span class="math inline">3 \times 3</span> kernel looks at a pixel and its neighbours, because in an image the neighbours are the context. In text they often are not.</p>
+<p><a href="images/fig-dependency.png" class="zoom" target="_blank"><img src="images/fig-dependency.png" class="dw95 img-fluid"></a></p>
+</section>
+<section id="sequence-data" class="level1">
+<h1>Sequence data</h1>
+<section id="what-makes-data-sequential" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-makes-data-sequential">What makes data sequential</h2>
+<p><strong>Sequence data is data where the order of the elements carries meaning and the number of elements is not fixed.</strong></p>
+<p><a href="images/seq-applications.png" class="zoom" target="_blank"><img src="images/seq-applications.png" class="dw80 img-fluid"></a></p>
+<p>Both halves of the definition matter. A bag of pixels in random order is no longer an image, so images care about order too, but an image’s size is fixed by resizing and a sentence’s is not. Notice that the input and the output are different shapes in almost every row: one label from a sequence, a sequence from one label, a sequence from a sequence.</p>
+</section>
+<section id="tokenization" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="tokenization">Tokenization</h2>
+<p>A network takes numbers. Text is characters. <strong>Tokenization is the step that splits text into pieces, and a vocabulary is the lookup from those pieces to integer ids.</strong></p>
+<p><a href="images/fig-tokenize.png" class="zoom" target="_blank"><img src="images/fig-tokenize.png" class="dw95 img-fluid"></a></p>
+<p>The same sentence is 37 tokens as characters, 8 as words, and 11 as subwords. The trade is between sequence length and vocabulary size, and subword tokenization is what every modern model uses because it gets most of both: a small fixed vocabulary that can still spell anything.</p>
+</section>
+<section id="why-subword-tokenization-won" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="why-subword-tokenization-won">Why subword tokenization won</h2>
+<div class="columns">
+<div class="column" style="width:33%;">
+<p><strong>Characters</strong> spell anything with a few hundred tokens. The cost is long sequences, and work grows with length.</p>
+</div><div class="column" style="width:33%;">
+<p><strong>Words</strong> give short sequences and a vocabulary that never stops growing. Anything missing becomes <code>&lt;unk&gt;</code>, meaning gone.</p>
+</div><div class="column" style="width:33%;">
+<p><strong>Subwords</strong> keep frequent words whole and split rare ones. Fixed vocabulary, nothing unspellable.</p>
+</div>
+</div>
+<p>In the figure, <code>unhappier</code> became <code>un</code> + <code>happ</code> + <code>ier</code>. A model that has never seen the word has seen <code>un</code> on <code>unlikely</code> and <code>ier</code> on <code>easier</code>, so the morphology survives instead of collapsing to <code>&lt;unk&gt;</code>.</p>
+</section>
+<section id="one-hot-encoding" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="one-hot-encoding">One-hot encoding</h2>
+<p>The first thing you would try. <strong>A one-hot vector is all zeros with a single 1, at the index of the token.</strong> A sequence of <span class="math inline">s</span> tokens over a vocabulary of <span class="math inline">n</span> becomes an <span class="math inline">s \times n</span> matrix <span class="math inline">\mathbf{O}</span>, almost all of it zeros.</p>
+<p><a href="images/onehot-to-embedding.png" class="zoom" target="_blank"><img src="images/onehot-to-embedding.png" class="dw92 img-fluid"></a></p>
+<p>Multiply <span class="math inline">\mathbf{O}</span> by a weight matrix <span class="math inline">\mathbf{W_E}</span> and you get a dense <span class="math inline">s \times m</span> matrix <span class="math inline">\mathbf{E}</span>, with <span class="math inline">m</span> in the hundreds rather than tens of thousands. <strong>That multiply is the embedding</strong>, and it is the next slide.</p>
+</section>
+<section id="embeddings" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="embeddings">Embeddings</h2>
+<p>Multiplying a one-hot row by <span class="math inline">\mathbf{W_E}</span> just selects a row of <span class="math inline">\mathbf{W_E}</span>, so you may as well index it. <strong>An embedding is that lookup table: one learned row per token.</strong></p>
+<p><a href="images/embedding-vectors.png" class="zoom" target="_blank"><img src="images/embedding-vectors.png" class="dw85 img-fluid"></a></p>
+<p>The rows are parameters, so the model learns them, and tokens that behave alike end up near each other. One-hot cannot do that: every token sits exactly as far from every other as it started, forever.</p>
+</section>
+<section id="how-an-embedding-is-read-and-updated" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="how-an-embedding-is-read-and-updated">How an embedding is read and updated</h2>
+<p><a href="images/fig-embed.png" class="zoom" target="_blank"><img src="images/fig-embed.png" class="dw92 img-fluid"></a></p>
+</section>
+<section id="embedding-a-batch-of-ids" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="embedding-a-batch-of-ids">Embedding a batch of ids</h2>
+<div id="a52fa923" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">6600</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>vocab_size, d_model <span class="op">=</span> <span class="dv">50_000</span>, <span class="dv">256</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>emb <span class="op">=</span> nn.Embedding(vocab_size, d_model)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>ids <span class="op">=</span> torch.randint(<span class="dv">0</span>, vocab_size, (<span class="dv">4</span>, <span class="dv">12</span>))      <span class="co"># 4 sequences, 12 tokens each</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"ids      </span><span class="sc">{</span><span class="bu">tuple</span>(ids.shape)<span class="sc">}</span><span class="ss">  dtype </span><span class="sc">{</span>ids<span class="sc">.</span>dtype<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"embedded </span><span class="sc">{</span><span class="bu">tuple</span>(emb(ids).shape)<span class="sc">}</span><span class="ss">  dtype </span><span class="sc">{</span>emb(ids)<span class="sc">.</span>dtype<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"parameters in the table: </span><span class="sc">{</span>emb<span class="sc">.</span>weight<span class="sc">.</span>numel()<span class="sc">:,}</span><span class="ss">"</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">forward, the row IS the lookup, no matrix multiply:"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  emb(tensor(7)) == emb.weight[7]  -&gt;  "</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"</span><span class="sc">{</span>torch<span class="sc">.</span>equal(emb(torch.tensor(<span class="dv">7</span>)), emb.weight[<span class="dv">7</span>])<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="co"># backward: token 7 appears three times, token 3 once, nothing else appears</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>small <span class="op">=</span> nn.Embedding(<span class="dv">10</span>, <span class="dv">4</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>small(torch.tensor([[<span class="dv">7</span>, <span class="dv">3</span>, <span class="dv">7</span>], [<span class="dv">7</span>, <span class="dv">2</span>, <span class="dv">2</span>]])).<span class="bu">sum</span>().backward()</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>g <span class="op">=</span> small.weight.grad.norm(dim<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">backward, gradient reaching each row:"</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row <span class="kw">in</span> (<span class="dv">7</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">5</span>):</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  row </span><span class="sc">{</span>row<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>g[row]<span class="sc">:.1f}</span><span class="ss">"</span>, end<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="st">"   &lt;- appeared 3 times"</span> <span class="cf">if</span> row <span class="op">==</span> <span class="dv">7</span> <span class="cf">else</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>          (<span class="st">"   &lt;- never appeared"</span> <span class="cf">if</span> g[row] <span class="op">==</span> <span class="dv">0</span> <span class="cf">else</span> <span class="st">""</span>))</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  rows with any gradient at all: "</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"</span><span class="sc">{</span>torch<span class="sc">.</span>nonzero(g)<span class="sc">.</span>flatten()<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss"> of 10"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ids      (4, 12)  dtype torch.int64
+embedded (4, 12, 256)  dtype torch.float32
+parameters in the table: 12,800,000
+
+forward, the row IS the lookup, no matrix multiply:
+  emb(tensor(7)) == emb.weight[7]  -&gt;  True
+
+backward, gradient reaching each row:
+  row 7: 6.0   &lt;- appeared 3 times
+  row 3: 2.0
+  row 2: 4.0
+  row 5: 0.0   &lt;- never appeared
+  rows with any gradient at all: [2, 3, 7] of 10</code></pre>
+</div>
+</div>
+</section>
+<section id="padding" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="padding">Padding</h2>
+<p>A batch has to be a rectangle. Sentences are not the same length. <strong>Padding means appending a reserved token to every sequence in the batch until they all reach the length of the longest one.</strong></p>
+<p><a href="images/fig-padding.png" class="zoom" target="_blank"><img src="images/fig-padding.png" class="dw92 img-fluid"></a></p>
+<p>Four sentences, padded to 7, and 14 of the 28 cells are padding. The pad id is reserved, conventionally 0, and it means “nothing here.”</p>
+</section>
+<section id="masking" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="masking">Masking</h2>
+<p><strong>A mask is a boolean tensor, the same shape as the batch, marking which positions are real.</strong> Without one the model reads <code>PAD</code> as a word.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p>The previous figure measured the cost: up to <strong>86%</strong> error in a pooled vector, worst for the shortest sentence and zero for the one that needed no padding. <strong>A masking bug damages short examples and leaves long ones alone</strong>, so it hides in the average.</p>
+</div><div class="column" style="width:50%;">
+<p>Three places it must be applied, and forgetting any one is silent:</p>
+<ul>
+<li><strong>Pooling.</strong> Divide by the real count, not <span class="math inline">T</span>.</li>
+<li><strong>The loss.</strong> <code>ignore_index=0</code>.</li>
+<li><strong>Attention</strong>, next week. Pad positions go to <span class="math inline">-\infty</span> before the softmax.</li>
+</ul>
+</div>
+</div>
+</section>
+<section id="pooling-a-padded-batch" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="pooling-a-padded-batch">Pooling a padded batch</h2>
+<div id="232ea56f" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># One ragged batch, done correctly, in the six lines it actually takes.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.nn.utils.rnn <span class="im">import</span> pad_sequence</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>seqs <span class="op">=</span> [torch.tensor([<span class="dv">5</span>, <span class="dv">9</span>, <span class="dv">2</span>]),</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>        torch.tensor([<span class="dv">7</span>, <span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">8</span>, <span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">2</span>]),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>        torch.tensor([<span class="dv">4</span>]),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        torch.tensor([<span class="dv">9</span>, <span class="dv">9</span>, <span class="dv">1</span>])]</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>ids <span class="op">=</span> pad_sequence(seqs, batch_first<span class="op">=</span><span class="va">True</span>, padding_value<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>mask <span class="op">=</span> (ids <span class="op">!=</span> <span class="dv">0</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>e <span class="op">=</span> nn.Embedding(<span class="dv">10</span>, <span class="dv">16</span>, padding_idx<span class="op">=</span><span class="dv">0</span>)(ids)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>naive <span class="op">=</span> e.mean(dim<span class="op">=</span><span class="dv">1</span>)                                        <span class="co"># wrong</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>pooled <span class="op">=</span> (e <span class="op">*</span> mask.unsqueeze(<span class="op">-</span><span class="dv">1</span>)).<span class="bu">sum</span>(<span class="dv">1</span>) <span class="op">/</span> mask.<span class="bu">sum</span>(<span class="dv">1</span>, keepdim<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"padded ids   </span><span class="sc">{</span><span class="bu">tuple</span>(ids.shape)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"real tokens  </span><span class="sc">{</span>mask<span class="sc">.</span><span class="bu">sum</span>(<span class="dv">1</span>)<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss">   of </span><span class="sc">{</span>ids<span class="sc">.</span>shape[<span class="dv">1</span>]<span class="sc">}</span><span class="ss"> columns"</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"pooled       </span><span class="sc">{</span><span class="bu">tuple</span>(pooled.shape)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>err <span class="op">=</span> (naive <span class="op">-</span> pooled).norm(dim<span class="op">=</span><span class="dv">1</span>) <span class="op">/</span> pooled.norm(dim<span class="op">=</span><span class="dv">1</span>) <span class="op">*</span> <span class="dv">100</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"error from pooling without the mask, per sequence:"</span>)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> n, pct <span class="kw">in</span> <span class="bu">zip</span>(mask.<span class="bu">sum</span>(<span class="dv">1</span>).tolist(), err.tolist()):</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  length </span><span class="sc">{</span>n<span class="sc">}</span><span class="ss">:  </span><span class="sc">{</span>pct<span class="sc">:5.1f}</span><span class="ss">%"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>padded ids   (4, 7)
+real tokens  [3, 7, 1, 3]   of 7 columns
+pooled       (4, 16)
+
+error from pooling without the mask, per sequence:
+  length 3:   57.1%
+  length 7:    0.0%
+  length 1:   85.7%
+  length 3:   57.1%</code></pre>
+</div>
+</div>
+</section>
+<section id="building-the-batch" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="building-the-batch">Building the batch</h2>
+<p>A <code>Dataset</code> returns one example; the default collation stacks them and needs matching shapes. Ragged sequences do not have them, so you pass a <strong><code>collate_fn</code></strong> and pad there, to each batch’s own longest member.</p>
+<p><a href="images/fig-bucketing.png" class="zoom" target="_blank"><img src="images/fig-bucketing.png" class="dw92 img-fluid"></a></p>
+<p>Sorting by length first is called <strong>bucketing</strong>. <strong>For a time series, split on time, not at random</strong>: train on the past, validate on the future, or you have leaked the answer.</p>
+</section>
+<section id="collating-a-ragged-batch" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="collating-a-ragged-batch">Collating a ragged batch</h2>
+<div id="2b00bdfd" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader, Dataset</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Sentences(Dataset):</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, seqs, labels):</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.seqs, <span class="va">self</span>.labels <span class="op">=</span> seqs, labels</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__len__</span>(<span class="va">self</span>):</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="bu">len</span>(<span class="va">self</span>.seqs)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__getitem__</span>(<span class="va">self</span>, i):</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.seqs[i], <span class="va">self</span>.labels[i]</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> collate(batch):</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Pad to the longest member of THIS batch, and return the mask with it."""</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    seqs, labels <span class="op">=</span> <span class="bu">zip</span>(<span class="op">*</span>batch)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    ids <span class="op">=</span> pad_sequence(seqs, batch_first<span class="op">=</span><span class="va">True</span>, padding_value<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> ids, (ids <span class="op">!=</span> <span class="dv">0</span>), torch.tensor(labels)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>loader <span class="op">=</span> DataLoader(Sentences(seqs, [<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>]), batch_size<span class="op">=</span><span class="dv">2</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>                    shuffle<span class="op">=</span><span class="va">False</span>, collate_fn<span class="op">=</span>collate)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ids, mask, y <span class="kw">in</span> loader:</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"batch </span><span class="sc">{</span><span class="bu">tuple</span>(ids.shape)<span class="sc">}</span><span class="ss">   real tokens </span><span class="sc">{</span>mask<span class="sc">.</span><span class="bu">sum</span>(<span class="dv">1</span>)<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss">   y </span><span class="sc">{</span>y<span class="sc">.</span>tolist()<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>batch (2, 7)   real tokens [3, 7]   y [0, 1]
+batch (2, 3)   real tokens [1, 3]   y [1, 0]</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="recurrent-networks" class="level1">
+<h1>Recurrent networks</h1>
+<section id="d-convolution" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="d-convolution">1D convolution</h2>
+<p>Slide a kernel along the sequence instead of across an image. <code>nn.Conv1d</code> takes <span class="math inline">(N, C, T)</span> and accepts any <span class="math inline">T</span>, so <strong>variable length was never the real objection</strong>. Locality is.</p>
+<p><a href="images/fig-conv1d.png" class="zoom" target="_blank"><img src="images/fig-conv1d.png" class="dw95 img-fluid"></a></p>
+<p>A <span class="math inline">k</span>-wide kernel widens the receptive field by <span class="math inline">k - 1</span> per layer, measured above by gradient tracing, so two tokens 100 apart need <strong>50 layers</strong> where attention needs one.</p>
+<p><strong>This is current practice, not history.</strong> Speech models put a convolutional front end before the transformer, Conformer blocks run convolution and attention side by side, and dilated causal convolutions are a strong, cheap baseline for time series. Use them where the pattern is local; reach for attention when it is not.</p>
+</section>
+<section id="the-recurrence-idea" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-recurrence-idea">The recurrence idea</h2>
+<p><strong>A recurrent network keeps a hidden state <span class="math inline">h_t</span> that it updates at every step from the current input and the previous state.</strong></p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><a href="images/unrolled-rnn.png" class="zoom" target="_blank"><img src="images/unrolled-rnn.png" class="dw95 img-fluid"></a></p>
+</div><div class="column" style="width:50%;">
+<p><span class="math display">h_t = \tanh\!\left(W_x\,x_t + W_h\,h_{t-1} + b\right)</span></p>
+<p><span class="math inline">h_0</span> is zeros. <strong>The same weights run at every step</strong>, which is weight sharing, the same idea as a kernel sliding over an image, except over time. It is what lets one model take any length.</p>
+</div>
+</div>
+<p><strong>The only route from <code>THE</code> to <code>DOG</code> is along the <span class="math inline">W_h</span> arrows</strong>, eight multiplications, with no other path.</p>
+</section>
+<section id="what-an-rnn-layer-returns" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="what-an-rnn-layer-returns">What an RNN layer returns</h2>
+<div id="c0c6aa90" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>rnn <span class="op">=</span> nn.RNN(input_size<span class="op">=</span><span class="dv">16</span>, hidden_size<span class="op">=</span><span class="dv">32</span>, batch_first<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">4</span>, <span class="dv">12</span>, <span class="dv">16</span>)              <span class="co"># 4 sequences, 12 steps, 16 features</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>out, h_T <span class="op">=</span> rnn(x)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"input          </span><span class="sc">{</span><span class="bu">tuple</span>(x.shape)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"out            </span><span class="sc">{</span><span class="bu">tuple</span>(out.shape)<span class="sc">}</span><span class="ss">   the hidden state at EVERY step"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"h_T            </span><span class="sc">{</span><span class="bu">tuple</span>(h_T.shape)<span class="sc">}</span><span class="ss">   the hidden state at the LAST step"</span>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"and they agree: </span><span class="sc">{</span>torch<span class="sc">.</span>allclose(out[:, <span class="op">-</span><span class="dv">1</span>], h_T[<span class="dv">0</span>], atol<span class="op">=</span><span class="fl">1e-6</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the same weights at every step, so the count does not depend on T:"</span>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, p <span class="kw">in</span> rnn.named_parameters():</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>name<span class="sc">:12s}</span><span class="ss"> </span><span class="sc">{</span><span class="bu">tuple</span>(p.shape)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>input          (4, 12, 16)
+out            (4, 12, 32)   the hidden state at EVERY step
+h_T            (1, 4, 32)   the hidden state at the LAST step
+and they agree: True
+
+the same weights at every step, so the count does not depend on T:
+  weight_ih_l0 (32, 16)
+  weight_hh_l0 (32, 32)
+  bias_ih_l0   (32,)
+  bias_hh_l0   (32,)</code></pre>
+</div>
+</div>
+</section>
+<section id="reading-the-output" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="reading-the-output">Reading the output</h2>
+<p>A recurrent layer returns the hidden state at every step. Which part you read is what makes it a different task.</p>
+<p><a href="images/sequence-mappings.png" class="zoom" target="_blank"><img src="images/sequence-mappings.png" class="dw85 img-fluid"></a></p>
+<p><strong>Translation</strong> is where attention came from: the whole input is squeezed into <strong>one</strong> hidden state and the decoder works from that alone, whether the sentence is 4 words or 400. With padding, <code>out[:, -1]</code> is the state after the padding, not after the sentence.</p>
+</section>
+<section id="generating-one-token-at-a-time" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="generating-one-token-at-a-time">Generating one token at a time</h2>
+<p><a href="images/autoregressive-steps.png" class="zoom" target="_blank"><img src="images/autoregressive-steps.png" class="dw85 img-fluid"></a></p>
+<p>Predict one token, append it to the input, run again. <strong>This is how every text generation model you have used produces output</strong>, one token per forward pass, and attention does not change it.</p>
+<p>Training does not work this way. Feeding the model its own early predictions compounds the errors, so you feed it the true previous token instead. That is <strong>teacher forcing</strong>, and it is why training is parallel over positions while generation is not.</p>
+</section>
+<section id="backpropagation-through-time" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="backpropagation-through-time">Backpropagation through time</h2>
+<p>Unroll it: <span class="math inline">T</span> steps become <span class="math inline">T</span> copies of the same layer, an ordinary feedforward network <span class="math inline">T</span> deep, and you backpropagate through that. The name <strong>backpropagation through time</strong> is the only new part.</p>
+<p>The weights are shared, so <span class="math inline">W_h</span> collects a gradient from every one of those steps, and every step on the way back multiplies by the same Jacobian.</p>
+<p>Week 6 hit this same wall with depth in CNNs: “the gradients just never make it back.” There the fix was a residual connection, a path with gradient 1 running alongside the layers. <strong>Recurrence has no such path, because the recurrence is the path.</strong></p>
+</section>
+<section id="how-far-back-the-gradient-reaches" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="how-far-back-the-gradient-reaches">How far back the gradient reaches</h2>
+<p><a href="images/fig-decay.png" class="zoom" target="_blank"><img src="images/fig-decay.png" class="dw95 img-fluid"></a></p>
+<p>A loss at the final step, 20 random initializations, sequence length 120. Both lines are straight on a log axis, which means both decay geometrically. The vanilla RNN keeps 0.53 of the gradient per step and has nothing left after 20 steps; the LSTM keeps 0.62 and lasts 28. Gating changed the slope. It did not change the shape.</p>
+</section>
+<section id="why-it-is-exponential" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="why-it-is-exponential">Why it is exponential</h2>
+<p><span class="math display">\frac{\partial h_T}{\partial h_t}
+  = \prod_{k=t+1}^{T} \frac{\partial h_k}{\partial h_{k-1}}</span></p>
+<p><a href="images/fig-bptt.png" class="zoom" target="_blank"><img src="images/fig-bptt.png" class="dw95 img-fluid"></a></p>
+<p>A product of <span class="math inline">T - t</span> terms, so it either goes to zero or it explodes. No choice of weights makes a product of many terms behave like a sum. Exploding is the easy half, because you can clip the norm; vanishing is the hard half, because there is nothing to clip.</p>
+<p><strong>The cost is not that the model is wrong about long sequences. It is that it cannot learn anything that depends on one</strong>, because the signal that would teach it never arrives. Training longer does not help, and nor does a bigger hidden state.</p>
+</section>
+<section id="one-step-per-token" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="one-step-per-token">One step per token</h2>
+<p><a href="images/fig-parallel.png" class="zoom" target="_blank"><img src="images/fig-parallel.png" class="dw95 img-fluid"></a></p>
+<p><span class="math inline">h_t</span> needs <span class="math inline">h_{t-1}</span>, so the steps cannot run together. The LSTM’s cost per token is flat: a fixed price per token, because it takes one sequential step per token. At 1024 tokens that is 16 ms against 7.6 ms on one RTX 3080.</p>
+<p><strong>The win is parallelism, not less work.</strong> Attention compares every position with every other, so its total work grows with the <em>square</em> of the length. You can watch the quadratic term arrive on the right, where its per-token cost turns upward past 256. That is also why long context windows are expensive.</p>
+</section>
+</section>
+<section id="gated-recurrence" class="level1">
+<h1>Gated recurrence</h1>
+<section id="lstm" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="lstm">LSTM</h2>
+<p>An <strong>LSTM</strong> is a recurrent network with a second state that information travels along without being multiplied by a weight matrix at every step.</p>
+<div class="columns">
+<div class="column" style="width:42%;">
+<p><a href="images/lstm-cell.png" class="zoom" target="_blank"><img src="images/lstm-cell.png" class="dw95 img-fluid"></a></p>
+<p><a href="images/gate-symbols.png" class="zoom" target="_blank"><img src="images/gate-symbols.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:58%;">
+<p>The <strong>cell state</strong> <span class="math inline">c_t</span> is the track across the top, updated almost additively:</p>
+<p><span class="math display">c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t</span></p>
+<p>The circled regions are <strong>gates</strong>, each a learned function of <span class="math inline">x_t</span> and <span class="math inline">h_{t-1}</span> squashed to <span class="math inline">[0, 1]</span>, so each is a soft switch: what to <strong>forget</strong>, what to <strong>write</strong>, what to <strong>expose</strong>.</p>
+<p>When <span class="math inline">f_t</span> is near 1, <span class="math inline">c_t \approx c_{t-1} + \text{something}</span>, so the gradient along that track is multiplied by roughly 1 instead of a weight matrix. <strong>That is the residual connection’s trick, eight years early.</strong> A GRU does the same with two gates.</p>
+</div>
+</div>
+</section>
+<section id="what-gating-fixed-and-what-it-did-not" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-gating-fixed-and-what-it-did-not">What gating fixed, and what it did not</h2>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Fixed.</strong> An LSTM holds information far longer, and for a decade it was the default for translation, speech and captioning. Measured reach 28 steps against 20, and more than that once the forget gate is initialized well.</p>
+</div><div class="column" style="width:50%;">
+<p><strong>Not fixed.</strong> The decay is still exponential, because the path is still a path. And gating does nothing at all about the second failure: still one sequential step per token.</p>
+</div>
+</div>
+<p>Gating bought a decade without changing either of the two things that needed changing. That is why this section is five minutes.</p>
+</section>
+</section>
+<section id="next-week-attention" class="level1">
+<h1>Next week: attention</h1>
+<section id="the-bottleneck-attention-removes" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-bottleneck-attention-removes">The bottleneck attention removes</h2>
+<p>A recurrent encoder-decoder squeezes the whole input into one fixed-size vector, so early positions must survive to the end and every step waits for the last.</p>
+<p><a href="images/attention-matrix.png" class="zoom" target="_blank"><img src="images/attention-matrix.png" class="dw85 img-fluid"></a></p>
+<p><strong>Attention stops compressing.</strong> Every position reads every other position directly, in one hop, with weights computed from the content. Position 100 reaches position 1 without 99 multiplications, and since there is no order to the computation it is one large matrix multiply. Hence <em>Attention Is All You Need</em>, 2017: once you have this, the recurrence can go.</p>
+</section>
+<section id="what-carries-forward" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-carries-forward">What carries forward</h2>
+<p>Most of the first half of today is not about recurrent networks and does not expire with them.</p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p><strong>Used unchanged next week</strong></p>
+<ul>
+<li>Tokenization and the vocabulary</li>
+<li>Embeddings as a learned lookup table</li>
+<li>Padding a batch to its longest member</li>
+<li>Masking, including the attention mask</li>
+<li><code>collate_fn</code> and bucketing by length</li>
+<li>Reading <code>(N, T, d)</code> shapes</li>
+</ul>
+</div><div class="column" style="width:50%;">
+<p><strong>Of historical interest</strong></p>
+<ul>
+<li>The recurrence <span class="math inline">h_t = \tanh(W_x x_t + W_h h_{t-1} + b)</span></li>
+<li>Backpropagation through time</li>
+<li>LSTM and GRU gates</li>
+</ul>
+<p>You should recognize these, know what problem each was solving, and be able to say why the field left them. You will not be asked to build one from scratch.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="wrap-up" class="level1">
+<h1>Wrap-up</h1>
+<section id="wrap-up-1" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="wrap-up-1">Wrap-up</h2>
+<ul>
+<li><strong>Sequence data</strong> has variable length and meaningful order, the two properties convolution assumes away.</li>
+<li><strong>Subword tokenization</strong> keeps a fixed vocabulary that can still spell anything.</li>
+<li><strong>Embeddings</strong> are a learned lookup table, one row per token.</li>
+<li><strong>Padding</strong> makes a batch rectangular; <strong>masking</strong> keeps it from being read as data, and forgetting it is silent.</li>
+<li><strong>1D convolution</strong> handles any length but reaches only <span class="math inline">k - 1</span> further per layer. <strong>Recurrent networks</strong> share weights across time instead.</li>
+<li><strong>Two failures.</strong> The gradient reaching back decays exponentially, so long dependencies cannot be learned, and each step waits for the previous one.</li>
+<li><strong>Gating</strong> slowed the first and did nothing about the second.</li>
+<li><strong>Attention</strong> fixes both, next week.</li>
+</ul>
+</section>
+<section id="supplemental-content" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="supplemental-content">Supplemental content</h2>
+<p>Optional. Prof.&nbsp;Hickman’s <a href="https://jfh.georgetown.domains/centralized-lecture-content/">centralized lecture content</a> covers this material with different examples, and a second pass rarely hurts:</p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/deep-learning/rnn/">Recurrent neural networks</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/deep-learning/nlp/">Text preprocessing and embeddings</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/deep-learning/transformers/">Attention and transformers</a>, which is next week</li>
+</ul>
+<p>Also optional, and worth the time if you want the primary sources: Hochreiter and Schmidhuber’s LSTM paper (1997), Bahdanau et al.&nbsp;on attention for translation (2014), and Vaswani et al., <em>Attention Is All You Need</em> (2017).</p>
+</section>
+<section id="lab-7-and-quiz-7" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="lab-7-and-quiz-7">Lab 7 and Quiz 7</h2>
+<p><strong>Lab 7</strong> is out today and due Wednesday Oct 21. Tokenize a corpus, build a vocabulary, pad and mask a ragged batch, and pool it correctly, then confirm by measurement that the unmasked version is wrong. Short, and entirely mechanics.</p>
+<p><strong>Quiz 7</strong> is now. Scope is the Oct 8 lecture only: the back half of the CNN deck and detection as far as non-maximum suppression. A formula sheet comes with it.</p>
+<p>Next week is <strong>Transformers</strong>: self-attention, multi-head attention, positional encoding, and the encoder-decoder architecture that the rest of the course is built on.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

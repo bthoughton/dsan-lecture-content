@@ -70,6 +70,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="02-how-neural-networks-work_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="02-how-neural-networks-work_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <link rel="icon" type="image/png" href="/icon.png">
+<style>
+/* HTML handout only; the RevealJS decks are styled by custom.scss.
+ * Quarto lays .column out as flush inline-blocks, so prose in adjacent
+ * columns ends up 3px apart and reads as one sentence across the gutter.
+ * The columns are border-box, so this padding cannot push the pair past
+ * 100% and wrap it. build-notebook.py inlines this file into the head.
+ */
+.columns > .column {
+  padding-right: 1.75rem;
+}
+
+.columns > .column:last-child {
+  padding-right: 0;
+}
+</style>
 
   <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
   <script>document.addEventListener("DOMContentLoaded", function () {
@@ -550,7 +565,7 @@ Relation to later architectures
 <section id="a-forward-pass-in-numpy" class="level2">
 <h2 class="anchored" data-anchor-id="a-forward-pass-in-numpy">A forward pass, in NumPy</h2>
 <p>Nine lines, no framework. The shapes printed below each step are the point.</p>
-<div id="71a4c1eb" class="cell" data-execution_count="1">
+<div id="8aa6e2a9" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -588,7 +603,7 @@ parameters: 20</code></pre>
 <section id="batched-forward-pass" class="level2">
 <h2 class="anchored" data-anchor-id="batched-forward-pass">Batched forward pass</h2>
 <p>Swap the single vector for a matrix of rows and transpose the weights. The arithmetic per example is identical; you have only stopped looping.</p>
-<div id="2188ea29" class="cell" data-execution_count="2">
+<div id="d4b5e58a" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> rng.normal(<span class="dv">0</span>, <span class="dv">1</span>, (<span class="dv">5</span>, <span class="dv">2</span>))              <span class="co"># five examples, 2 features each</span></span>
@@ -658,7 +673,7 @@ Vocabulary you will meet
 <section id="linear-layers-collapse" class="level2">
 <h2 class="anchored" data-anchor-id="linear-layers-collapse">Linear layers collapse</h2>
 <p>97 parameters and three layers, versus the single layer they are secretly equal to. No fitting involved; we just multiply the matrices out.</p>
-<div id="a9b4c2a7" class="cell" data-execution_count="3">
+<div id="ea1ce28f" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>rng <span class="op">=</span> np.random.default_rng(<span class="dv">6600</span>)</span>
@@ -1021,7 +1036,7 @@ The takeaway
 <h2 class="codetight anchored" data-anchor-id="training-with-finite-differences">Training with finite differences</h2>
 <p>A <span class="math inline">1 \to 16 \to 1</span> tanh network, fitting a curve. Source code for your reference; all the cost lives in the loop inside <code>finite_difference_gradient</code>.</p>
 <p>Read the bottom four numbers together: the network went from its random initialization, past what a straight line can do, to within a factor of two of the noise floor.</p>
-<div id="e472277c" class="cell" data-execution_count="4">
+<div id="34a5323f" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>

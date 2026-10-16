@@ -70,6 +70,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="05-convolutional-networks_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="05-convolutional-networks_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <link rel="icon" type="image/png" href="/icon.png">
+<style>
+/* HTML handout only; the RevealJS decks are styled by custom.scss.
+ * Quarto lays .column out as flush inline-blocks, so prose in adjacent
+ * columns ends up 3px apart and reads as one sentence across the gutter.
+ * The columns are border-box, so this padding cannot push the pair past
+ * 100% and wrap it. build-notebook.py inlines this file into the head.
+ */
+.columns > .column {
+  padding-right: 1.75rem;
+}
+
+.columns > .column:last-child {
+  padding-right: 0;
+}
+</style>
 
   <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
   <script>document.addEventListener("DOMContentLoaded", function () {
@@ -294,7 +309,7 @@ The question this deck answers
 </section>
 <section id="an-image-is-a-tensor" class="level2">
 <h2 class="anchored" data-anchor-id="an-image-is-a-tensor">An image is a tensor</h2>
-<div id="eaf94f6d" class="cell" data-execution_count="1">
+<div id="f6d50f43" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
@@ -341,7 +356,7 @@ total numbers 8,998,173</code></pre>
 <li>The same object can have very different values across two photographs, which is part of why augmentation helps.</li>
 <li>A model trained on one camera’s images can get worse on another’s.</li>
 </ul>
-<div id="158cda6f" class="cell" data-execution_count="2">
+<div id="41fe80c8" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> row, col <span class="kw">in</span> [(<span class="dv">260</span>, <span class="dv">390</span>), (<span class="dv">250</span>, <span class="dv">1150</span>), (<span class="dv">250</span>, <span class="dv">1750</span>)]:</span>
@@ -403,7 +418,7 @@ the whole image is 8,998,173 numbers</code></pre>
 </table>
 <p>You have already used NCHW. Lab 4’s batches were <code>(128, 1, 28, 28)</code>: 128 images, one channel because Fashion-MNIST is greyscale, 28 rows, 28 columns.</p>
 <p><code>transforms.ToTensor()</code> does two things at once that are easy to miss. It converts HWC to CHW, <strong>and</strong> it divides by 255 so values land in <code>[0, 1]</code>.</p>
-<div id="913c30a8" class="cell" data-execution_count="3">
+<div id="25e40966" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
@@ -537,7 +552,7 @@ CHW chw[:, 250, 1150] [173 174 169]</code></pre>
 <section id="why-a-fully-connected-layer-is-wrong-for-images" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="why-a-fully-connected-layer-is-wrong-for-images">Why a fully connected layer is wrong for images</h2>
 <p>Take a 224x224 colour image, which is the standard size for pretrained models, and send it to a modest hidden layer of 1024 units.</p>
-<div id="b5a250f0" class="cell" data-execution_count="4">
+<div id="5715efde" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
@@ -612,7 +627,7 @@ X_{i+m-1,\;j+n-1,\;c}\, W_{m,n,c,f} + b_f
 <h2 class="smaller anchored" data-anchor-id="filters-and-feature-maps">Filters and feature maps</h2>
 <p>One filter produces <strong>one</strong> output channel, called a <strong>feature map</strong>. It records how strongly that filter responded at every position.</p>
 <p>A layer with <span class="math inline">F</span> filters produces <span class="math inline">F</span> feature maps, stacked into one output tensor. Different filters learn to respond to different things.</p>
-<div id="e592a3d1" class="cell" data-execution_count="5">
+<div id="7222472f" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
@@ -766,7 +781,7 @@ W_{\text{out}}=\left\lfloor\frac{W+2P-K}{S}\right\rfloor+1
 <div class="sourceCode" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>nn.Conv2d(in_channels, out_channels, kernel_size,</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>          stride<span class="op">=</span><span class="dv">1</span>, padding<span class="op">=</span><span class="dv">0</span>, bias<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <p><code>in_channels</code> must match the channel count of whatever comes in. <code>out_channels</code> is the number of filters, so it is the channel count coming out.</p>
-<div id="d0cb30eb" class="cell" data-execution_count="6">
+<div id="96d9178b" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>layer <span class="op">=</span> nn.Conv2d(in_channels<span class="op">=</span><span class="dv">3</span>, out_channels<span class="op">=</span><span class="dv">16</span>, kernel_size<span class="op">=</span><span class="dv">3</span>, padding<span class="op">=</span><span class="dv">1</span>)</span>
@@ -883,7 +898,7 @@ actual parameter count            = 448</code></pre>
 </section>
 <section id="a-small-cnn-in-pytorch" class="level2 codetight">
 <h2 class="codetight anchored" data-anchor-id="a-small-cnn-in-pytorch">A small CNN in PyTorch</h2>
-<div id="40650450" class="cell" data-execution_count="7">
+<div id="a4a9927a" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>cnn <span class="op">=</span> nn.Sequential(</span>

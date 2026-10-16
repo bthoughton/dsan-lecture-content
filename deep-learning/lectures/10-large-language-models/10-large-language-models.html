@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.549">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Prof.&nbsp;Ben Houghton">
+<meta name="dcterms.date" content="2026-10-29">
+
+<title>DSAN 6600: Large Language Models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="10-large-language-models_files/libs/clipboard/clipboard.min.js"></script>
+<script src="10-large-language-models_files/libs/quarto-html/quarto.js"></script>
+<script src="10-large-language-models_files/libs/quarto-html/popper.min.js"></script>
+<script src="10-large-language-models_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="10-large-language-models_files/libs/quarto-html/anchor.min.js"></script>
+<link href="10-large-language-models_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="10-large-language-models_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="10-large-language-models_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="10-large-language-models_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="10-large-language-models_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link rel="icon" type="image/png" href="/icon.png">
+<style>
+/* HTML handout only; the RevealJS decks are styled by custom.scss.
+ * Quarto lays .column out as flush inline-blocks, so prose in adjacent
+ * columns ends up 3px apart and reads as one sentence across the gutter.
+ * The columns are border-box, so this padding cannot push the pair past
+ * 100% and wrap it. build-notebook.py inlines this file into the head.
+ */
+.columns > .column {
+  padding-right: 1.75rem;
+}
+
+.columns > .column:last-child {
+  padding-right: 0;
+}
+</style>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#today" id="toc-today" class="nav-link active" data-scroll-target="#today">Today</a></li>
+  <li><a href="#labs-and-quizzes" id="toc-labs-and-quizzes" class="nav-link" data-scroll-target="#labs-and-quizzes">Labs and quizzes</a></li>
+  <li><a href="#what-an-llm-is" id="toc-what-an-llm-is" class="nav-link" data-scroll-target="#what-an-llm-is">What an LLM is</a></li>
+  <li><a href="#it-got-bigger" id="toc-it-got-bigger" class="nav-link" data-scroll-target="#it-got-bigger">It got bigger</a>
+  <ul class="collapse">
+  <li><a href="#five-and-a-half-years-of-scaling" id="toc-five-and-a-half-years-of-scaling" class="nav-link" data-scroll-target="#five-and-a-half-years-of-scaling">Five and a half years of scaling</a></li>
+  <li><a href="#scaling-laws" id="toc-scaling-laws" class="nav-link" data-scroll-target="#scaling-laws">Scaling laws</a></li>
+  <li><a href="#most-of-the-famous-models-were-undertrained" id="toc-most-of-the-famous-models-were-undertrained" class="nav-link" data-scroll-target="#most-of-the-famous-models-were-undertrained">Most of the famous models were undertrained</a></li>
+  <li><a href="#why-nobody-trains-compute-optimal-any-more" id="toc-why-nobody-trains-compute-optimal-any-more" class="nav-link" data-scroll-target="#why-nobody-trains-compute-optimal-any-more">Why nobody trains compute-optimal any more</a></li>
+  </ul></li>
+  <li><a href="#four-parts-got-replaced" id="toc-four-parts-got-replaced" class="nav-link" data-scroll-target="#four-parts-got-replaced">Four parts got replaced</a>
+  <ul class="collapse">
+  <li><a href="#absolute-position-does-not-survive-a-long-context" id="toc-absolute-position-does-not-survive-a-long-context" class="nav-link" data-scroll-target="#absolute-position-does-not-survive-a-long-context">Absolute position does not survive a long context</a></li>
+  <li><a href="#rotary-position-embedding" id="toc-rotary-position-embedding" class="nav-link" data-scroll-target="#rotary-position-embedding">Rotary position embedding</a></li>
+  <li><a href="#rope-in-code" id="toc-rope-in-code" class="nav-link" data-scroll-target="#rope-in-code">RoPE in code</a></li>
+  <li><a href="#normalization-layernorm-to-rmsnorm" id="toc-normalization-layernorm-to-rmsnorm" class="nav-link" data-scroll-target="#normalization-layernorm-to-rmsnorm">Normalization: LayerNorm to RMSNorm</a></li>
+  <li><a href="#attention-the-kv-cache-and-then-shrinking-it" id="toc-attention-the-kv-cache-and-then-shrinking-it" class="nav-link" data-scroll-target="#attention-the-kv-cache-and-then-shrinking-it">Attention: the KV cache, and then shrinking it</a></li>
+  <li><a href="#what-the-cache-costs" id="toc-what-the-cache-costs" class="nav-link" data-scroll-target="#what-the-cache-costs">What the cache costs</a></li>
+  <li><a href="#the-mlp-gelu-to-swiglu" id="toc-the-mlp-gelu-to-swiglu" class="nav-link" data-scroll-target="#the-mlp-gelu-to-swiglu">The MLP: GELU to SwiGLU</a></li>
+  <li><a href="#where-the-four-changes-land" id="toc-where-the-four-changes-land" class="nav-link" data-scroll-target="#where-the-four-changes-land">Where the four changes land</a></li>
+  </ul></li>
+  <li><a href="#how-it-is-trained" id="toc-how-it-is-trained" class="nav-link" data-scroll-target="#how-it-is-trained">How it is trained</a>
+  <ul class="collapse">
+  <li><a href="#one-objective" id="toc-one-objective" class="nav-link" data-scroll-target="#one-objective">One objective</a></li>
+  <li><a href="#training-data" id="toc-training-data" class="nav-link" data-scroll-target="#training-data">Training data</a></li>
+  <li><a href="#tokenization-at-this-scale" id="toc-tokenization-at-this-scale" class="nav-link" data-scroll-target="#tokenization-at-this-scale">Tokenization at this scale</a></li>
+  <li><a href="#keeping-a-long-run-alive" id="toc-keeping-a-long-run-alive" class="nav-link" data-scroll-target="#keeping-a-long-run-alive">Keeping a long run alive</a></li>
+  <li><a href="#how-the-work-is-split" id="toc-how-the-work-is-split" class="nav-link" data-scroll-target="#how-the-work-is-split">How the work is split</a></li>
+  </ul></li>
+  <li><a href="#making-it-useful" id="toc-making-it-useful" class="nav-link" data-scroll-target="#making-it-useful">Making it useful</a>
+  <ul class="collapse">
+  <li><a href="#a-pretrained-model-is-not-an-assistant" id="toc-a-pretrained-model-is-not-an-assistant" class="nav-link" data-scroll-target="#a-pretrained-model-is-not-an-assistant">A pretrained model is not an assistant</a></li>
+  <li><a href="#supervised-fine-tuning" id="toc-supervised-fine-tuning" class="nav-link" data-scroll-target="#supervised-fine-tuning">Supervised fine-tuning</a></li>
+  <li><a href="#learning-from-preferences" id="toc-learning-from-preferences" class="nav-link" data-scroll-target="#learning-from-preferences">Learning from preferences</a></li>
+  <li><a href="#what-alignment-does-and-does-not-do" id="toc-what-alignment-does-and-does-not-do" class="nav-link" data-scroll-target="#what-alignment-does-and-does-not-do">What alignment does and does not do</a></li>
+  </ul></li>
+  <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">Inference</a>
+  <ul class="collapse">
+  <li><a href="#how-the-next-token-is-chosen" id="toc-how-the-next-token-is-chosen" class="nav-link" data-scroll-target="#how-the-next-token-is-chosen">How the next token is chosen</a></li>
+  <li><a href="#sampling-in-code" id="toc-sampling-in-code" class="nav-link" data-scroll-target="#sampling-in-code">Sampling in code</a></li>
+  <li><a href="#why-serving-is-expensive" id="toc-why-serving-is-expensive" class="nav-link" data-scroll-target="#why-serving-is-expensive">Why serving is expensive</a></li>
+  <li><a href="#making-it-cheaper" id="toc-making-it-cheaper" class="nav-link" data-scroll-target="#making-it-cheaper">Making it cheaper</a></li>
+  <li><a href="#prompting-in-one-slide" id="toc-prompting-in-one-slide" class="nav-link" data-scroll-target="#prompting-in-one-slide">Prompting, in one slide</a></li>
+  <li><a href="#emergent-capabilities" id="toc-emergent-capabilities" class="nav-link" data-scroll-target="#emergent-capabilities">Emergent capabilities</a></li>
+  <li><a href="#evaluating-these-is-genuinely-hard" id="toc-evaluating-these-is-genuinely-hard" class="nav-link" data-scroll-target="#evaluating-these-is-genuinely-hard">Evaluating these is genuinely hard</a></li>
+  </ul></li>
+  <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap-up</a>
+  <ul class="collapse">
+  <li><a href="#wrap-up-1" id="toc-wrap-up-1" class="nav-link" data-scroll-target="#wrap-up-1">Wrap-up</a></li>
+  <li><a href="#supplemental-content" id="toc-supplemental-content" class="nav-link" data-scroll-target="#supplemental-content">Supplemental content</a></li>
+  <li><a href="#lab-9-and-quiz-9" id="toc-lab-9-and-quiz-9" class="nav-link" data-scroll-target="#lab-9-and-quiz-9">Lab 9 and Quiz 9</a></li>
+  </ul></li>
+  </ul>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="presentation.html"><i class="bi bi-file-slides"></i>RevealJS</a></li></ul></div></nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">DSAN 6600: Large Language Models</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Prof.&nbsp;Ben Houghton </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 29, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="today" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="today">Today</h2>
+<p>Last week built the 2017 transformer. <strong>Today is one question: what had to change to get from that to a model you can hold a conversation with?</strong></p>
+<ul>
+<li><strong>It got bigger</strong>, in a specific ratio that the field got wrong at first.</li>
+<li><strong>Four parts were replaced</strong>: how position is encoded, how it is normalized, how attention is stored, and what the MLP does.</li>
+<li><strong>It was trained differently</strong>: one objective, a very large pile of text, and a set of tricks that exist only to keep the run from diverging.</li>
+<li><strong>It was aligned afterwards</strong>, which is a separate training run and is most of what makes a chat model feel like one.</li>
+</ul>
+<p>Then inference, which is where the money goes, and emergence, which is the part you have all heard about and where most of what gets said is loose.</p>
+</section>
+<section id="labs-and-quizzes" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="labs-and-quizzes">Labs and quizzes</h2>
+<p><strong>Lab 8</strong> was due yesterday: a transformer encoder block from <code>nn.Linear</code> and <code>softmax</code>, checked against <code>nn.TransformerEncoderLayer</code>, then broken three ways on purpose.</p>
+<p><strong>Quiz 9</strong> is at the end of class. It covers the Oct 22 lecture and Lab 8: attention, query, key and value, the scaled dot product, multi-head, positional encoding, the two masks, and the block. <strong>Nothing from today is on it.</strong></p>
+<p><strong>Lab 9</strong> goes out today, due Wednesday Nov 4.</p>
+</section>
+<section id="what-an-llm-is" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-an-llm-is">What an LLM is</h2>
+<p><strong>A large language model is a decoder-only transformer trained on a very large corpus to predict the next token, and nothing in its architecture is new.</strong></p>
+<p>Every part was on last week’s slides. What changed is scale, four component swaps, and two extra training stages after the pretraining.</p>
+<p>That is worth being blunt about, because the marketing is not. There is no new mathematical idea between <em>Attention Is All You Need</em> and the model you used this morning. There is a great deal of engineering.</p>
+</section>
+<section id="it-got-bigger" class="level1">
+<h1>It got bigger</h1>
+<section id="five-and-a-half-years-of-scaling" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="five-and-a-half-years-of-scaling">Five and a half years of scaling</h2>
+<p><a href="images/fig-growth.png" class="zoom" target="_blank"><img src="images/fig-growth.png" class="dw80 img-fluid"></a></p>
+<p>From <strong>65 million</strong> parameters to <strong>1.7 trillion</strong>, about <strong>26,154 times</strong> in under six years, or roughly <strong>5 times a year</strong>. A straight line on a log axis is exponential growth.</p>
+<p>Published figures, not measured here, and GPT-4’s is a reported estimate rather than a disclosure. Notice that the line stops being the whole story around 2022, which is the next slide.</p>
+</section>
+<section id="scaling-laws" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="scaling-laws">Scaling laws</h2>
+<p><strong>A scaling law is an empirical relationship between how much you spend and how well the model does.</strong> Kaplan et al., 2020, found that test loss falls as a power law in parameters, data and compute, with no sign of a floor.</p>
+<p>That paper’s practical reading was that parameters mattered most, and the field acted on it: GPT-3 was 175 billion parameters trained on 300 billion tokens.</p>
+<p>Hoffmann et al., 2022, redid the experiment over a wider range and found something different. <strong>For a fixed compute budget, parameters and training tokens should grow together</strong>, at roughly</p>
+<p><span class="math display">D \approx 20\,N, \qquad \text{training FLOPs} \approx 6\,N\,D</span></p>
+<p>for <span class="math inline">N</span> parameters and <span class="math inline">D</span> training tokens.</p>
+</section>
+<section id="most-of-the-famous-models-were-undertrained" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="most-of-the-famous-models-were-undertrained">Most of the famous models were undertrained</h2>
+<p><a href="images/fig-chinchilla.png" class="zoom" target="_blank"><img src="images/fig-chinchilla.png" class="dw95 img-fluid"></a></p>
+<p>GPT-3 saw <strong>1.7</strong> tokens per parameter where the compute-optimal ratio is about <strong>20</strong>. The same compute spent on the line would have trained a <strong>51 billion</strong> parameter model on far more data, and that model would have been better <em>and</em> cheaper to serve.</p>
+<p>Chinchilla itself was the demonstration: 70 billion parameters, 1.4 trillion tokens, and it beat the 280 billion parameter Gopher trained on the same budget.</p>
+</section>
+<section id="why-nobody-trains-compute-optimal-any-more" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="why-nobody-trains-compute-optimal-any-more">Why nobody trains compute-optimal any more</h2>
+<p>Chinchilla optimises <strong>training</strong> cost. Nobody trains a model once and stops; they serve it to millions of people, and serving cost scales with parameters, not with how many tokens it was trained on.</p>
+<p>So the modern move is to go deliberately past the optimum: take a smaller model and train it far longer than Chinchilla would say. LLaMA-3-70B saw about <strong>214</strong> tokens per parameter, ten times the compute-optimal ratio.</p>
+<p><strong>The ratio you want depends on what you are paying for.</strong> Compute-optimal if you train once and throw it away; heavily overtrained if you have to serve it.</p>
+</section>
+</section>
+<section id="four-parts-got-replaced" class="level1">
+<h1>Four parts got replaced</h1>
+<section id="absolute-position-does-not-survive-a-long-context" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="absolute-position-does-not-survive-a-long-context">Absolute position does not survive a long context</h2>
+<p>Week 9 added a positional vector to each embedding, either sinusoidal or learned. Both break as context grows.</p>
+<ul>
+<li><strong>A learned table has a fixed number of rows.</strong> Position 2,049 of a 2,048 row table does not exist, so you cannot run on a longer sequence at all.</li>
+<li><strong>Sinusoidal encoding is defined everywhere</strong>, but the model has only ever seen the pattern for positions it trained on, and it does not reliably generalize past them.</li>
+<li>Both encode <strong>where a token is</strong>, when attention almost always wants to know <strong>how far apart two tokens are</strong>.</li>
+</ul>
+<p>The fix is to stop adding position to the embedding and start applying it to the query and the key instead.</p>
+</section>
+<section id="rotary-position-embedding" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="rotary-position-embedding">Rotary position embedding</h2>
+<p><strong>RoPE rotates each pair of dimensions in the query and key by an angle proportional to the position.</strong> Rotating two vectors by the same amount does not change the angle between them, so a dot product of two rotated vectors depends on their positions only through the difference.</p>
+<p><a href="images/fig-rope.png" class="zoom" target="_blank"><img src="images/fig-rope.png" class="dw95 img-fluid"></a></p>
+<p>The right panel is the measurement. Holding the gap fixed and sliding the pair along the sequence, the rotary score changes by <strong>5e-6</strong>, which is floating point noise. The absolute encoding changes by <strong>21.4</strong> over the same slide. RoPE is in LLaMA, Mistral, Qwen and most of what is current.</p>
+</section>
+<section id="rope-in-code" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="rope-in-code">RoPE in code</h2>
+<div id="74b476ef" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-15T17:00:29.620686Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-15T17:00:29.620559Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-15T17:00:30.446056Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-15T17:00:30.445538Z&quot;}" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">6600</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>d, base <span class="op">=</span> <span class="dv">64</span>, <span class="fl">10_000.0</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rope(x, pos):</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""Rotate each pair of dimensions by an angle proportional to position."""</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    half <span class="op">=</span> d <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    inv <span class="op">=</span> base <span class="op">**</span> (<span class="op">-</span>torch.arange(half, dtype<span class="op">=</span>torch.float32) <span class="op">*</span> <span class="dv">2</span> <span class="op">/</span> d)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    ang <span class="op">=</span> pos[:, <span class="va">None</span>] <span class="op">*</span> inv[<span class="va">None</span>, :]</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    x1, x2 <span class="op">=</span> x[..., :half], x[..., half:]</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> torch.cat([x1 <span class="op">*</span> ang.cos() <span class="op">-</span> x2 <span class="op">*</span> ang.sin(),</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>                      x1 <span class="op">*</span> ang.sin() <span class="op">+</span> x2 <span class="op">*</span> ang.cos()], dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>q, k <span class="op">=</span> torch.randn(d), torch.randn(d)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the score depends only on the gap, not the position:"</span>)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> a, b <span class="kw">in</span> [(<span class="dv">0</span>, <span class="dv">3</span>), (<span class="dv">10</span>, <span class="dv">13</span>), (<span class="dv">40</span>, <span class="dv">43</span>), (<span class="dv">100</span>, <span class="dv">103</span>)]:</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    qa <span class="op">=</span> rope(q[<span class="va">None</span>, :], torch.tensor([<span class="bu">float</span>(a)]))</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    kb <span class="op">=</span> rope(k[<span class="va">None</span>, :], torch.tensor([<span class="bu">float</span>(b)]))</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  positions </span><span class="sc">{</span>a<span class="sc">:&gt;3}</span><span class="ss"> and </span><span class="sc">{</span>b<span class="sc">:&gt;3}</span><span class="ss">  (gap 3)   score </span><span class="sc">{</span><span class="bu">float</span>(qa <span class="op">@</span> kb.T)<span class="sc">:+.6f}</span><span class="ss">"</span>)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"a different gap gives a different score, as it should:"</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> a, b <span class="kw">in</span> [(<span class="dv">0</span>, <span class="dv">7</span>), (<span class="dv">40</span>, <span class="dv">47</span>)]:</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    qa <span class="op">=</span> rope(q[<span class="va">None</span>, :], torch.tensor([<span class="bu">float</span>(a)]))</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    kb <span class="op">=</span> rope(k[<span class="va">None</span>, :], torch.tensor([<span class="bu">float</span>(b)]))</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  positions </span><span class="sc">{</span>a<span class="sc">:&gt;3}</span><span class="ss"> and </span><span class="sc">{</span>b<span class="sc">:&gt;3}</span><span class="ss">  (gap 7)   score </span><span class="sc">{</span><span class="bu">float</span>(qa <span class="op">@</span> kb.T)<span class="sc">:+.6f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>the score depends only on the gap, not the position:
+  positions   0 and   3  (gap 3)   score +1.367940
+  positions  10 and  13  (gap 3)   score +1.367940
+  positions  40 and  43  (gap 3)   score +1.367940
+  positions 100 and 103  (gap 3)   score +1.367938
+
+a different gap gives a different score, as it should:
+  positions   0 and   7  (gap 7)   score -0.705606
+  positions  40 and  47  (gap 7)   score -0.705608</code></pre>
+</div>
+</div>
+</section>
+<section id="normalization-layernorm-to-rmsnorm" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="normalization-layernorm-to-rmsnorm">Normalization: LayerNorm to RMSNorm</h2>
+<p>Week 9 showed why sequence models normalize over features. RMSNorm keeps that and drops the mean:</p>
+<p><span class="math display">\text{LayerNorm}(x) = \frac{x - \mu}{\sigma}\,g + b, \qquad
+  \text{RMSNorm}(x) = \frac{x}{\sqrt{\tfrac{1}{d}\sum_i x_i^2}}\,g</span></p>
+<p>No mean subtraction and no bias, so it is one pass over the features rather than two. It performs about the same and is measurably cheaper, which at this scale is reason enough.</p>
+<p>The other change is <strong>where</strong> it goes. The original paper normalized after the residual add; every large model now normalizes before the sublayer (<code>norm_first=True</code>), because post-norm networks of 50 or more blocks are unstable to train.</p>
+</section>
+<section id="attention-the-kv-cache-and-then-shrinking-it" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="attention-the-kv-cache-and-then-shrinking-it">Attention: the KV cache, and then shrinking it</h2>
+<p>Generation is one token per forward pass, and every new token attends to every previous one. Recomputing the keys and values of the whole prefix each step makes generating <span class="math inline">T</span> tokens cost <span class="math inline">O(T^2)</span>.</p>
+<p><strong>The KV cache stores the projected keys and values and appends one column per step</strong>, so each step is <span class="math inline">O(1)</span> of projection plus one attention against the store. It is not an optimization you can skip; it is how generation is done.</p>
+<p>The cache then becomes the problem. It is per sequence, per layer, and grows with the conversation.</p>
+</section>
+<section id="what-the-cache-costs" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-the-cache-costs">What the cache costs</h2>
+<p><a href="images/fig-kvcache.png" class="zoom" target="_blank"><img src="images/fig-kvcache.png" class="dw95 img-fluid"></a></p>
+<p>A 7 billion parameter model at a 32,000 token context needs about <strong>17 GB</strong> of cache for <strong>one</strong> sequence with ordinary multi-head attention. Serving many users at once, that, not the weights, is what fills the GPU.</p>
+<p><strong>Grouped query attention</strong> is the fix: keep all the query heads, share keys and values across groups of them. Eight key-value heads instead of 32 brings that 32k cache to <strong>4.3 GB</strong>. The right panel measures why the cache exists at all: at <strong>1,024</strong> tokens of context, producing one more token costs <strong>10 times</strong> less with the cache than without.</p>
+</section>
+<section id="the-mlp-gelu-to-swiglu" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-mlp-gelu-to-swiglu">The MLP: GELU to SwiGLU</h2>
+<p>Week 9’s feed forward network was two linear layers with a nonlinearity, widening to <span class="math inline">4d</span> and back. Modern models use a <strong>gated</strong> variant:</p>
+<p><span class="math display">\text{SwiGLU}(x) = \big(\text{Swish}(xW_1) \odot xW_3\big)\,W_2</span></p>
+<p>Three matrices instead of two. One branch computes values and the other computes a gate that scales them elementwise, which is the same idea as an LSTM’s gates applied per position instead of per timestep.</p>
+<p>Because there are three matrices, the hidden width is usually cut to about <span class="math inline">\tfrac{8}{3}d</span> to keep the parameter count the same. <strong>The FFN is about two thirds of a transformer’s parameters</strong>, so this is not a small part of the model.</p>
+</section>
+<section id="where-the-four-changes-land" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="where-the-four-changes-land">Where the four changes land</h2>
+<table class="table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>part</th>
+<th>2017</th>
+<th>now</th>
+<th>why</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>position</td>
+<td>added to the embedding</td>
+<td><strong>RoPE</strong>, rotating Q and K</td>
+<td>relative, and extends past the trained length</td>
+</tr>
+<tr class="even">
+<td>normalization</td>
+<td>LayerNorm, after the residual</td>
+<td><strong>RMSNorm</strong>, before the sublayer</td>
+<td>cheaper, and stable at depth</td>
+</tr>
+<tr class="odd">
+<td>attention</td>
+<td>recompute each step</td>
+<td><strong>KV cache</strong>, then <strong>grouped query</strong></td>
+<td>generation would be quadratic; the cache then has to shrink</td>
+</tr>
+<tr class="even">
+<td>the MLP</td>
+<td>two matrices and GELU</td>
+<td><strong>SwiGLU</strong>, three matrices</td>
+<td>better at equal parameter count</td>
+</tr>
+</tbody>
+</table>
+<p>None of these change what a transformer is. Attention, multi-head, the residuals, the causal mask and the block structure are all exactly last week’s.</p>
+</section>
+</section>
+<section id="how-it-is-trained" class="level1">
+<h1>How it is trained</h1>
+<section id="one-objective" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="one-objective">One objective</h2>
+<p><strong>Causal language modelling: predict the next token, for every position at once.</strong></p>
+<p><span class="math display">\mathcal{L} = -\frac{1}{T}\sum_{t=1}^{T}
+  \log p_\theta\!\left(x_t \mid x_{&lt;t}\right)</span></p>
+<p>Which is cross entropy with the next token as the label, and the causal mask from last week is what makes computing all <span class="math inline">T</span> terms in one pass legitimate.</p>
+<p>That is the whole pretraining objective. No labels, no human input, nothing task-specific. The text is its own supervision, which is why it scales: the limit is how much text you can find, not how much you can afford to annotate.</p>
+</section>
+<section id="training-data" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="training-data">Training data</h2>
+<p>Modern pretraining corpora are measured in trillions of tokens, assembled from web crawl, code, books, and reference text. The work is almost entirely in what you remove:</p>
+<ul>
+<li><strong>deduplication</strong>, exact and near. Duplicated text gets memorized rather than learned, and it inflates your benchmark scores.</li>
+<li><strong>quality filtering</strong>, usually a classifier trained to recognise text that looks like a curated source.</li>
+<li><strong>decontamination</strong>, removing anything that appears in the evaluation sets. This one is routinely done badly, which is why benchmark numbers should be read with suspicion.</li>
+</ul>
+<p><strong>Data work is most of the job and almost none of the papers.</strong> The architecture has barely moved; the corpora have moved enormously.</p>
+</section>
+<section id="tokenization-at-this-scale" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="tokenization-at-this-scale">Tokenization at this scale</h2>
+<p>Week 8’s subword tokenizer, with the vocabulary size now a real engineering decision. Typical modern vocabularies run 32,000 to 256,000.</p>
+<p>A larger vocabulary means <strong>shorter sequences</strong>, which is quadratically cheaper in attention, and <strong>a bigger embedding table and output layer</strong>, which is linearly more parameters and more softmax work. Somewhere in the middle is the right answer, and it depends on the languages you care about.</p>
+<p>The costs show up in odd places. A tokenizer fitted mostly to English spends several tokens per word on other languages, so the same sentence costs more to process and more to buy. Numbers and code are similarly sensitive to how digits and whitespace were split.</p>
+</section>
+<section id="keeping-a-long-run-alive" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="keeping-a-long-run-alive">Keeping a long run alive</h2>
+<p>A training run of this size is one job for weeks on thousands of accelerators, and the practical content of a technical report is mostly about not losing it.</p>
+<ul>
+<li><strong>Learning rate</strong>: a linear warmup over the first fraction of a percent of steps, then a cosine decay. Warmup exists because the first updates at full learning rate reliably diverge.</li>
+<li><strong>Gradient clipping</strong> by global norm, usually at 1.0.</li>
+<li><strong>bf16</strong> rather than fp16: the same 16 bits, more exponent and less mantissa, which matters because the failure mode at this scale is overflow.</li>
+<li><strong>Checkpoint often</strong>, because hardware fails and you will be restarting from a checkpoint, not from zero.</li>
+</ul>
+</section>
+<section id="how-the-work-is-split" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="how-the-work-is-split">How the work is split</h2>
+<p>One model no longer fits on one device, so the work is cut up. You should recognize the names; you will not be asked to implement any of them.</p>
+<table class="table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>kind</th>
+<th>what is split</th>
+<th>cost</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>data parallel</strong></td>
+<td>the batch, model replicated</td>
+<td>memory, every replica holds everything</td>
+</tr>
+<tr class="even">
+<td><strong>tensor parallel</strong></td>
+<td>individual matrices, across devices</td>
+<td>communication inside every layer</td>
+</tr>
+<tr class="odd">
+<td><strong>pipeline parallel</strong></td>
+<td>whole layers, across devices</td>
+<td>devices idle waiting for each other</td>
+</tr>
+<tr class="even">
+<td><strong>ZeRO / FSDP</strong></td>
+<td>the optimizer state, gradients and parameters</td>
+<td>communication, in exchange for a much smaller footprint</td>
+</tr>
+</tbody>
+</table>
+<p>The thing worth taking away: <strong>optimizer state is the memory problem, not weights.</strong> Adam keeps two moments per parameter, so training a model costs several times what storing it does.</p>
+</section>
+</section>
+<section id="making-it-useful" class="level1">
+<h1>Making it useful</h1>
+<section id="a-pretrained-model-is-not-an-assistant" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="a-pretrained-model-is-not-an-assistant">A pretrained model is not an assistant</h2>
+<p>A model trained only to predict the next token does exactly that. Ask one a question and a plausible continuation is <strong>another question</strong>, because that is what documents full of questions look like.</p>
+<p>Nothing is wrong with the model. It was never trained to be helpful, and helpfulness is not a property of text statistics.</p>
+<p>Two further stages close that gap, and together they are what separates a base model from a chat model.</p>
+<p><a href="images/fig-stages.png" class="zoom" target="_blank"><img src="images/fig-stages.png" class="dw95 img-fluid"></a></p>
+</section>
+<section id="supervised-fine-tuning" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="supervised-fine-tuning">Supervised fine-tuning</h2>
+<p><strong>SFT is ordinary supervised training on demonstrations: prompt and response pairs written or curated by people, with the loss taken on the response only.</strong></p>
+<p>The objective is unchanged from pretraining; only the data changed. That is why it is cheap, typically thousands to hundreds of thousands of examples rather than trillions of tokens.</p>
+<p>SFT is what installs the shape of a conversation: that a question gets an answer, that instructions get followed, that there is a turn structure at all. It does not install judgement about which of two decent answers is better, because a demonstration gives one answer and no comparison.</p>
+</section>
+<section id="learning-from-preferences" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="learning-from-preferences">Learning from preferences</h2>
+<p>The next stage uses <strong>comparisons</strong> instead of demonstrations: given one prompt and two responses, a human says which is better. Comparing is far easier than writing, so this data is cheaper to collect and more consistent.</p>
+<p><strong>RLHF</strong> turns those comparisons into a <em>reward model</em> that scores responses, then optimizes the language model against that score with reinforcement learning, usually PPO, with a penalty for drifting too far from the SFT model.</p>
+<p><strong>DPO</strong> skips the reward model. The same preference data is turned directly into a loss on the language model, which is simpler, has fewer moving parts and performs comparably. Much of the field moved to it or a variant.</p>
+<p>You should be able to say what each is for. You will not be asked to derive either objective.</p>
+</section>
+<section id="what-alignment-does-and-does-not-do" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-alignment-does-and-does-not-do">What alignment does and does not do</h2>
+<p><strong>Does.</strong> Make it follow instructions, adopt a consistent format and register, refuse some categories of request, and prefer answers people rate highly.</p>
+<p><strong>Does not.</strong> Make it know anything it did not learn in pretraining, or make it accurate. Those are pretraining properties, and no amount of preference data adds a fact that was never in the corpus.</p>
+<p><strong>And the failure mode is specific.</strong> Optimizing against a learned reward model rewards answers that <em>score</em> well, which is not the same as answers that <em>are</em> good. Confident, fluent, agreeable and wrong scores well. That is most of what people mean by an LLM being sycophantic, and it is a predictable consequence of the training objective rather than a mystery.</p>
+</section>
+</section>
+<section id="inference" class="level1">
+<h1>Inference</h1>
+<section id="how-the-next-token-is-chosen" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="how-the-next-token-is-chosen">How the next token is chosen</h2>
+<p><a href="images/fig-decoding.png" class="zoom" target="_blank"><img src="images/fig-decoding.png" class="dw95 img-fluid"></a></p>
+<p>A real distribution out of GPT-2. The top token is <strong>Paris</strong>, and it is correct, but it has only <strong>0.07</strong> of the probability mass.</p>
+<p><strong>Temperature</strong> divides the logits before the softmax: below 1 sharpens toward the top token, above 1 flattens. <strong>Top-p</strong> keeps the smallest set of tokens whose probability sums to <span class="math inline">p</span> and renormalizes, so the number kept adapts to how confident the model is: 52 tokens at <span class="math inline">p = 0.5</span> here, <strong>1,018</strong> at <span class="math inline">p = 0.9</span>, out of 50,257.</p>
+<p>Greedy decoding, always taking the top token, is temperature 0. It is right for extraction and wrong for anything that should read naturally.</p>
+</section>
+<section id="sampling-in-code" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="sampling-in-code">Sampling in code</h2>
+<div id="01d20a1c" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-15T17:00:30.447704Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-15T17:00:30.447423Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-15T17:00:30.452975Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-15T17:00:30.452585Z&quot;}" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>torch.manual_seed(<span class="dv">6600</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># a stand-in for one real next-token distribution: a few likely tokens and a</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># long tail, which is the shape the GPT-2 figure showed</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>logits <span class="op">=</span> torch.cat([torch.tensor([<span class="fl">6.0</span>, <span class="fl">5.4</span>, <span class="fl">5.1</span>, <span class="fl">4.4</span>]), torch.randn(<span class="dv">996</span>) <span class="op">-</span> <span class="dv">1</span>])</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sample(logits, temperature<span class="op">=</span><span class="fl">1.0</span>, top_p<span class="op">=</span><span class="fl">1.0</span>):</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> (logits <span class="op">/</span> temperature).softmax(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    order <span class="op">=</span> p.argsort(descending<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    keep <span class="op">=</span> (p[order].cumsum(<span class="dv">0</span>) <span class="op">-</span> p[order]) <span class="op">&lt;</span> top_p      <span class="co"># always keeps the first</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> torch.zeros_like(p).scatter_(<span class="dv">0</span>, order[keep], p[order][keep])</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> p <span class="op">/</span> p.<span class="bu">sum</span>()</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> temp <span class="kw">in</span> (<span class="fl">0.2</span>, <span class="fl">1.0</span>, <span class="fl">1.6</span>):</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> sample(logits, temperature<span class="op">=</span>temp)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  temperature </span><span class="sc">{</span>temp<span class="sc">:&lt;4}</span><span class="ss"> top token </span><span class="sc">{</span>p<span class="sc">.</span><span class="bu">max</span>()<span class="sc">:.3f}</span><span class="ss">   "</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>          <span class="ss">f"tokens above 1%: </span><span class="sc">{</span>(p <span class="op">&gt;</span> <span class="fl">0.01</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:&gt;3}</span><span class="ss">"</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> tp <span class="kw">in</span> (<span class="fl">0.5</span>, <span class="fl">0.9</span>, <span class="fl">1.0</span>):</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> sample(logits, top_p<span class="op">=</span>tp)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  top-p </span><span class="sc">{</span>tp<span class="sc">:&lt;5}</span><span class="ss"> keeps </span><span class="sc">{</span>(p <span class="op">&gt;</span> <span class="dv">0</span>)<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">:&gt;4}</span><span class="ss"> of </span><span class="sc">{</span><span class="bu">len</span>(logits)<span class="sc">}</span><span class="ss"> tokens"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  temperature 0.2  top token 0.942   tokens above 1%:   3
+  temperature 1.0  top token 0.268   tokens above 1%:   5
+  temperature 1.6  top token 0.055   tokens above 1%:   4
+
+  top-p 0.5   keeps    3 of 1000 tokens
+  top-p 0.9   keeps  370 of 1000 tokens
+  top-p 1.0   keeps 1000 of 1000 tokens</code></pre>
+</div>
+</div>
+</section>
+<section id="why-serving-is-expensive" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="why-serving-is-expensive">Why serving is expensive</h2>
+<p>Conflating these two is the most common mistake in capacity planning.</p>
+<p><a href="images/fig-serve.png" class="zoom" target="_blank"><img src="images/fig-serve.png" class="dw95 img-fluid"></a></p>
+<p><strong>Decode speed tracks memory bandwidth, not FLOPs.</strong> A faster GPU with the same memory bandwidth generates at nearly the same rate.</p>
+</section>
+<section id="making-it-cheaper" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="making-it-cheaper">Making it cheaper</h2>
+<table class="table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>technique</th>
+<th>what it does</th>
+<th>what it costs</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>quantization</strong></td>
+<td>store weights in 8 or 4 bits instead of 16</td>
+<td>a little quality, usually surprisingly little</td>
+</tr>
+<tr class="even">
+<td><strong>grouped query attention</strong></td>
+<td>shrink the KV cache</td>
+<td>a little quality</td>
+</tr>
+<tr class="odd">
+<td><strong>continuous batching</strong></td>
+<td>start new requests as others finish</td>
+<td>nothing, it is scheduling</td>
+</tr>
+<tr class="even">
+<td><strong>paged attention</strong></td>
+<td>page the cache like virtual memory</td>
+<td>nothing, it is bookkeeping</td>
+</tr>
+<tr class="odd">
+<td><strong>speculative decoding</strong></td>
+<td>a small model drafts, the big one checks in parallel</td>
+<td>nothing, output is identical</td>
+</tr>
+</tbody>
+</table>
+<p>Speculative decoding is the elegant one. A draft model proposes several tokens, the real model verifies them in a single forward pass, and any prefix it agrees with is kept. The output distribution is provably unchanged.</p>
+</section>
+<section id="prompting-in-one-slide" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="prompting-in-one-slide">Prompting, in one slide</h2>
+<p><a href="images/chain-of-thought.png" class="zoom" target="_blank"><img src="images/chain-of-thought.png" class="dw60 img-fluid"></a></p>
+<p>Everything the model will use is in its context window, so prompting is just deciding what goes there. <strong>Chain of thought</strong> is asking for the reasoning before the answer, which helps because each generated token is another forward pass: writing the steps out gives the model more computation to spend.</p>
+<p>Retrieval does the same thing with facts rather than reasoning: find the relevant text, put it in the context, and the model reads it rather than recalling it. <strong>Nothing here changes the weights.</strong></p>
+</section>
+<section id="emergent-capabilities" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="emergent-capabilities">Emergent capabilities</h2>
+<p><strong>An emergent capability is one that is near chance at smaller scales and then rises sharply past some size</strong>, rather than improving smoothly. Arithmetic, multi-step reasoning and following an unfamiliar instruction format are the usual examples.</p>
+<p>The honest caveat matters as much as the claim. Several of these curves look like step functions <strong>because the metric is a step function</strong>: exact-match scoring gives no credit for being nearly right, so smooth underlying improvement shows up as a sudden jump. Change to a graded metric and some emergence disappears.</p>
+<p>Some of it survives that correction and some does not. Treat a claimed emergent ability as a claim about the metric until you have checked.</p>
+</section>
+<section id="evaluating-these-is-genuinely-hard" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="evaluating-these-is-genuinely-hard">Evaluating these is genuinely hard</h2>
+<p>Benchmarks are cheap to game and easy to contaminate, and the two interact: if a test set was on the web before the crawl, a high score may be memorization.</p>
+<p>What tends to survive contact with reality: <strong>held-out perplexity</strong> on text you collected after the model shipped, <strong>task suites you built yourself</strong> from your own data, and <strong>human comparison</strong>, which is expensive and still the thing everyone falls back on.</p>
+<p>The practical version for your project: <strong>do not trust a published score on a public benchmark as evidence that a model will work on your problem.</strong> Build a small evaluation set of your own, by hand if necessary, and use that.</p>
+</section>
+</section>
+<section id="wrap-up" class="level1">
+<h1>Wrap-up</h1>
+<section id="wrap-up-1" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="wrap-up-1">Wrap-up</h2>
+<ul>
+<li>An LLM is a <strong>decoder-only transformer</strong>. Nothing in the architecture is new since 2017.</li>
+<li><strong>Scaling laws</strong> say parameters and tokens should grow together, about 20 tokens per parameter, and most famous models were well off that line.</li>
+<li>Modern serving cost pushes <strong>past</strong> compute-optimal on purpose.</li>
+<li>Four parts were replaced: <strong>RoPE</strong>, <strong>RMSNorm before the sublayer</strong>, <strong>the KV cache plus grouped query attention</strong>, and <strong>SwiGLU</strong>.</li>
+<li>Pretraining is one objective, next-token prediction, on a corpus whose construction is most of the work.</li>
+<li><strong>SFT</strong> installs the format; <strong>preference optimization</strong> installs the judgement. Neither adds knowledge.</li>
+<li>Generation is <strong>memory-bound</strong>, which is why the KV cache governs what you can serve.</li>
+<li>Treat <strong>emergence</strong> and <strong>benchmark scores</strong> as claims about a metric until checked.</li>
+</ul>
+</section>
+<section id="supplemental-content" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="supplemental-content">Supplemental content</h2>
+<p>Optional. Prof.&nbsp;Hickman’s <a href="https://jfh.georgetown.domains/centralized-lecture-content/">centralized lecture content</a>:</p>
+<ul>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/transformers/llm/notes.html">Large language models</a>, which goes considerably deeper than today on every section</li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/transformers/running-and-LLM-locally/notes.html">Running an LLM locally</a></li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/transformers/agentic-ai/notes.html">Agentic AI</a></li>
+</ul>
+<p>Also optional, and all three are short: Kaplan et al., <a href="https://arxiv.org/abs/2001.08361">Scaling Laws</a> (2020); Hoffmann et al., <a href="https://arxiv.org/abs/2203.15556">Training Compute-Optimal LLMs</a> (2022), the Chinchilla paper; and Schaeffer et al., <a href="https://arxiv.org/abs/2304.15004">Are Emergent Abilities a Mirage?</a> (2023), which is the metric argument from two slides ago.</p>
+</section>
+<section id="lab-9-and-quiz-9" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="lab-9-and-quiz-9">Lab 9 and Quiz 9</h2>
+<p><strong>Lab 9</strong> is out today, due Wednesday Nov 4. You take a pretrained GPT-2, look at what it actually predicts, implement temperature and top-p sampling yourself, measure what the KV cache saves, and compare a base model against an instruction-tuned one on the same prompts.</p>
+<p><strong>Quiz 9</strong> is now. Scope is the Oct 22 lecture and Lab 8 only: attention, Q, K and V, multi-head, positional encoding, the masks, and the block. A formula sheet comes with it.</p>
+<p>Next week is <strong>Generative Modeling</strong>: autoencoders, latent spaces and VAEs.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

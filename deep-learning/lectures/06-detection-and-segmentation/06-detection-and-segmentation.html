@@ -70,6 +70,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="06-detection-and-segmentation_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="06-detection-and-segmentation_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <link rel="icon" type="image/png" href="/icon.png">
+<style>
+/* HTML handout only; the RevealJS decks are styled by custom.scss.
+ * Quarto lays .column out as flush inline-blocks, so prose in adjacent
+ * columns ends up 3px apart and reads as one sentence across the gutter.
+ * The columns are border-box, so this padding cannot push the pair past
+ * 100% and wrap it. build-notebook.py inlines this file into the head.
+ */
+.columns > .column {
+  padding-right: 1.75rem;
+}
+
+.columns > .column:last-child {
+  padding-right: 0;
+}
+</style>
 
   <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"></script>
   <script>document.addEventListener("DOMContentLoaded", function () {
@@ -145,6 +160,7 @@ window.Quarto = {
   <li><a href="#what-the-label-looks-like" id="toc-what-the-label-looks-like" class="nav-link" data-scroll-target="#what-the-label-looks-like">What the label looks like</a></li>
   <li><a href="#why-detection-is-harder-than-classification" id="toc-why-detection-is-harder-than-classification" class="nav-link" data-scroll-target="#why-detection-is-harder-than-classification">Why detection is harder than classification</a></li>
   <li><a href="#intersection-over-union" id="toc-intersection-over-union" class="nav-link" data-scroll-target="#intersection-over-union">Intersection over Union</a></li>
+  <li><a href="#iou-on-two-boxes-the-detector-produced" id="toc-iou-on-two-boxes-the-detector-produced" class="nav-link" data-scroll-target="#iou-on-two-boxes-the-detector-produced">IoU on two boxes the detector produced</a></li>
   <li><a href="#semantic-against-instance-segmentation-measured" id="toc-semantic-against-instance-segmentation-measured" class="nav-link" data-scroll-target="#semantic-against-instance-segmentation-measured">Semantic against instance segmentation, measured</a></li>
   </ul></li>
   <li><a href="#two-stage-detection" id="toc-two-stage-detection" class="nav-link" data-scroll-target="#two-stage-detection">Two-stage detection</a>
@@ -168,8 +184,10 @@ window.Quarto = {
   <li><a href="#skipping-the-proposal-stage" id="toc-skipping-the-proposal-stage" class="nav-link" data-scroll-target="#skipping-the-proposal-stage">Skipping the proposal stage</a></li>
   <li><a href="#yolo" id="toc-yolo" class="nav-link" data-scroll-target="#yolo">YOLO</a></li>
   <li><a href="#the-yolo-output-tensor" id="toc-the-yolo-output-tensor" class="nav-link" data-scroll-target="#the-yolo-output-tensor">The YOLO output tensor</a></li>
+  <li><a href="#the-yolo-tensor-counted" id="toc-the-yolo-tensor-counted" class="nav-link" data-scroll-target="#the-yolo-tensor-counted">The YOLO tensor, counted</a></li>
   <li><a href="#one-stage-against-two" id="toc-one-stage-against-two" class="nav-link" data-scroll-target="#one-stage-against-two">One stage against two</a></li>
   <li><a href="#feature-pyramid-networks" id="toc-feature-pyramid-networks" class="nav-link" data-scroll-target="#feature-pyramid-networks">Feature pyramid networks</a></li>
+  <li><a href="#mean-average-precision" id="toc-mean-average-precision" class="nav-link" data-scroll-target="#mean-average-precision">Mean average precision</a></li>
   <li><a href="#detection-in-practice" id="toc-detection-in-practice" class="nav-link" data-scroll-target="#detection-in-practice">Detection in practice</a></li>
   </ul></li>
   <li><a href="#segmentation" id="toc-segmentation" class="nav-link" data-scroll-target="#segmentation">Segmentation</a>
@@ -178,6 +196,7 @@ window.Quarto = {
   <li><a href="#the-resolution-problem" id="toc-the-resolution-problem" class="nav-link" data-scroll-target="#the-resolution-problem">The resolution problem</a></li>
   <li><a href="#transposed-convolution" id="toc-transposed-convolution" class="nav-link" data-scroll-target="#transposed-convolution">Transposed convolution</a></li>
   <li><a href="#three-ways-to-upsample" id="toc-three-ways-to-upsample" class="nav-link" data-scroll-target="#three-ways-to-upsample">Three ways to upsample</a></li>
+  <li><a href="#upsampling-output-shapes" id="toc-upsampling-output-shapes" class="nav-link" data-scroll-target="#upsampling-output-shapes">Upsampling output shapes</a></li>
   <li><a href="#the-checkerboard-artifact" id="toc-the-checkerboard-artifact" class="nav-link" data-scroll-target="#the-checkerboard-artifact">The checkerboard artifact</a></li>
   <li><a href="#encoder-and-decoder" id="toc-encoder-and-decoder" class="nav-link" data-scroll-target="#encoder-and-decoder">Encoder and decoder</a></li>
   <li><a href="#u-net" id="toc-u-net" class="nav-link" data-scroll-target="#u-net">U-Net</a></li>
@@ -185,6 +204,7 @@ window.Quarto = {
   <li><a href="#segmentation-losses" id="toc-segmentation-losses" class="nav-link" data-scroll-target="#segmentation-losses">Segmentation losses</a></li>
   <li><a href="#class-imbalance-measured" id="toc-class-imbalance-measured" class="nav-link" data-scroll-target="#class-imbalance-measured">Class imbalance, measured</a></li>
   <li><a href="#dice-loss-and-the-combined-loss" id="toc-dice-loss-and-the-combined-loss" class="nav-link" data-scroll-target="#dice-loss-and-the-combined-loss">Dice loss and the combined loss</a></li>
+  <li><a href="#dice-against-cross-entropy-measured" id="toc-dice-against-cross-entropy-measured" class="nav-link" data-scroll-target="#dice-against-cross-entropy-measured">Dice against cross entropy, measured</a></li>
   <li><a href="#instance-segmentation-and-mask-r-cnn" id="toc-instance-segmentation-and-mask-r-cnn" class="nav-link" data-scroll-target="#instance-segmentation-and-mask-r-cnn">Instance segmentation and Mask R-CNN</a></li>
   <li><a href="#roi-align" id="toc-roi-align" class="nav-link" data-scroll-target="#roi-align">ROI Align</a></li>
   </ul></li>
@@ -342,7 +362,7 @@ The practical consequence
 </section>
 <section id="loading-a-pretrained-model" class="level2">
 <h2 class="anchored" data-anchor-id="loading-a-pretrained-model">Loading a pretrained model</h2>
-<div id="17ce9e6e" class="cell" data-execution_count="1">
+<div id="4a95bf50" class="cell" data-execution_count="1">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
@@ -381,7 +401,7 @@ ImageClassification(
 <section id="replacing-the-head" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="replacing-the-head">Replacing the head</h2>
 <p>A <code>torchvision</code> classifier ends in a single <code>nn.Linear</code>. For ResNet it is called <code>fc</code>. Swapping it is one assignment, and the new layer is randomly initialized with <code>requires_grad=True</code> by default.</p>
-<div id="5ca39dd0" class="cell" data-execution_count="2">
+<div id="46aa5c41" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"original head:"</span>, model.fc)</span>
@@ -537,7 +557,10 @@ Why this is the right way to see it
 </ul>
 </div>
 </div>
-<div id="8b9a4289" class="cell" data-execution_count="3">
+</section>
+<section id="iou-on-two-boxes-the-detector-produced" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="iou-on-two-boxes-the-detector-produced">IoU on two boxes the detector produced</h2>
+<div id="0c59cee6" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.ops <span class="im">import</span> box_iou</span>
@@ -600,19 +623,12 @@ The distinction in one sentence
 </section>
 <section id="r-cnn" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="r-cnn">R-CNN</h2>
+<p><a href="images/r-cnn.png" class="zoom" target="_blank"><img src="images/r-cnn.png" class="dh480 img-fluid"></a></p>
 <div class="columns">
-<div class="column" style="width:55%;">
-<p><a href="images/r-cnn.png" class="zoom" target="_blank"><img src="images/r-cnn.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:45%;">
-<p><strong>R-CNN</strong>, 2014, was the first version of this idea that worked well.</p>
-<ol type="1">
-<li>Selective search produces about <strong>2,000 region proposals</strong>.</li>
-<li>Each proposal is <strong>cropped out of the image</strong> and warped to 227x227.</li>
-<li>Each warped crop runs through AlexNet to get a feature vector.</li>
-<li>An SVM per class scores the vector, and a separate regressor refines the box.</li>
-</ol>
-<p>Say the cost out loud: that is <strong>2,000 full CNN forward passes for one image</strong>. R-CNN took roughly 47 seconds per image at inference.</p>
-<p>It also could not be trained end to end. The CNN, the SVMs and the box regressors were three separate training stages.</p>
+<div class="column" style="width:50%;">
+<p><strong>R-CNN</strong>, 2014, was the first version of propose-then-classify that worked. The five steps above are the whole method.</p>
+</div><div class="column" style="width:50%;">
+<p>Each of the 2,000 proposals is warped and run through AlexNet on its own, so one image costs <strong>2,000 forward passes</strong>, about 47 seconds. The CNN, the SVMs and the regressors are also three separate training stages.</p>
 </div>
 </div>
 </section>
@@ -630,25 +646,24 @@ The distinction in one sentence
 <section id="non-maximum-suppression" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="non-maximum-suppression">Non-maximum suppression</h2>
 <div class="columns">
-<div class="column" style="width:46%;">
+<div class="column" style="width:58%;">
 <p><a href="images/non-max-suppression.png" class="zoom" target="_blank"><img src="images/non-max-suppression.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:54%;">
-<p><strong>Non-maximum suppression, or NMS, is the step that removes duplicate detections of the same object.</strong></p>
-<p>It is needed because many proposals overlap one object, and each of them produces its own confident box.</p>
-<p>The algorithm, for one class:</p>
+</div><div class="column" style="width:42%;">
+<p><strong>Non-maximum suppression, or NMS, removes duplicate detections of the same object.</strong> Many proposals cover one object, and each produces its own confident box.</p>
+<p>For one class:</p>
 <ol type="1">
-<li>Discard every box whose score is below a <strong>score threshold</strong>.</li>
-<li>Take the highest-scoring box that is left and <strong>keep</strong> it.</li>
-<li>Delete every remaining box whose <strong>IoU with the kept box</strong> is above an <strong>NMS threshold</strong>, typically 0.5.</li>
-<li>Repeat from step 2 until no boxes are left.</li>
+<li>Drop every box below a <strong>score threshold</strong>.</li>
+<li>Keep the highest-scoring box left.</li>
+<li>Delete every box whose <strong>IoU</strong> with it is above an <strong>NMS threshold</strong>, typically 0.5.</li>
+<li>Repeat from step 2.</li>
 </ol>
-<p>Two thresholds, and they do different jobs. The score threshold controls how confident a detection has to be. The NMS threshold controls how much overlap counts as a duplicate.</p>
+<p>The score threshold sets how confident a detection has to be. The NMS threshold sets how much overlap counts as a duplicate.</p>
 </div>
 </div>
 </section>
 <section id="running-a-pretrained-detector" class="level2">
 <h2 class="anchored" data-anchor-id="running-a-pretrained-detector">Running a pretrained detector</h2>
-<div id="1c7ae3d5" class="cell" data-execution_count="4">
+<div id="79951a00" class="cell" data-execution_count="4">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torchvision.models.detection <span class="im">import</span> (FasterRCNN_ResNet50_FPN_Weights,</span>
@@ -689,6 +704,7 @@ The distinction in one sentence
 <p>The model already ran NMS internally. Those 18 boxes are what survived it. Everything below is the same output, unchanged, viewed at three score thresholds.</p>
 <p><a href="images/fig-threshold.png" class="zoom" target="_blank"><img src="images/fig-threshold.png" class="dw100 img-fluid"></a></p>
 <p>8 detections, then 5, then 4. <strong>The network did not change.</strong> The only thing that changed is a number you picked after the forward pass.</p>
+<p><strong>The score is the detector’s confidence that this box holds this class</strong>, and how it is built depends on the architecture. Faster R-CNN, the model above, classifies each region over the object classes plus a background class, so the score is that class probability directly. YOLO, later today, predicts objectness and class separately and multiplies them. It is not always the classification head’s softmax.</p>
 <p>This is why a detector’s reported accuracy is meaningless without its threshold, and it is why mAP exists. More on that at the end of the next section.</p>
 </section>
 <section id="what-nms-removed" class="level2 smaller">
@@ -707,36 +723,24 @@ The distinction in one sentence
 </section>
 <section id="fast-r-cnn" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="fast-r-cnn">Fast R-CNN</h2>
+<p><a href="images/fast-r-cnn-diagram.png" class="zoom" target="_blank"><img src="images/fast-r-cnn-diagram.png" class="dw80 img-fluid"></a></p>
 <div class="columns">
-<div class="column" style="width:56%;">
-<p><a href="images/fast-r-cnn-diagram.png" class="zoom" target="_blank"><img src="images/fast-r-cnn-diagram.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:44%;">
-<p><strong>Fast R-CNN</strong>, 2015, fixed the 2,000-forward-passes problem with one observation: convolution is position-preserving, so a region of the <em>image</em> corresponds to a region of the <em>feature map</em>.</p>
-<p>So run the backbone <strong>once</strong> over the whole image, then crop the feature map instead of the pixels.</p>
-<ul>
-<li>one CNN forward pass per image, not 2,000</li>
-<li>the SVMs and separate regressors are replaced by two output heads, so it trains end to end with one loss</li>
-<li>inference went from about 47 seconds to about 2 seconds per image</li>
-</ul>
-<p>Selective search is still there, and now it is the slow part. Of those two seconds, nearly all of it is proposal generation.</p>
+<div class="column" style="width:50%;">
+<p><strong>Fast R-CNN</strong>, 2015, removed the 2,000 forward passes with one observation: convolution is position-preserving, so a region of the <em>image</em> corresponds to a region of the <em>feature map</em>. Run the backbone <strong>once</strong> and crop the feature map instead of the pixels.</p>
+</div><div class="column" style="width:50%;">
+<p>The SVMs and the regressors become two heads on one network, so it trains end to end with one loss. Inference went from about <strong>47 seconds to about 2 seconds</strong>. Selective search is still there, and it is now nearly all of those two seconds.</p>
 </div>
 </div>
 </section>
 <section id="roi-pooling" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="roi-pooling">ROI pooling</h2>
 <div class="columns">
-<div class="column" style="width:44%;">
+<div class="column" style="width:58%;">
 <p><a href="images/roi-pooling.png" class="zoom" target="_blank"><img src="images/roi-pooling.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:56%;">
-<p>Cropping the feature map gives you a region of a different size for every proposal, and the head after it is an <code>nn.Linear</code>, which needs a fixed size.</p>
-<p><strong>ROI pooling turns a region of any size into a fixed-size feature map.</strong></p>
-<ol type="1">
-<li>Take the proposal’s box and project it onto the feature map by dividing the coordinates by the backbone’s total stride.</li>
-<li>Divide that region into a fixed grid, usually 7x7.</li>
-<li>Max-pool within each cell.</li>
-</ol>
-<p>Out comes a 7x7 feature map per proposal regardless of the proposal’s size, so the head’s input shape is fixed again.</p>
-<p>Note step 1 and step 2 both <strong>round to integers</strong>. That rounding is fine for predicting a box and is a real problem for predicting a mask, which is what ROI Align fixes at the end of the segmentation section.</p>
+</div><div class="column" style="width:42%;">
+<p>Cropping the feature map gives a different-sized region for every proposal, and the head after it is an <code>nn.Linear</code>, which needs a fixed size.</p>
+<p><strong>ROI pooling turns a region of any size into a fixed-size feature map.</strong> Project the box onto the feature map by dividing its coordinates by the backbone’s stride, split that region into a fixed grid, usually 7x7, and max-pool each cell.</p>
+<p>Both the projection and the split <strong>round to integers</strong>. That is fine for predicting a box and a real problem for predicting a mask, which is what ROI Align fixes at the end of the segmentation section.</p>
 </div>
 </div>
 </section>
@@ -752,17 +756,12 @@ The distinction in one sentence
 <section id="faster-r-cnn" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="faster-r-cnn">Faster R-CNN</h2>
 <div class="columns">
-<div class="column" style="width:42%;">
+<div class="column" style="width:50%;">
 <p><a href="images/faster-r-cnn-overview.png" class="zoom" target="_blank"><img src="images/faster-r-cnn-overview.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:58%;">
+</div><div class="column" style="width:50%;">
 <p><strong>Faster R-CNN</strong>, 2015, replaced selective search with a small convolutional network that proposes regions: the <strong>region proposal network</strong>, or RPN.</p>
-<p>The RPN slides over the same feature map the detection head uses and, at every position, predicts two things:</p>
-<ul>
-<li>an <strong>objectness score</strong>: is there an object here at all, regardless of class</li>
-<li><strong>box offsets</strong> that refine a set of predefined anchor boxes</li>
-</ul>
-<p>Because the RPN reads the backbone’s feature map, proposals cost almost nothing on top of a forward pass the network was doing anyway. Inference dropped to about 0.2 seconds per image.</p>
-<p>More importantly, the proposals are now <strong>learned</strong>. They improve with your data, which hand-designed selective search could never do, and the whole detector is one network trained with one loss.</p>
+<p>It slides over the same feature map the detection head uses and at every position predicts two things: an <strong>objectness score</strong>, meaning is there an object here at all, and <strong>box offsets</strong> that refine predefined anchor boxes.</p>
+<p>Reading a feature map the network already computed makes proposals nearly free, and inference dropped to about <strong>0.2 seconds</strong> per image. More importantly the proposals are <strong>learned</strong>, which hand-designed selective search could never be, and the detector is one network with one loss.</p>
 <p>This is the model that produced every box in today’s deck.</p>
 </div>
 </div>
@@ -770,15 +769,14 @@ The distinction in one sentence
 <section id="anchors-and-box-offsets" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="anchors-and-box-offsets">Anchors and box offsets</h2>
 <div class="columns">
-<div class="column" style="width:38%;">
+<div class="column" style="width:50%;">
 <p><a href="images/anchor-boxes.png" class="zoom" target="_blank"><img src="images/anchor-boxes.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:62%;">
-<p><strong>An anchor box is a box of fixed size and shape, placed at a fixed position on the feature map, that a prediction is made relative to.</strong></p>
-<p>At each feature map position the RPN places several anchors, typically three scales times three aspect ratios, so nine. A 50x38 feature map then carries about 17,000 anchors.</p>
-<p>The network does not predict coordinates. It predicts four <strong>offsets</strong> from the anchor:</p>
-<p><span class="math display">t_x = \frac{x - x_a}{w_a}, \quad t_y = \frac{y - y_a}{h_a}, \quad
-t_w = \log\frac{w}{w_a}, \quad t_h = \log\frac{h}{h_a}</span></p>
-<p>Two reasons this parameterization is used rather than raw pixels. Dividing by the anchor’s width and height makes the targets <strong>scale-free</strong>, so the same output range works for a small object and a large one. The <code>log</code> on width and height keeps the predicted size <strong>positive</strong> no matter what the network outputs, and makes equal ratios equally far apart.</p>
+</div><div class="column" style="width:50%;">
+<p><strong>An anchor box is a box of fixed size and shape at a fixed position on the feature map, that a prediction is made relative to.</strong></p>
+<p>The RPN places several at every position, typically three scales times three aspect ratios, so nine. A 50x38 feature map carries about 17,000 anchors.</p>
+<p>It predicts <strong>offsets</strong> from the anchor, not coordinates:</p>
+<p><span class="math display">t_x = \frac{x - x_a}{w_a}, \qquad t_y = \frac{y - y_a}{h_a}</span> <span class="math display">t_w = \log\frac{w}{w_a}, \qquad t_h = \log\frac{h}{h_a}</span></p>
+<p>Dividing by the anchor size makes the targets <strong>scale-free</strong>, so one output range works for a small object and a large one. The <code>log</code> keeps the predicted size <strong>positive</strong> whatever the network outputs.</p>
 </div>
 </div>
 </section>
@@ -794,15 +792,12 @@ t_w = \log\frac{w}{w_a}, \quad t_h = \log\frac{h}{h_a}</span></p>
 </section>
 <section id="yolo" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="yolo">YOLO</h2>
+<p><a href="images/yolo-overview.png" class="zoom" target="_blank"><img src="images/yolo-overview.png" class="dw68 img-fluid"></a></p>
 <div class="columns">
-<div class="column" style="width:55%;">
-<p><a href="images/yolo-overview.png" class="zoom" target="_blank"><img src="images/yolo-overview.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:45%;">
-<p><strong>YOLO</strong>, “You Only Look Once”, 2016, was the first one-stage detector to be both fast and good.</p>
-<p>One CNN, one forward pass, boxes and classes straight out of the last layer. The original ran at 45 frames per second, against Faster R-CNN’s 5.</p>
-<p>Each grid cell is <strong>responsible</strong> for any object whose centre falls inside it. That cell predicts the boxes, the confidences, and the class probabilities for that object.</p>
-<p>Its weaknesses came from the same design. A cell could only claim a limited number of objects, so crowds and small clustered objects were missed, and the coarse grid made its boxes less precise than a two-stage detector’s.</p>
-<p>Later versions, and there are many, mostly kept the structure and fixed these: anchor boxes, multi-scale prediction, and better loss functions.</p>
+<div class="column" style="width:50%;">
+<p><strong>YOLO</strong>, “You Only Look Once”, 2016, was the first one-stage detector that was both fast and good. One CNN, one forward pass, boxes and classes straight out of the last layer, at 45 frames per second against Faster R-CNN’s 5.</p>
+</div><div class="column" style="width:50%;">
+<p>Each grid cell is <strong>responsible</strong> for any object whose centre falls inside it. A cell can claim only a few objects, so crowds and small clustered objects were missed, and the coarse grid made its boxes less precise. Later versions added anchors, multi-scale prediction and better losses.</p>
 </div>
 </div>
 </section>
@@ -821,9 +816,14 @@ t_w = \log\frac{w}{w_a}, \quad t_h = \log\frac{h}{h_a}</span></p>
 <li><code>C</code> is the number of classes, 20 for PASCAL VOC</li>
 </ul>
 <p>The <code>x, y</code> are the box centre <strong>relative to the cell</strong>, and <code>w, h</code> are relative to the whole image, which is why the numbers all land in <code>[0, 1]</code>.</p>
+<p><code>confidence</code> is <span class="math inline">P(\text{object})</span>, how sure the cell is that a box is there at all. It is separate from the <span class="math inline">C</span> class probabilities, and the number you rank and threshold by is their product:</p>
+<p><span class="math display">s_c = P(\text{object}) \cdot P(c \mid \text{object})</span></p>
 </div>
 </div>
-<div id="4953e974" class="cell" data-execution_count="5">
+</section>
+<section id="the-yolo-tensor-counted" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="the-yolo-tensor-counted">The YOLO tensor, counted</h2>
+<div id="c73e036b" class="cell" data-execution_count="5">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>S, B, C <span class="op">=</span> <span class="dv">7</span>, <span class="dv">2</span>, <span class="dv">20</span></span>
@@ -896,17 +896,33 @@ the same shape, as the last layer sees it:
 <section id="feature-pyramid-networks" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="feature-pyramid-networks">Feature pyramid networks</h2>
 <div class="columns">
-<div class="column" style="width:52%;">
-<p><a href="images/feature-pyramid-network.png" class="zoom" target="_blank"><img src="images/feature-pyramid-network.png" class="dw92 img-fluid"></a></p>
-</div><div class="column" style="width:48%;">
-<p>A backbone’s feature maps shrink with depth. That creates a problem for detection that classification never had.</p>
-<ul>
-<li><strong>Early layers</strong> are high resolution and semantically weak. Good spatial precision, poor idea of what the object is.</li>
-<li><strong>Late layers</strong> are low resolution and semantically strong. They know it is a dog, and at 7x7 they cannot say precisely where.</li>
-</ul>
-<p>A small object may occupy a few pixels of a late feature map, or none.</p>
-<p><strong>A feature pyramid network builds a set of feature maps that are all semantically strong, at several resolutions.</strong> It upsamples the deep map and adds it to the shallower one, repeating up the pyramid.</p>
+<div class="column" style="width:66%;">
+<p><a href="images/feature-pyramid-network.png" class="zoom" target="_blank"><img src="images/feature-pyramid-network.png" class="dw100 img-fluid"></a></p>
+</div><div class="column" style="width:34%;">
+<p>Feature maps shrink with depth. Shallow maps are spatially precise and have a poor idea of what the object is; deep maps are the reverse. A small object can occupy a few pixels of a deep map, or none.</p>
+<p><strong>A feature pyramid network builds feature maps that are all semantically strong, at several resolutions.</strong> It upsamples the deep map, adds it to the shallower one, and repeats.</p>
 <p>The head then runs at <strong>every level</strong>: small objects on the high-resolution levels, large ones on the low-resolution levels. This is the “neck”, and it is in nearly every modern detector including today’s Faster R-CNN.</p>
+</div>
+</div>
+</section>
+<section id="mean-average-precision" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="mean-average-precision">Mean average precision</h2>
+<p><a href="images/fig-map.png" class="zoom" target="_blank"><img src="images/fig-map.png" class="dw92 img-fluid"></a></p>
+<div class="columns">
+<div class="column" style="width:50%;">
+<p>A detection is a <strong>true positive</strong> if its IoU with an unclaimed ground-truth box of the same class clears a threshold, usually 0.5, and a <strong>false positive</strong> if not. An object that no box matched is a <strong>false negative</strong>.</p>
+<p><span class="math display">\begin{aligned}
+\text{precision} &amp;= \frac{TP}{TP + FP} \\[2pt]
+\text{recall} &amp;= \frac{TP}{TP + FN}
+\end{aligned}</span></p>
+<p>Precision is how many of your boxes were right; recall is how many you found. AP ranks by score, however the detector formed it.</p>
+</div><div class="column" style="width:50%;">
+<p>Lowering the score threshold adds boxes, so recall rises and precision falls. <strong>Average precision</strong> is the area under that trade for one class; <strong>mAP</strong> averages it over the <span class="math inline">C</span> classes:</p>
+<p><span class="math display">\begin{aligned}
+\text{AP} &amp;= \int_0^1 p(r)\,dr \\[2pt]
+\text{mAP} &amp;= \frac{1}{C}\sum_{c=1}^{C}\text{AP}_c
+\end{aligned}</span></p>
+<p>COCO averages over IoU thresholds 0.5 to 0.95 too, written <strong>mAP@[.5:.95]</strong>. Averaging the threshold away is both the point and the cost.</p>
 </div>
 </div>
 </section>
@@ -914,7 +930,6 @@ the same shape, as the last layer sees it:
 <h2 class="smaller anchored" data-anchor-id="detection-in-practice">Detection in practice</h2>
 <p><strong>What to reach for.</strong> A pretrained detector from <code>torchvision.models.detection</code> or from the <code>ultralytics</code> package, fine-tuned on your data. Training a detector from scratch is a research project, not a step in a pipeline.</p>
 <p><strong>The API, which you saw a few slides ago.</strong> <code>fasterrcnn_resnet50_fpn(weights=...)</code> in <code>eval()</code> mode takes a <strong>list</strong> of image tensors, each one allowed to be a different size, and returns a <strong>list</strong> of dicts with keys <code>boxes</code>, <code>labels</code> and <code>scores</code>. In <code>train()</code> mode the same model takes images and targets and returns the loss dict instead.</p>
-<p><strong>mAP, in one paragraph.</strong> Mean average precision is the standard score. For one class, sweep the score threshold, record precision at each recall level, and average: that is average precision. Then average over IoU thresholds from 0.5 to 0.95, and finally over classes. The averaging over score thresholds is the point: it is what makes mAP independent of the threshold choice that the slide earlier showed changing the answer from 8 detections to 4. The cost is that one number now hides which threshold you would actually ship.</p>
 </section>
 </section>
 <section id="segmentation" class="level1">
@@ -980,7 +995,10 @@ the same shape, as the last layer sees it:
 <p><strong><code>ConvTranspose2d</code></strong> has weights, so it learns what the upsampled detail should look like. Here the four kernel weights were set by hand to make the arithmetic visible; in a real network they are trained.</p>
 <p>The output size, which you should be able to predict before running it:</p>
 <p><span class="math display">H_{\text{out}} = (H_{\text{in}} - 1) \cdot s - 2p + k</span></p>
-<div id="ccfbf309" class="cell" data-execution_count="6">
+</section>
+<section id="upsampling-output-shapes" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="upsampling-output-shapes">Upsampling output shapes</h2>
+<div id="42190ef9" class="cell" data-execution_count="6">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
@@ -1080,7 +1098,10 @@ Not the same as a residual connection
 \text{IoU})</span>. The good prediction above scores Dice 0.918 and IoU 0.848.</p>
 <p>Crucially, <strong>neither one contains a term for correctly-predicted background</strong>. Doing nothing scores 0, no matter how much background there is.</p>
 <p>In practice you add them: <code>loss = BCE + Dice</code>. Cross entropy gives well-behaved per-pixel gradients early in training, when the predictions are near 0.5 everywhere and Dice is flat. Dice targets the overlap you are actually scored on.</p>
-<div id="74c770b6" class="cell" data-execution_count="7">
+</section>
+<section id="dice-against-cross-entropy-measured" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="dice-against-cross-entropy-measured">Dice against cross entropy, measured</h2>
+<div id="953e3293" class="cell" data-execution_count="7">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> dice_loss(logits, target, eps<span class="op">=</span><span class="fl">1.0</span>):</span>
@@ -1113,17 +1134,16 @@ finds the object  BCE 0.0025   Dice loss 0.0401</code></pre>
 </section>
 <section id="instance-segmentation-and-mask-r-cnn" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="instance-segmentation-and-mask-r-cnn">Instance segmentation and Mask R-CNN</h2>
+<p><a href="images/mask-r-cnn-overview.png" class="zoom" target="_blank"><img src="images/mask-r-cnn-overview.png" class="dw75 img-fluid"></a></p>
 <div class="columns">
-<div class="column" style="width:55%;">
-<p><a href="images/mask-r-cnn-overview.png" class="zoom" target="_blank"><img src="images/mask-r-cnn-overview.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:45%;">
+<div class="column" style="width:50%;">
 <p><strong>Instance segmentation is detection plus a mask for each detected object.</strong></p>
-<p><strong>Mask R-CNN</strong>, 2017, is Faster R-CNN with a third head. For every region the detector keeps, a small fully convolutional branch predicts a binary mask, usually 28x28, which is then resized onto the box.</p>
-<p>So the multi-task loss gains a term:</p>
+<p><strong>Mask R-CNN</strong>, 2017, is Faster R-CNN with a third head. For every region the detector keeps, a small fully convolutional branch predicts a binary mask, usually 28x28, which is then resized onto the box:</p>
 <p><span class="math display">\mathcal{L} = \mathcal{L}_{\text{cls}} + \mathcal{L}_{\text{box}} +
 \mathcal{L}_{\text{mask}}</span></p>
-<p>One design detail that matters. The mask branch predicts <strong>one mask per class</strong> and only the mask for the predicted class contributes to the loss. Masks and classes do not compete, so the mask branch never has to decide what the object is. It only has to decide which pixels in this box belong to the object.</p>
-<p>This is the model that produced the right-hand panel of the earlier segmentation slide, with two separate cat masks.</p>
+</div><div class="column" style="width:50%;">
+<p>The mask branch predicts <strong>one mask per class</strong>, and only the mask for the predicted class contributes to the loss. Masks and classes do not compete, so the mask branch never has to decide what the object is. It only decides which pixels in this box belong to the object.</p>
+<p>This is the model that produced the two separate cat masks on the earlier segmentation slide.</p>
 </div>
 </div>
 </section>
@@ -1155,14 +1175,14 @@ finds the object  BCE 0.0025   Dice loss 0.0401</code></pre>
 <section id="cnn-and-vit-compared" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="cnn-and-vit-compared">CNN and ViT compared</h2>
 <div class="columns">
-<div class="column" style="width:50%;">
+<div class="column" style="width:60%;">
 <p><a href="images/cnn-vs-vit.png" class="zoom" target="_blank"><img src="images/cnn-vs-vit.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:50%;">
+</div><div class="column" style="width:40%;">
 <p>The difference is where the spatial structure comes from.</p>
 <p>A <strong>CNN</strong> has locality and weight sharing in the architecture. It cannot help but respect them.</p>
-<p>A <strong>ViT</strong> has neither. Every patch can attend to every other patch from the first layer, so long-range relationships are available immediately. The cost is that nothing tells it neighbouring patches are related; it has to learn that, from data.</p>
-<p>That trade shows up as a data requirement. On ImageNet-scale data alone, ViTs underperform comparable CNNs. Pretrained on a much larger dataset first, they match or beat them.</p>
-<p><strong>What this means for you.</strong> Use a pretrained ViT or fine-tune one. Training one from scratch on your own dataset is almost always the wrong call, for exactly the reason in the paragraph above.</p>
+<p>A <strong>ViT</strong> has neither. Every patch can attend to every other patch from the first layer, so long-range relationships are available immediately. Nothing tells it that neighbouring patches are related; it learns that from data.</p>
+<p>That trade is a data requirement. On ImageNet-scale data alone, ViTs underperform comparable CNNs. Pretrained on far more data first, they match or beat them.</p>
+<p>So use a pretrained ViT or fine-tune one. Training one from scratch on your own dataset is almost always the wrong call.</p>
 </div>
 </div>
 </section>
@@ -1175,24 +1195,22 @@ finds the object  BCE 0.0025   Dice loss 0.0401</code></pre>
 </section>
 <section id="matching-predictions-to-ground-truth" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="matching-predictions-to-ground-truth">Matching predictions to ground truth</h2>
+<p><a href="images/fig-matching.png" class="zoom" target="_blank"><img src="images/fig-matching.png" class="dw92 img-fluid"></a></p>
 <div class="columns">
-<div class="column" style="width:40%;">
-<p><a href="images/bipartite-matching.png" class="zoom" target="_blank"><img src="images/bipartite-matching.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:60%;">
-<p>Removing NMS creates a new problem. The 100 predictions come out in no particular order, and the image has, say, 3 real objects. Which prediction should be compared against which object?</p>
-<p>Pairing them by index would be arbitrary, and would train the network to care about slot order, which is meaningless.</p>
-<p><strong>DETR pairs predictions with ground truth objects before computing the loss</strong>, choosing the pairing that minimizes total cost over all possible pairings. The cost combines class probability and box similarity. This is the assignment problem, and the <strong>Hungarian algorithm</strong> solves it exactly.</p>
-<p>The matched pairs get a classification and box loss. The other 97 predictions are trained toward “no object”.</p>
+<div class="column" style="width:50%;">
+<p>Removing NMS creates a new problem. The 100 predictions come out in no particular order, and the image has, say, 3 real objects. Which prediction should be compared against which object? Pairing them by index would train the network to care about slot order, which is meaningless.</p>
+</div><div class="column" style="width:50%;">
+<p><strong>DETR pairs predictions with ground truth objects before computing the loss</strong>, choosing the pairing with the lowest total cost, where cost combines class probability and box similarity. This is the assignment problem, and the <strong>Hungarian algorithm</strong> solves it exactly. Matched pairs get a classification and box loss; the rest are trained toward “no object”.</p>
+</div>
+</div>
 <p>Because exactly one prediction is responsible for each object, duplicates are penalized during training rather than removed afterwards. That is why there is no NMS.</p>
-</div>
-</div>
 </section>
 <section id="what-weeks-8-and-9-fill-in" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="what-weeks-8-and-9-fill-in">What Weeks 8 and 9 fill in</h2>
 <p>Be clear about what just happened. The last four slides used the words <strong>transformer</strong>, <strong>attention</strong>, <strong>encoder-decoder</strong> and <strong>query</strong> without defining any of them.</p>
 <p>That was on purpose. The <em>architectural ideas</em> here, an image as a sequence of patches and detection as set prediction, do not require knowing how attention computes anything. The mechanism does, and it is the next two weeks.</p>
-<p><strong>Week 8</strong> introduces sequence models and attention: what a query, a key and a value are, and what the attention operation actually computes.</p>
-<p><strong>Week 9</strong> builds the transformer from those parts, which is the architecture a ViT and DETR both use.</p>
+<p><strong>Week 8</strong> is sequence data and the parts a transformer reuses unchanged: tokens, embeddings, padding and masking. It also shows the two failures of recurrence that attention exists to fix.</p>
+<p><strong>Week 9</strong> defines a query, a key and a value, shows what the attention operation computes, and builds the transformer from those parts. That is the architecture a ViT and DETR both use.</p>
 <p>When you get there, come back to these four slides. They should read differently.</p>
 </section>
 </section>
