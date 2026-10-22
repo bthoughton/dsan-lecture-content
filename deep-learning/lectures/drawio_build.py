@@ -108,6 +108,24 @@ class Diagram:
             f"</mxCell>")
         return i
 
+    def image(self, x, y, w, h, path):
+        """Place a raster image, embedded as base64 so the .drawio is portable.
+
+        Exported text stays vector on top of it, so overlaid labels are sharp
+        even though the picture underneath is whatever resolution it was.
+        """
+        import base64
+        data = base64.b64encode(open(path, "rb").read()).decode()
+        i = self._id()
+        style = ("shape=image;imageAspect=0;verticalLabelPosition=bottom;"
+                 "verticalAlign=top;aspect=fixed;"
+                 f"image=data:image/png,{data};")
+        self.cells.append(
+            f'<mxCell id="{i}" value="" style="{style}" vertex="1" parent="1">'
+            f'<mxGeometry x="{x}" y="{y}" width="{w}" height="{h}" '
+            f'as="geometry"/></mxCell>')
+        return i
+
     def text(self, x, y, w, h, label, colour=None, size=None, align="center",
              bold=False):
         i = self._id()

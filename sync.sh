@@ -36,16 +36,27 @@ PRIVATE=(--exclude='*-complete.ipynb' --exclude='*-solution.ipynb' --exclude='*-
 # Fashion-MNIST into labs/lab-4/data. None of that belongs in a git repo.
 BULKY=(--exclude='data/' --exclude='.ipynb_checkpoints/' --exclude='__pycache__/')
 
+# Lab 8 weights are hosted on this site, not in dsan-6600-2026. The lab pull
+# uses --delete, and without these excludes it would erase them before deploy.
+# Colab downloads the real files from the course site; do not replace them with
+# a Git LFS pointer.
+LAB_SITE_ONLY=(
+  --exclude='lab-8/mini-gpt.pt'
+  --exclude='lab-8/vocab.json'
+)
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 pull_source() {
   local source_dir="$1" dest_dir="$2"
+  shift 2
   rsync -avz --checksum --delete \
     --exclude='index.qmd' \
     "${PRIVATE[@]}" \
     "${BULKY[@]}" \
+    "$@" \
     "$source_dir/" "$dest_dir/"
 }
 
@@ -622,7 +633,7 @@ echo "==> Pulling DSAN 6600 lectures from source repo..."
 pull_source "$DL_LECTURE_SOURCE" "$SCRIPT_DIR/deep-learning/lectures"
 
 echo "==> Pulling DSAN 6600 labs from source repo..."
-pull_source "$DL_LAB_SOURCE" "$SCRIPT_DIR/deep-learning/labs"
+pull_source "$DL_LAB_SOURCE" "$SCRIPT_DIR/deep-learning/labs" "${LAB_SITE_ONLY[@]}"
 
 echo "==> Pulling DSAN 6600 study guides from source repo..."
 pull_study_guides "$DL_QUIZ_SOURCE" "$SCRIPT_DIR/deep-learning/study-guides"

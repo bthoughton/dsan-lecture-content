@@ -164,6 +164,7 @@ window.Quarto = {
   <li><a href="#the-recurrence-idea" id="toc-the-recurrence-idea" class="nav-link" data-scroll-target="#the-recurrence-idea">The recurrence idea</a></li>
   <li><a href="#what-an-rnn-layer-returns" id="toc-what-an-rnn-layer-returns" class="nav-link" data-scroll-target="#what-an-rnn-layer-returns">What an RNN layer returns</a></li>
   <li><a href="#reading-the-output" id="toc-reading-the-output" class="nav-link" data-scroll-target="#reading-the-output">Reading the output</a></li>
+  <li><a href="#from-a-hidden-state-to-a-word" id="toc-from-a-hidden-state-to-a-word" class="nav-link" data-scroll-target="#from-a-hidden-state-to-a-word">From a hidden state to a word</a></li>
   <li><a href="#generating-one-token-at-a-time" id="toc-generating-one-token-at-a-time" class="nav-link" data-scroll-target="#generating-one-token-at-a-time">Generating one token at a time</a></li>
   <li><a href="#backpropagation-through-time" id="toc-backpropagation-through-time" class="nav-link" data-scroll-target="#backpropagation-through-time">Backpropagation through time</a></li>
   <li><a href="#how-far-back-the-gradient-reaches" id="toc-how-far-back-the-gradient-reaches" class="nav-link" data-scroll-target="#how-far-back-the-gradient-reaches">How far back the gradient reaches</a></li>
@@ -173,6 +174,8 @@ window.Quarto = {
   <li><a href="#gated-recurrence" id="toc-gated-recurrence" class="nav-link" data-scroll-target="#gated-recurrence">Gated recurrence</a>
   <ul class="collapse">
   <li><a href="#lstm" id="toc-lstm" class="nav-link" data-scroll-target="#lstm">LSTM</a></li>
+  <li><a href="#gate-equations" id="toc-gate-equations" class="nav-link" data-scroll-target="#gate-equations">Gate equations</a></li>
+  <li><a href="#why-the-memory-survives" id="toc-why-the-memory-survives" class="nav-link" data-scroll-target="#why-the-memory-survives">Why the memory survives</a></li>
   <li><a href="#what-gating-fixed-and-what-it-did-not" id="toc-what-gating-fixed-and-what-it-did-not" class="nav-link" data-scroll-target="#what-gating-fixed-and-what-it-did-not">What gating fixed, and what it did not</a></li>
   </ul></li>
   <li><a href="#next-week-attention" id="toc-next-week-attention" class="nav-link" data-scroll-target="#next-week-attention">Next week: attention</a>
@@ -290,7 +293,7 @@ window.Quarto = {
 </section>
 <section id="embedding-a-batch-of-ids" class="level2 smaller codetight">
 <h2 class="smaller codetight anchored" data-anchor-id="embedding-a-batch-of-ids">Embedding a batch of ids</h2>
-<div id="a52fa923" class="cell" data-execution_count="1">
+<div id="5d677a1a" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-22T14:56:55.866744Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-22T14:56:55.866619Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-22T14:56:57.032893Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-22T14:56:57.032376Z&quot;}" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -358,7 +361,7 @@ backward, gradient reaching each row:
 </section>
 <section id="pooling-a-padded-batch" class="level2 smaller codetight">
 <h2 class="smaller codetight anchored" data-anchor-id="pooling-a-padded-batch">Pooling a padded batch</h2>
-<div id="232ea56f" class="cell" data-execution_count="2">
+<div id="c8da86b5" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-22T14:56:57.034696Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-22T14:56:57.034261Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-22T14:56:57.040278Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-22T14:56:57.039714Z&quot;}" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># One ragged batch, done correctly, in the six lines it actually takes.</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.nn.utils.rnn <span class="im">import</span> pad_sequence</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -403,7 +406,7 @@ error from pooling without the mask, per sequence:
 </section>
 <section id="collating-a-ragged-batch" class="level2 smaller codetight">
 <h2 class="smaller codetight anchored" data-anchor-id="collating-a-ragged-batch">Collating a ragged batch</h2>
-<div id="2b00bdfd" class="cell" data-execution_count="3">
+<div id="d96bfa2e" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-22T14:56:57.041965Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-22T14:56:57.041600Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-22T14:56:57.047075Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-22T14:56:57.046527Z&quot;}" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> torch.utils.data <span class="im">import</span> DataLoader, Dataset</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Sentences(Dataset):</span>
@@ -456,25 +459,31 @@ batch (2, 3)   real tokens [1, 3]   y [1, 0]</code></pre>
 </section>
 <section id="what-an-rnn-layer-returns" class="level2 smaller codetight">
 <h2 class="smaller codetight anchored" data-anchor-id="what-an-rnn-layer-returns">What an RNN layer returns</h2>
-<div id="c0c6aa90" class="cell" data-execution_count="4">
+<p>Three dimensions, and they are the same <span class="math inline">(N, T, d)</span> shapes from earlier. <strong><span class="math inline">N</span></strong> is the batch, how many sequences at once. <strong><span class="math inline">T</span></strong> is the sequence position, one slot per token. The last one is <strong>features per token</strong>: on the way in that is the embedding dimension, on the way out it is the hidden size.</p>
+<p><strong>Those last two are unrelated.</strong> The layer is a learned map from one width to the other, so 16 in and 32 out is a free choice, picked here only so you can tell the axes apart in the output.</p>
+<div id="dc0d81b4" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-22T14:56:57.048614Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-22T14:56:57.048162Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-22T14:56:57.054102Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-22T14:56:57.053594Z&quot;}" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>rnn <span class="op">=</span> nn.RNN(input_size<span class="op">=</span><span class="dv">16</span>, hidden_size<span class="op">=</span><span class="dv">32</span>, batch_first<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> torch.randn(<span class="dv">4</span>, <span class="dv">12</span>, <span class="dv">16</span>)              <span class="co"># 4 sequences, 12 steps, 16 features</span></span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>out, h_T <span class="op">=</span> rnn(x)</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"input          </span><span class="sc">{</span><span class="bu">tuple</span>(x.shape)<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"out            </span><span class="sc">{</span><span class="bu">tuple</span>(out.shape)<span class="sc">}</span><span class="ss">   the hidden state at EVERY step"</span>)</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"h_T            </span><span class="sc">{</span><span class="bu">tuple</span>(h_T.shape)<span class="sc">}</span><span class="ss">   the hidden state at the LAST step"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"input   </span><span class="sc">{</span><span class="bu">tuple</span>(x.shape)<span class="sc">}</span><span class="ss">   (N, T, embedding dim)"</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"out     </span><span class="sc">{</span><span class="bu">tuple</span>(out.shape)<span class="sc">}</span><span class="ss">   (N, T, hidden) the state at EVERY token"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"h_T     </span><span class="sc">{</span><span class="bu">tuple</span>(h_T.shape)<span class="sc">}</span><span class="ss">    (layers, N, hidden) the state at the LAST token"</span>)</span>
 <span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"and they agree: </span><span class="sc">{</span>torch<span class="sc">.</span>allclose(out[:, <span class="op">-</span><span class="dv">1</span>], h_T[<span class="dv">0</span>], atol<span class="op">=</span><span class="fl">1e-6</span>)<span class="sc">}</span><span class="ss">"</span>)</span>
 <span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the same weights at every step, so the count does not depend on T:"</span>)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, p <span class="kw">in</span> rnn.named_parameters():</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>name<span class="sc">:12s}</span><span class="ss"> </span><span class="sc">{</span><span class="bu">tuple</span>(p.shape)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"note the batch moved: batch_first=True reorders out, not h_T"</span>)</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the same weights at every step, so the count does not depend on T:"</span>)</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> name, p <span class="kw">in</span> rnn.named_parameters():</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"  </span><span class="sc">{</span>name<span class="sc">:12s}</span><span class="ss"> </span><span class="sc">{</span><span class="bu">tuple</span>(p.shape)<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>input          (4, 12, 16)
-out            (4, 12, 32)   the hidden state at EVERY step
-h_T            (1, 4, 32)   the hidden state at the LAST step
+<pre><code>input   (4, 12, 16)   (N, T, embedding dim)
+out     (4, 12, 32)   (N, T, hidden) the state at EVERY token
+h_T     (1, 4, 32)    (layers, N, hidden) the state at the LAST token
 and they agree: True
+
+note the batch moved: batch_first=True reorders out, not h_T
 
 the same weights at every step, so the count does not depend on T:
   weight_ih_l0 (32, 16)
@@ -489,6 +498,46 @@ the same weights at every step, so the count does not depend on T:
 <p>A recurrent layer returns the hidden state at every step. Which part you read is what makes it a different task.</p>
 <p><a href="images/sequence-mappings.png" class="zoom" target="_blank"><img src="images/sequence-mappings.png" class="dw85 img-fluid"></a></p>
 <p><strong>Translation</strong> is where attention came from: the whole input is squeezed into <strong>one</strong> hidden state and the decoder works from that alone, whether the sentence is 4 words or 400. With padding, <code>out[:, -1]</code> is the state after the padding, not after the sentence.</p>
+</section>
+<section id="from-a-hidden-state-to-a-word" class="level2 smaller codetight">
+<h2 class="smaller codetight anchored" data-anchor-id="from-a-hidden-state-to-a-word">From a hidden state to a word</h2>
+<p>The hidden state is not a word and is not an embedding. To predict a token you add an <strong>output head</strong>: one <code>nn.Linear</code> from the hidden size to the <strong>vocabulary size</strong>, giving one score per entry in the vocabulary, then a softmax over those.</p>
+<div id="51ac0e71" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-22T14:56:57.055691Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-22T14:56:57.055403Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-22T14:56:57.185324Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-22T14:56:57.184649Z&quot;}" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>V, d_emb, H <span class="op">=</span> <span class="dv">30_000</span>, <span class="dv">256</span>, <span class="dv">512</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>emb  <span class="op">=</span> nn.Embedding(V, d_emb)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>lstm <span class="op">=</span> nn.LSTM(d_emb, H, batch_first<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>head <span class="op">=</span> nn.Linear(H, V)                    <span class="co"># hidden -&gt; one score per token</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>ids <span class="op">=</span> torch.randint(<span class="dv">0</span>, V, (<span class="dv">4</span>, <span class="dv">12</span>))</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>out, _ <span class="op">=</span> lstm(emb(ids))</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"ids    </span><span class="sc">{</span><span class="bu">tuple</span>(ids.shape)<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"embed  </span><span class="sc">{</span><span class="bu">tuple</span>(emb(ids).shape)<span class="sc">}</span><span class="ss">   d_emb = </span><span class="sc">{</span>d_emb<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"hidden </span><span class="sc">{</span><span class="bu">tuple</span>(out.shape)<span class="sc">}</span><span class="ss">   H = </span><span class="sc">{</span>H<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"logits </span><span class="sc">{</span><span class="bu">tuple</span>(head(out).shape)<span class="sc">}</span><span class="ss">   V = </span><span class="sc">{</span>V<span class="sc">:,}</span><span class="ss">  &lt;- one per vocabulary entry"</span>)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"the head is not small:"</span>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  embedding table </span><span class="sc">{</span>emb<span class="sc">.</span>weight<span class="sc">.</span>numel()<span class="sc">:&gt;12,}</span><span class="ss">"</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  output head     </span><span class="sc">{</span><span class="bu">sum</span>(p.numel() <span class="cf">for</span> p <span class="kw">in</span> head.parameters())<span class="sc">:&gt;12,}</span><span class="ss">"</span>)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>()</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"if you set H == d_emb you can reuse the embedding matrix instead:"</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>tied <span class="op">=</span> nn.LSTM(d_emb, d_emb, batch_first<span class="op">=</span><span class="va">True</span>)(emb(ids))[<span class="dv">0</span>] <span class="op">@</span> emb.weight.T</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  tied logits </span><span class="sc">{</span><span class="bu">tuple</span>(tied.shape)<span class="sc">}</span><span class="ss"> for 0 extra parameters, "</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>      <span class="ss">f"saving </span><span class="sc">{</span>V <span class="op">*</span> d_emb <span class="op">+</span> V<span class="sc">:,}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>ids    (4, 12)
+embed  (4, 12, 256)   d_emb = 256
+hidden (4, 12, 512)   H = 512
+logits (4, 12, 30000)   V = 30,000  &lt;- one per vocabulary entry
+
+the head is not small:
+  embedding table    7,680,000
+  output head       15,390,000
+
+if you set H == d_emb you can reuse the embedding matrix instead:
+  tied logits (4, 12, 30000) for 0 extra parameters, saving 7,710,000</code></pre>
+</div>
+</div>
 </section>
 <section id="generating-one-token-at-a-time" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="generating-one-token-at-a-time">Generating one token at a time</h2>
@@ -526,29 +575,74 @@ the same weights at every step, so the count does not depend on T:
 <h1>Gated recurrence</h1>
 <section id="lstm" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="lstm">LSTM</h2>
-<p>An <strong>LSTM</strong> is a recurrent network with a second state that information travels along without being multiplied by a weight matrix at every step.</p>
+<p>An <strong>LSTM</strong> is a recurrent network that carries two states.</p>
 <div class="columns">
-<div class="column" style="width:42%;">
-<p><a href="images/lstm-cell.png" class="zoom" target="_blank"><img src="images/lstm-cell.png" class="dw95 img-fluid"></a></p>
-<p><a href="images/gate-symbols.png" class="zoom" target="_blank"><img src="images/gate-symbols.png" class="dw100 img-fluid"></a></p>
-</div><div class="column" style="width:58%;">
-<p>The <strong>cell state</strong> <span class="math inline">c_t</span> is the track across the top, updated almost additively:</p>
-<p><span class="math display">c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t</span></p>
-<p>The circled regions are <strong>gates</strong>, each a learned function of <span class="math inline">x_t</span> and <span class="math inline">h_{t-1}</span> squashed to <span class="math inline">[0, 1]</span>, so each is a soft switch: what to <strong>forget</strong>, what to <strong>write</strong>, what to <strong>expose</strong>.</p>
-<p>When <span class="math inline">f_t</span> is near 1, <span class="math inline">c_t \approx c_{t-1} + \text{something}</span>, so the gradient along that track is multiplied by roughly 1 instead of a weight matrix. <strong>That is the residual connection’s trick, eight years early.</strong> A GRU does the same with two gates.</p>
+<div class="column" style="width:56%;">
+<p><a href="images/fig-lstm.png" class="zoom" target="_blank"><img src="images/fig-lstm.png" class="dw95 img-fluid"></a></p>
+</div><div class="column" style="width:44%;">
+<ul>
+<li><span class="math inline">c_t</span> is the <strong>cell state</strong>, the memory.</li>
+<li><span class="math inline">h_t</span> is the <strong>hidden state</strong>, what this step exposes.</li>
+<li><span class="math inline">x_t</span> is the <strong>input</strong> at this step.</li>
+<li><span class="math inline">f_t</span> is the <strong>forget gate</strong>. It scales <span class="math inline">c_{t-1}</span>.</li>
+<li><span class="math inline">i_t</span> is the <strong>input gate</strong>. It scales the candidate.</li>
+<li><span class="math inline">\tilde{c}_t</span> is the <strong>candidate</strong>, the value that could be written.</li>
+<li><span class="math inline">o_t</span> is the <strong>output gate</strong>. It scales what becomes <span class="math inline">h_t</span>.</li>
+</ul>
 </div>
 </div>
+<p>The red curve is a sigmoid and the blue curve is tanh. × multiplies element by element, and + adds. <code>nn.LSTM</code> returns <code>(output, (h_n, c_n))</code>. <code>output</code> is <span class="math inline">h_t</span> at every step, so <span class="math inline">c_t</span> stays inside the layer.</p>
+</section>
+<section id="gate-equations" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="gate-equations">Gate equations</h2>
+<p><a href="images/fig-gate.png" class="zoom" target="_blank"><img src="images/fig-gate.png" class="dw92 img-fluid"></a></p>
+<p><span class="math display">
+\begin{aligned}
+f_t &amp;= \sigma\!\left(W_f [h_{t-1}, x_t] + b_f\right) \\
+i_t &amp;= \sigma\!\left(W_i [h_{t-1}, x_t] + b_i\right) \\
+o_t &amp;= \sigma\!\left(W_o [h_{t-1}, x_t] + b_o\right) \\
+\tilde{c}_t &amp;= \tanh\!\left(W_c [h_{t-1}, x_t] + b_c\right)
+\end{aligned}
+</span></p>
+<p><span class="math inline">\sigma</span> is the sigmoid, so <span class="math inline">f_t</span>, <span class="math inline">i_t</span>, and <span class="math inline">o_t</span> lie in <span class="math inline">(0, 1)</span>: near 0 the gate blocks, near 1 it passes. The candidate uses <span class="math inline">\tanh</span>, so <span class="math inline">\tilde{c}_t</span> lies in <span class="math inline">(-1, 1)</span>.</p>
+<p>A <strong>GRU</strong> does the same job with two gates instead of three.</p>
+</section>
+<section id="why-the-memory-survives" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="why-the-memory-survives">Why the memory survives</h2>
+<p>The new cell state keeps a fraction of the old one and adds a fraction of the candidate. The hidden state is the part of that memory the output gate lets out.</p>
+<p><span class="math display">c_t = f_t \odot c_{t-1} + i_t \odot \tilde{c}_t
+\qquad
+h_t = o_t \odot \tanh(c_t)</span></p>
+<p><span class="math inline">\odot</span> is elementwise multiplication, the × on the cell diagram. The memory line scales <span class="math inline">c_{t-1}</span> and adds the candidate. A plain recurrence multiplies by <span class="math inline">W_h</span> at every step, which is what makes the gradient decay exponentially.</p>
+<p>When <span class="math inline">f_t</span> is near 1, <span class="math inline">c_t \approx c_{t-1}</span>, so the gradient along the memory is multiplied by about 1. The hidden state still goes through a matrix at every step. Only the memory has this path. It is a residual connection inside the recurrence: Week 6 added the same kind of path beside the layers.</p>
 </section>
 <section id="what-gating-fixed-and-what-it-did-not" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="what-gating-fixed-and-what-it-did-not">What gating fixed, and what it did not</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
-<p><strong>Fixed.</strong> An LSTM holds information far longer, and for a decade it was the default for translation, speech and captioning. Measured reach 28 steps against 20, and more than that once the forget gate is initialized well.</p>
-</div><div class="column" style="width:50%;">
-<p><strong>Not fixed.</strong> The decay is still exponential, because the path is still a path. And gating does nothing at all about the second failure: still one sequential step per token.</p>
-</div>
-</div>
-<p>Gating bought a decade without changing either of the two things that needed changing. That is why this section is five minutes.</p>
+<p><strong>Gating addressed one of the two failures, partly, and the other not at all.</strong></p>
+<table class="table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>the failure</th>
+<th>did gating fix it?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>the gradient cannot reach back</td>
+<td><strong>Partly.</strong> The memory track gives it a path multiplied by roughly 1, so reach went from 20 steps to 28. Still exponential, because a path is still a path.</td>
+</tr>
+<tr class="even">
+<td>one sequential step per token</td>
+<td><strong>No.</strong> Not at all. <span class="math inline">c_t</span> still needs <span class="math inline">c_{t-1}</span>, so nothing about gating lets the steps run together.</td>
+</tr>
+</tbody>
+</table>
+<p>An LSTM was the default for translation, speech and captioning for a decade, so this was not a small win. But it bought that decade <strong>without changing either of the two things that actually needed changing</strong>.</p>
+<p>That is why this section is five minutes, and why attention is next week.</p>
 </section>
 </section>
 <section id="next-week-attention" class="level1">

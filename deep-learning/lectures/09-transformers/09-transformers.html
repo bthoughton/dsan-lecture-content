@@ -142,7 +142,7 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#today" id="toc-today" class="nav-link active" data-scroll-target="#today">Today</a></li>
   <li><a href="#labs-and-quizzes" id="toc-labs-and-quizzes" class="nav-link" data-scroll-target="#labs-and-quizzes">Labs and quizzes</a></li>
-  <li><a href="#what-week-8-already-paid-for" id="toc-what-week-8-already-paid-for" class="nav-link" data-scroll-target="#what-week-8-already-paid-for">What Week 8 already paid for</a></li>
+  <li><a href="#what-the-first-half-pays-for" id="toc-what-the-first-half-pays-for" class="nav-link" data-scroll-target="#what-the-first-half-pays-for">What the first half pays for</a></li>
   <li><a href="#attention" id="toc-attention" class="nav-link" data-scroll-target="#attention">Attention</a>
   <ul class="collapse">
   <li><a href="#what-a-transformer-is" id="toc-what-a-transformer-is" class="nav-link" data-scroll-target="#what-a-transformer-is">What a transformer is</a></li>
@@ -183,13 +183,15 @@ window.Quarto = {
   <li><a href="#the-block-around-the-attention" id="toc-the-block-around-the-attention" class="nav-link" data-scroll-target="#the-block-around-the-attention">The block around the attention</a>
   <ul class="collapse">
   <li><a href="#what-surrounds-an-attention-layer" id="toc-what-surrounds-an-attention-layer" class="nav-link" data-scroll-target="#what-surrounds-an-attention-layer">What surrounds an attention layer</a></li>
-  <li><a href="#why-layernorm-and-not-batchnorm" id="toc-why-layernorm-and-not-batchnorm" class="nav-link" data-scroll-target="#why-layernorm-and-not-batchnorm">Why LayerNorm and not BatchNorm</a></li>
+  <li><a href="#layernorm-versus-batchnorm" id="toc-layernorm-versus-batchnorm" class="nav-link" data-scroll-target="#layernorm-versus-batchnorm">LayerNorm versus BatchNorm</a></li>
   <li><a href="#layer-normalization-in-place" id="toc-layer-normalization-in-place" class="nav-link" data-scroll-target="#layer-normalization-in-place">Layer normalization, in place</a></li>
   <li><a href="#a-block-in-code" id="toc-a-block-in-code" class="nav-link" data-scroll-target="#a-block-in-code">A block in code</a></li>
   </ul></li>
   <li><a href="#decoder-and-architectures" id="toc-decoder-and-architectures" class="nav-link" data-scroll-target="#decoder-and-architectures">Decoder and architectures</a>
   <ul class="collapse">
   <li><a href="#the-decoder-block" id="toc-the-decoder-block" class="nav-link" data-scroll-target="#the-decoder-block">The decoder block</a></li>
+  <li><a href="#decoder-attention-weights" id="toc-decoder-attention-weights" class="nav-link" data-scroll-target="#decoder-attention-weights">Decoder attention weights</a></li>
+  <li><a href="#the-weighted-sum-in-the-decoder" id="toc-the-weighted-sum-in-the-decoder" class="nav-link" data-scroll-target="#the-weighted-sum-in-the-decoder">The weighted sum in the decoder</a></li>
   <li><a href="#cross-attention" id="toc-cross-attention" class="nav-link" data-scroll-target="#cross-attention">Cross-attention</a></li>
   <li><a href="#encoder-decoder-or-both" id="toc-encoder-decoder-or-both" class="nav-link" data-scroll-target="#encoder-decoder-or-both">Encoder, decoder, or both</a></li>
   <li><a href="#a-decoder-only-model-training-and-generating" id="toc-a-decoder-only-model-training-and-generating" class="nav-link" data-scroll-target="#a-decoder-only-model-training-and-generating">A decoder-only model, training and generating</a></li>
@@ -240,7 +242,8 @@ window.Quarto = {
 
 <section id="today" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="today">Today</h2>
-<p>Last week ended with two measured failures of recurrence: <strong>a gradient that cannot reach back</strong>, and <strong>one sequential step per token</strong>. One operation fixes both.</p>
+<p><strong>First we finish the sequence deck</strong>, which got as far as embeddings last week: padding, masking, building a batch, and then recurrence and what breaks about it. <strong>Then this deck.</strong></p>
+<p>Attention answers both of recurrence’s failures with one operation, so the second half starts from there.</p>
 <ul>
 <li><strong>Attention</strong>, defined properly. What a query, a key and a value are, and what the operation computes.</li>
 <li><strong>Multi-head attention</strong>, and what a head is for.</li>
@@ -252,14 +255,14 @@ window.Quarto = {
 <section id="labs-and-quizzes" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="labs-and-quizzes">Labs and quizzes</h2>
 <p><strong>Lab 7</strong> was due yesterday. Tokenizing, a vocabulary, padding, masking, and the measurement showing an unmasked pooled vector is wrong by exactly <span class="math inline">1 - \ell/T</span>.</p>
-<p><strong>Quiz 8</strong> is at the end of class. It covers the Oct 15 lecture and Lab 7: sequence data, tokens, embeddings, padding, masking, recurrence and what gating did. <strong>Nothing from today is on it.</strong> The study guide and formula sheet are on the course site.</p>
-<p><strong>Lab 8</strong> goes out today, due Wednesday Oct 28.</p>
+<p><strong>Quiz 8</strong> is at the end of class, and its scope is <strong>what Oct 15 actually covered</strong>: detection and segmentation finished, plus sequence data as far as embeddings. Padding, masking and recurrence are <strong>not</strong> on it, because we had not got there. They move to Quiz 9. <strong>Nothing from today is on it.</strong></p>
+<p>There is no coding section on this or any later quiz. Part D is short answer.</p>
 </section>
-<section id="what-week-8-already-paid-for" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="what-week-8-already-paid-for">What Week 8 already paid for</h2>
+<section id="what-the-first-half-pays-for" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="what-the-first-half-pays-for">What the first half pays for</h2>
 <div class="columns">
 <div class="column" style="width:50%;">
-<p><strong>Used today, unchanged.</strong> None of this is re-taught.</p>
+<p><strong>Used in this deck, unchanged.</strong> None of it is re-taught here.</p>
 <ul>
 <li>tokenization and the vocabulary</li>
 <li>embeddings as a learned lookup table, one row per token</li>
@@ -268,11 +271,12 @@ window.Quarto = {
 <li>reading <span class="math inline">(N, T, d)</span> shapes</li>
 </ul>
 </div><div class="column" style="width:50%;">
-<p><strong>The two failures this week answers.</strong></p>
-<p>The gradient reaching back decayed by a measured 0.53 per step, so a dependency 60 tokens away was unreachable by gradient descent.</p>
-<p>And <span class="math inline">h_t</span> needed <span class="math inline">h_{t-1}</span>, so no amount of hardware made the steps run together.</p>
+<p><strong>The two failures this deck answers.</strong></p>
+<p>The gradient reaching back decays by a measured 0.53 per step, so a dependency 60 tokens away is unreachable by gradient descent.</p>
+<p>And <span class="math inline">h_t</span> needs <span class="math inline">h_{t-1}</span>, so no amount of hardware makes the steps run together.</p>
 </div>
 </div>
+<p>Embeddings were the last thing covered on Oct 15. Everything above it on that list is the first part of today.</p>
 </section>
 <section id="attention" class="level1">
 <h1>Attention</h1>
@@ -370,7 +374,7 @@ window.Quarto = {
 </section>
 <section id="attention-in-code" class="level2 smaller codetight">
 <h2 class="smaller codetight anchored" data-anchor-id="attention-in-code">Attention in code</h2>
-<div id="4fb5652c" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-15T16:57:48.770630Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-15T16:57:48.770508Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-15T16:57:49.590463Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-15T16:57:49.589854Z&quot;}" data-execution_count="1">
+<div id="d25db8ff" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-22T15:59:36.614937Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-22T15:59:36.614786Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-22T15:59:37.349179Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-22T15:59:37.348688Z&quot;}" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn.functional <span class="im">as</span> F</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -427,7 +431,7 @@ torch does the whole thing in one call:
 </section>
 <section id="multi-head-attention-in-code" class="level2 smaller codetight">
 <h2 class="smaller codetight anchored" data-anchor-id="multi-head-attention-in-code">Multi-head attention in code</h2>
-<div id="f4242e30" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-15T16:57:49.592462Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-15T16:57:49.591943Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-15T16:57:49.607945Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-15T16:57:49.607506Z&quot;}" data-execution_count="2">
+<div id="edaff88a" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-22T15:59:37.351133Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-22T15:59:37.350718Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-22T15:59:37.365516Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-22T15:59:37.365028Z&quot;}" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -526,12 +530,11 @@ self-attention means the same tensor is query, key and value:
 <li><strong>Layer normalization</strong> is the part that is not Week 6’s.</li>
 </ul>
 </section>
-<section id="why-layernorm-and-not-batchnorm" class="level2 smaller">
-<h2 class="smaller anchored" data-anchor-id="why-layernorm-and-not-batchnorm">Why LayerNorm and not BatchNorm</h2>
-<p><a href="images/fig-norm.png" class="zoom" target="_blank"><img src="images/fig-norm.png" class="dw95 img-fluid"></a></p>
-<p>The same token, every time. Only the amount of padding around it changes.</p>
-<p><strong>BatchNorm normalizes over the batch</strong>, so its answer for this token depends on the other examples, including how much of the batch is padding: the output moves by up to <strong>3.11</strong>. <strong>LayerNorm normalizes over the features</strong> of each token on its own, so the output moves by <strong>0.00</strong>. Exactly zero, not approximately.</p>
-<p>That is the whole reason sequence models normalize over features. A batch of sentences is ragged, so batch statistics are not a property of the data.</p>
+<section id="layernorm-versus-batchnorm" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="layernorm-versus-batchnorm">LayerNorm versus BatchNorm</h2>
+<p><strong>LayerNorm</strong> normalizes each token by that token’s own mean and standard deviation. <strong>BatchNorm</strong> normalizes it by the mean and standard deviation of the whole batch, and the padding zeros are part of that batch.</p>
+<p><a href="images/fig-norm.png" class="zoom" target="_blank"><img src="images/fig-norm.png" class="dw85 img-fluid"></a></p>
+<p>LayerNorm of a token is not a function of the padding or the other tokens, so the blue line stays put. BatchNorm is a function of those rows, so the same token moves by <strong>2.20</strong>.</p>
 </section>
 <section id="layer-normalization-in-place" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="layer-normalization-in-place">Layer normalization, in place</h2>
@@ -540,7 +543,7 @@ self-attention means the same tensor is query, key and value:
 </section>
 <section id="a-block-in-code" class="level2 smaller codetight">
 <h2 class="smaller codetight anchored" data-anchor-id="a-block-in-code">A block in code</h2>
-<div id="d08c0544" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-15T16:57:49.609185Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-15T16:57:49.609044Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-15T16:57:49.806529Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-15T16:57:49.806089Z&quot;}" data-execution_count="3">
+<div id="e801185b" class="cell" data-execution="{&quot;iopub.execute_input&quot;:&quot;2026-10-22T15:59:37.366938Z&quot;,&quot;iopub.status.busy&quot;:&quot;2026-10-22T15:59:37.366799Z&quot;,&quot;iopub.status.idle&quot;:&quot;2026-10-22T15:59:37.555458Z&quot;,&quot;shell.execute_reply&quot;:&quot;2026-10-22T15:59:37.555003Z&quot;}" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -577,16 +580,19 @@ parameters in one block: 789,760
 <h1>Decoder and architectures</h1>
 <section id="the-decoder-block" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="the-decoder-block">The decoder block</h2>
-<div class="columns">
-<div class="column" style="width:50%;">
 <p>A decoder block is an encoder block plus two changes.</p>
 <p><strong>Its self-attention is causally masked</strong>, so position <span class="math inline">t</span> sees only positions up to <span class="math inline">t</span>.</p>
-<p><strong>It has a third sublayer, cross-attention</strong>, between the self-attention and the feed forward network.</p>
-</div><div class="column" style="width:50%;">
-<p><a href="images/decoder-notation.png" class="zoom" target="_blank"><img src="images/decoder-notation.png" class="dw85 img-fluid"></a></p>
-</div>
-</div>
-<p><a href="images/decoder-step-3.png" class="zoom" target="_blank"><img src="images/decoder-step-3.png" class="dw40 img-fluid"></a></p>
+<p><strong>It adds a cross-attention sublayer</strong> between the self-attention and the feed forward network. The queries come from the decoder. The keys and values come from the encoder.</p>
+</section>
+<section id="decoder-attention-weights" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="decoder-attention-weights">Decoder attention weights</h2>
+<p><a href="images/decoder-notation.png" class="zoom" target="_blank"><img src="images/decoder-notation.png" class="dw70 img-fluid"></a></p>
+<p>The left matrix is the decoder attending to its own earlier tokens. The right matrix is each decoder token attending to the encoder’s sentence.</p>
+</section>
+<section id="the-weighted-sum-in-the-decoder" class="level2 smaller">
+<h2 class="smaller anchored" data-anchor-id="the-weighted-sum-in-the-decoder">The weighted sum in the decoder</h2>
+<p><a href="images/decoder-step-3.png" class="zoom" target="_blank"><img src="images/decoder-step-3.png" class="dw70 img-fluid"></a></p>
+<p>Those weights multiply the value matrix. Each output row is a blend of value vectors, the same product as in the encoder, now with the decoder’s weights.</p>
 </section>
 <section id="cross-attention" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="cross-attention">Cross-attention</h2>
@@ -698,8 +704,8 @@ parameters in one block: 789,760
 </section>
 <section id="lab-8-and-quiz-8" class="level2 smaller">
 <h2 class="smaller anchored" data-anchor-id="lab-8-and-quiz-8">Lab 8 and Quiz 8</h2>
-<p><strong>Lab 8</strong> is out today, due Wednesday Oct 28. You build a transformer encoder block from <code>nn.Linear</code> and <code>softmax</code> alone, check it against <code>nn.TransformerEncoderLayer</code>, and then break it three ways on purpose: drop the scale, drop the positional encoding, and drop the causal mask.</p>
-<p><strong>Quiz 8</strong> is now. Scope is the Oct 15 lecture and Lab 7 only. A formula sheet comes with it.</p>
+<p><strong>Lab 8</strong> is movie-review generation, the same task as the old mini-GPT lab. You build the next-word target, the causal mask and one attention head, then load the trained weights and sample a continuation. The two-hour training run is already done.</p>
+<p><strong>Quiz 8</strong> is now. Scope is what Oct 15 covered: detection and segmentation finished, and sequence data as far as embeddings. A formula sheet comes with it.</p>
 <p>Next week is <strong>Large Language Models</strong>: what had to change between the 2017 architecture on these slides and a model you can hold a conversation with.</p>
 </section>
 </section>
