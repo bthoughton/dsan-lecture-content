@@ -43,6 +43,7 @@ BULKY=(--exclude='data/' --exclude='.ipynb_checkpoints/' --exclude='__pycache__/
 LAB_SITE_ONLY=(
   --exclude='lab-8/mini-gpt.pt'
   --exclude='lab-8/vocab.json'
+  --exclude='lab-11/ddpm-mnist.pt'
 )
 
 # ---------------------------------------------------------------------------
@@ -622,6 +623,52 @@ push_video() {
   rsync -av --partial -e "$SSH_CMD" "$local_file" "$REMOTE:$REMOTE_ROOT/$remote_path"
 }
 
+# PUBLISH_THROUGH_WEEK=N builds and uploads only through that calendar week.
+# Later decks and labs are moved aside for the build and the upload, then put
+# back, so a partial release does not delete them from this repo.
+HOLD_ROOT=""
+restore_held_content() {
+  [ -n "${HOLD_ROOT:-}" ] && [ -d "$HOLD_ROOT" ] || return 0
+  local item base dest
+  shopt -s nullglob
+  for item in "$HOLD_ROOT"/*; do
+    base=$(basename "$item")
+    if [[ "$base" == lab-* ]]; then
+      dest="$SCRIPT_DIR/deep-learning/labs/$base"
+    else
+      dest="$SCRIPT_DIR/deep-learning/lectures/$base"
+    fi
+    rm -rf "$dest"
+    mv "$item" "$dest"
+  done
+  shopt -u nullglob
+  rm -rf "$HOLD_ROOT"
+  HOLD_ROOT=""
+}
+
+hold_later_weeks() {
+  local max="${PUBLISH_THROUGH_WEEK:-}"
+  [ -n "$max" ] || return 0
+  local num deck lab
+  HOLD_ROOT=$(mktemp -d)
+  trap restore_held_content EXIT
+  echo "==> Holding materials after week $max for this deploy..."
+  while read -r num; do
+    [ "$num" -gt "$max" ] || continue
+    for deck in $(dl_lecture_folders "$num"); do
+      if [ -d "$SCRIPT_DIR/deep-learning/lectures/$deck" ]; then
+        mv "$SCRIPT_DIR/deep-learning/lectures/$deck" "$HOLD_ROOT/$deck"
+        echo "    held lecture $deck"
+      fi
+    done
+    lab=$(dl_lab_for_week "$num")
+    if [ -n "$lab" ] && [ -d "$SCRIPT_DIR/deep-learning/labs/$lab" ]; then
+      mv "$SCRIPT_DIR/deep-learning/labs/$lab" "$HOLD_ROOT/$lab"
+      echo "    held $lab"
+    fi
+  done < <(dl_week_numbers)
+}
+
 # ---------------------------------------------------------------------------
 # Pull content from the course repos
 # ---------------------------------------------------------------------------
@@ -637,6 +684,8 @@ pull_source "$DL_LAB_SOURCE" "$SCRIPT_DIR/deep-learning/labs" "${LAB_SITE_ONLY[@
 
 echo "==> Pulling DSAN 6600 study guides from source repo..."
 pull_study_guides "$DL_QUIZ_SOURCE" "$SCRIPT_DIR/deep-learning/study-guides"
+
+hold_later_weeks
 
 # ---------------------------------------------------------------------------
 # Build landing pages

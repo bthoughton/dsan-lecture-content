@@ -45,7 +45,7 @@
 8|Oct 15|Object Detection and Segmentation (continued) + Sequence Models|06-detection-and-segmentation 07-sequence-models|lab-7
 9|Oct 22|Transformers|09-transformers|lab-8
 10|Oct 29|Large Language Models|10-large-language-models|lab-9
-11|Nov 5|Generative Modeling I||
-12|Nov 12|Generative Modeling II + Multimodal Begins||
-13|Nov 19|Multimodal Deep Learning + Small Introduction to GNNs||
+11|Nov 5|Generative Modeling I|11-autoencoders-and-vaes|lab-10
+12|Nov 12|Generative Modeling II + Multimodal Begins|12-diffusion-and-gans|lab-11
+13|Nov 19|Multimodal Deep Learning + Small Introduction to GNNs|13-multimodal-and-graphs|lab-12
 14|Dec 3|Project Presentations||
