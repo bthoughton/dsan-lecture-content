@@ -635,6 +635,8 @@ restore_held_content() {
     base=$(basename "$item")
     if [[ "$base" == lab-* ]]; then
       dest="$SCRIPT_DIR/deep-learning/labs/$base"
+    elif [[ "$base" == quiz-* ]]; then
+      dest="$SCRIPT_DIR/deep-learning/study-guides/$base"
     else
       dest="$SCRIPT_DIR/deep-learning/lectures/$base"
     fi
@@ -649,7 +651,7 @@ restore_held_content() {
 hold_later_weeks() {
   local max="${PUBLISH_THROUGH_WEEK:-}"
   [ -n "$max" ] || return 0
-  local num deck lab
+  local num deck lab quiz_name
   HOLD_ROOT=$(mktemp -d)
   trap restore_held_content EXIT
   echo "==> Holding materials after week $max for this deploy..."
@@ -666,7 +668,19 @@ hold_later_weeks() {
       mv "$SCRIPT_DIR/deep-learning/labs/$lab" "$HOLD_ROOT/$lab"
       echo "    held $lab"
     fi
+    quiz_name=$(printf 'quiz-%02d' "$num")
+    if [ -d "$SCRIPT_DIR/deep-learning/study-guides/$quiz_name" ]; then
+      mv "$SCRIPT_DIR/deep-learning/study-guides/$quiz_name" "$HOLD_ROOT/$quiz_name"
+      echo "    held $quiz_name"
+    fi
   done < <(dl_week_numbers)
+  local extra
+  for extra in ${HOLD_LABS:-}; do
+    if [ -d "$SCRIPT_DIR/deep-learning/labs/$extra" ]; then
+      mv "$SCRIPT_DIR/deep-learning/labs/$extra" "$HOLD_ROOT/$extra"
+      echo "    held $extra"
+    fi
+  done
 }
 
 # ---------------------------------------------------------------------------

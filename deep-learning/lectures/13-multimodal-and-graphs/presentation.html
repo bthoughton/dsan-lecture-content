@@ -347,8 +347,8 @@ Prof.&nbsp;Ben Houghton
 <h2>Today</h2>
 <ul>
 <li><strong>Multimodal</strong>: what CLIP is for, and the three ways to combine two kinds of input</li>
-<li><strong>Document AI</strong>, the multimodal job you are most likely to be handed</li>
-<li><strong>Graph neural networks</strong>, the short version</li>
+<li><strong>Document AI</strong>: pulling fields out of forms, receipts, and invoices</li>
+<li><strong>Graph neural networks</strong>: models for data where items are connected to each other</li>
 </ul>
 <aside class="notes">
 <p>Last content meeting. Two weeks from today is presentations. The multimodal half is the practical one. The graph half is here so that when you meet relational data you recognize it, not so you can implement a GNN from memory.</p>
@@ -367,9 +367,9 @@ Prof.&nbsp;Ben Houghton
 <section id="what-multimodal-means" class="slide level2 smaller">
 <h2>What multimodal means</h2>
 <p><a href="images/multimodal.png" class="zoom" target="_blank"><img data-src="images/multimodal.png" class="dw60"></a></p>
-<p>More than one kind of input, handled by one model.</p>
+<p>A multimodal model takes more than one kind of input, such as an image and some text, and handles them together.</p>
 <aside class="notes">
-<p>The hard part is never the second encoder. It is getting two different kinds of representation into a form where they can be compared or combined, and that decision is what the first half of today is about.</p>
+<p>Adding a second encoder is easy. The hard part is getting two different kinds of representation into a form where they can be compared or combined, and that is what the first half of today is about.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -382,10 +382,10 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="clip-measured" class="slide level2 smaller">
-<h2>CLIP, measured</h2>
+<section id="clip-similarity-on-six-coco-photos" class="slide level2 smaller">
+<h2>CLIP similarity on six COCO photos</h2>
 <p><a href="images/fig-clip-matrix.png" class="zoom" target="_blank"><img data-src="images/fig-clip-matrix.png" class="dw92"></a></p>
-<p>Six COCO photographs against their own human captions. <strong>The diagonal wins 6 out of 6</strong>, and CLIP was never trained on COCO.</p>
+<p>Each column is one COCO photo, scored against all 6 human-written captions. The photo’s own caption scores highest in <strong>6 of the 6 columns</strong>, and CLIP was never trained on COCO.</p>
 <aside class="notes">
 <p>The numbers are cosine similarities between the image vector and the caption vector. The correct pairing is brightest in every row. Over 200 images in pools of 50, the right caption is top-1 92% of the time. Nothing was fine-tuned, and nothing about COCO was in the training objective.</p>
 <style type="text/css">
@@ -400,11 +400,12 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="three-jobs-for-one-embedding" class="slide level2 smaller">
-<h2>Three jobs for one embedding</h2>
+<section id="what-clip-embeddings-are-used-for" class="slide level2 smaller">
+<h2>What CLIP embeddings are used for</h2>
 <p><a href="images/fig-clip-uses.png" class="zoom" target="_blank"><img data-src="images/fig-clip-uses.png" class="dw100"></a></p>
+<p>CLIP was trained once, by OpenAI, on 400 million image and caption pairs. You can use its two encoders as they are for all three jobs, without training anything yourself. Each image and each piece of text is embedded once and stored. Every job is then a dot product between stored vectors.</p>
 <aside class="notes">
-<p>This is the Week 10 retrieval story again with pictures added. Embed the catalogue once, store the vectors, and every later question is a dot product. Zero-shot classification is the demo everyone shows, but search and deduplication are what people actually deploy.</p>
+<p>This is the same retrieval setup as Week 10, with images added. You embed every image and caption in a catalogue once and store the vectors. A later query needs only one new embedding and a dot product against the stored vectors. Zero-shot classification gets the most attention, but search and finding near-duplicate images use the same stored vectors and are common in real systems.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -442,7 +443,25 @@ Prof.&nbsp;Ben Houghton
 <li><strong>Cross-attention</strong>: let one modality attend to the other, in the middle</li>
 </ul>
 <aside class="notes">
-<p>This is the part to retain from today. Every multimodal model you meet is one of these three, and knowing which one tells you what it can and cannot do. Late fusion cannot reason about a specific region of the image, because by the time the two sides meet, the image is one vector. CLIP is late fusion.</p>
+<p>Every multimodal model you meet uses one of these three, and knowing which one tells you what it can and cannot do. Late fusion cannot reason about a specific region of the image, because by the time the two sides meet, the image is one vector. CLIP is late fusion.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="vision-language-models-in-research-and-production" class="slide level2 smaller">
+<h2>Vision-language models in research and production</h2>
+<p><a href="images/fig-vlm-map.png" class="zoom" target="_blank"><img data-src="images/fig-vlm-map.png" class="dw100"></a></p>
+<p>Flamingo and PaLI are 2022 research models, and neither was released for public use. We cover them because production models use their designs.</p>
+<aside class="notes">
+<p>Most people meet vision-language models as products: ChatGPT, Gemini, or Claude reading a screenshot, or an open model like Llama, Gemma, or Qwen running on their own hardware. The closed models do not publish their designs, so we cannot place them in a column for certain. The open ones do, and each uses one of the three designs from the previous slide. Most open models now put image tokens straight into the language model’s sequence, the way LLaVA did in 2023. Meta’s Llama 3.2 Vision uses Flamingo’s design instead: it adds gated cross-attention layers to a frozen Llama 3.1, so the text-only model’s abilities stay intact. Google’s PaliGemma is the open successor to PaLI, a small model meant to be fine-tuned for one task. CLIP-style models are still used on their own for search and filtering, and a CLIP or SigLIP image encoder is the image half inside many of the models in the other two columns.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -478,7 +497,7 @@ Prof.&nbsp;Ben Houghton
 <p>LayoutLMv3 reads the words, where they sit on the page, and the pixels, all at once.</p>
 <p><a href="images/layoutlmv3.png" class="zoom" target="_blank"><img data-src="images/layoutlmv3.png" class="dw58"></a></p>
 <aside class="notes">
-<p>Every business has decades of invoices, forms, and scanned contracts, and someone is paying a vendor per page to pull fields out of them. This is the clearest example of early fusion earning its keep: on a form, the fact that a number sits in the box labeled “Total” is the entire signal, and a model that flattens the page to text loses it. Specialists like this still beat general vision-language models on tables and structured layouts.</p>
+<p>Every business has decades of invoices, forms, and scanned contracts, and someone is paying a vendor per page to pull fields out of them. This is the clearest case for early fusion: on a form, the fact that a number sits in the box labeled “Total” is the entire signal, and a model that flattens the page to text loses it. Specialists like this still beat general vision-language models on tables and structured layouts.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -493,10 +512,10 @@ Prof.&nbsp;Ben Houghton
 </section>
 <section id="cross-attention" class="slide level2 smaller">
 <h2>Cross-attention</h2>
-<p>Keep the two encoders separate, and let one read the other in the middle.</p>
+<p>Cross-attention keeps the two encoders separate and lets one of them read the other’s output partway through.</p>
 <p><a href="images/hybrid.png" class="zoom" target="_blank"><img data-src="images/hybrid.png" class="dw85"></a></p>
 <aside class="notes">
-<p>Same mechanism as the prompt entering the denoiser last week, and the same as the decoder reading the encoder in Week 9. It keeps showing up because it is the general answer to “let this sequence consult that one”.</p>
+<p>Same mechanism as the prompt entering the denoiser last week, and the same as the decoder reading the encoder in Week 9. It keeps appearing because it is the standard way to let one sequence use information from another.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -512,9 +531,9 @@ Prof.&nbsp;Ben Houghton
 <section id="flamingo-freeze-the-language-model" class="slide level2 smaller">
 <h2>Flamingo: freeze the language model</h2>
 <p><a href="images/flamingo.png" class="zoom" target="_blank"><img data-src="images/flamingo.png" class="dw75"></a></p>
-<p>The snowflakes are frozen. Only the cross-attention layers train.</p>
+<p>Flamingo (DeepMind, 2022) adds new cross-attention layers to a frozen language model, and Meta’s Llama 3.2 Vision uses the same design. The parts marked with a snowflake are frozen. Only the purple parts are trained: the new cross-attention layers, and a Perceiver Resampler that turns each image into a fixed number of tokens.</p>
 <aside class="notes">
-<p>You already have a good language model and you do not want to damage it or pay to retrain it. So freeze it, and insert small gated cross-attention layers between its blocks that let it look at images. That is the same instinct as LoRA.</p>
+<p>You already have a good language model and you do not want to damage it or pay to retrain it. So freeze it, and insert small gated cross-attention layers between its blocks that let it look at images. LoRA follows the same idea. Meta did this for Llama 3.2 Vision so that it could replace the text-only Llama 3.1 without losing anything on text tasks.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -527,12 +546,12 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="the-gate" class="slide level2 smaller">
-<h2>The gate</h2>
+<section id="flamingos-gated-cross-attention-layer" class="slide level2 smaller">
+<h2>Flamingo’s gated cross-attention layer</h2>
 <p><a href="images/flamingo-gate.png" class="zoom" target="_blank"><img data-src="images/flamingo-gate.png" class="dw92"></a></p>
-<p>The tanh gates start at zero, so the model begins as exactly the original language model.</p>
+<p>Each new layer’s output is multiplied by a <strong>gate</strong>, <span class="math inline">\(\tanh(\alpha)\)</span>, before it is added back into the language model. <span class="math inline">\(\alpha\)</span> is one learned number per layer, and it starts at 0.</p>
 <aside class="notes">
-<p>This is the detail worth knowing, because the trick generalizes. If you insert a new layer into a trained network you will damage it, unless the new layer starts as a no-op and learns to open. LoRA does the same thing by initializing one of its two matrices to zero. ControlNet does it with zero convolutions.</p>
+<p>Left: one new layer sits in front of each frozen language-model block. Middle: inside it there is a cross-attention layer, with queries from the text and keys and values from the image, followed by a feed-forward layer. Each one’s output goes through a tanh gate and is added to the text stream. The frozen self-attention and feed-forward layers of the original block come after. Right: the same thing as code. The two alpha parameters are the gates, one for the cross-attention and one for the feed-forward layer.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -545,11 +564,31 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="pali-write-every-task-as-text" class="slide level2 smaller">
-<h2>PaLI: write every task as text</h2>
+<section id="zero-initialized-gates" class="slide level2 smaller">
+<h2>Zero-initialized gates</h2>
+<p><a href="images/fig-gate-zero.png" class="zoom" target="_blank"><img data-src="images/fig-gate-zero.png" class="dw85"></a></p>
+<p>Because <span class="math inline">\(\tanh(0) = 0\)</span>, the new layers start as a <strong>no-op</strong>: they add nothing. Without the gate, the untrained layers would add random noise into every block of a language model that already works. Training then moves each <span class="math inline">\(\alpha\)</span> away from 0, letting in as much of the image as helps. Llama 3.2 Vision uses the same zero-initialized gates.</p>
+<aside class="notes">
+<p>Think about what happens without the gate. The new cross-attention layers start with random weights, so on the first training step they would add random vectors into the text stream before every frozen block. The language model has never seen inputs like that, so its output would be nonsense, and because it is frozen it cannot adapt. The new layers would first have to learn to stop doing damage. With the gate at zero, training starts from a model that already writes fluent text, and the only question is how much of the image to let in. The Flamingo paper reports that this made training more stable and the final model better. The tanh keeps each gate between minus one and one, so a gate can never scale a new layer’s output up without limit.</p>
+<p>The same idea shows up whenever a new part is added to a trained network. LoRA starts one of its two small matrices at zero, so the adapted model starts identical to the original. ControlNet, which adds controls such as edge maps to Stable Diffusion, connects its new branch through convolutions whose weights start at zero. In Hugging Face’s code for Llama 3.2 Vision, the two gates are called cross_attn_attn_gate and cross_attn_mlp_gate, and both are initialized to zero.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="pali-every-task-written-as-text" class="slide level2 smaller">
+<h2>PaLI: every task written as text</h2>
 <p><a href="images/pali.png" class="zoom" target="_blank"><img data-src="images/pali.png" class="dw95"></a></p>
+<p>PaLI (Google, 2022) feeds image tokens and a text prompt into one encoder-decoder, and the prompt says which task to do. Its open successor, PaliGemma, is the version you would download and fine-tune.</p>
 <aside class="notes">
-<p>A ViT and one encoder-decoder, and the task is specified in the prompt rather than by the architecture. Captioning, visual question answering, and classification all become “read this image and this instruction, write the answer”. This is where the field went, and it is why the modern recipe is a vision encoder bolted onto a language model.</p>
+<p>PaLI is a ViT feeding one encoder-decoder, and the task is given in the prompt instead of being built into the architecture. Captioning, visual question answering, and classification all become “read this image and this instruction, then write the answer”. Most open vision-language models now work the same way: a vision encoder whose output tokens go into a language model, with the task written in the prompt. PaliGemma takes a short task prefix such as “caption en” or “detect cat”, and it is meant to be fine-tuned on your own task rather than used as a chatbot.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -562,8 +601,8 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="picking-one" class="slide level2 smaller">
-<h2>Picking one</h2>
+<section id="choosing-a-multimodal-model" class="slide level2 smaller">
+<h2>Choosing a multimodal model</h2>
 <p><a href="images/fig-pick.png" class="zoom" target="_blank"><img data-src="images/fig-pick.png" class="dw100"></a></p>
 <aside class="notes">
 <p>The common mistake in 2026 is reaching for a general vision-language model because it is easy to call, when the task is narrow and repeated. If you are processing the same form a million times, a specialist is cheaper, faster, and evaluable. The VLM is for open questions and one-off analysis.</p>
@@ -583,12 +622,12 @@ Prof.&nbsp;Ben Houghton
 <h2>When your data is a graph</h2>
 <p><a href="images/fig-is-a-graph.png" class="zoom" target="_blank"><img data-src="images/fig-is-a-graph.png" class="dw100"></a></p>
 </section>
-<section id="you-have-already-seen-one" class="slide level2 smaller">
-<h2>You have already seen one</h2>
+<section id="images-as-graphs" class="slide level2 smaller">
+<h2>Images as graphs</h2>
 <p><a href="images/gnn-images.png" class="zoom" target="_blank"><img data-src="images/gnn-images.png" class="dw85"></a></p>
 <p>An image is a graph where every pixel is joined to its neighbors.</p>
 <aside class="notes">
-<p>A convolution is a graph operation on a very regular graph. Every pixel has the same number of neighbors in the same relative positions, which is exactly why a fixed square kernel works. Take that regularity away and you need something that can handle a different number of neighbors per node, which is the whole subject.</p>
+<p>A convolution is a graph operation on a very regular graph. Every pixel has the same number of neighbors in the same relative positions, which is exactly why a fixed square kernel works. Take that regularity away and you need something that can handle a different number of neighbors per node, which is what a graph neural network does.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -601,12 +640,21 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="a-graph-as-data" class="slide level2 smaller">
-<h2>A graph as data</h2>
-<p>A graph is nodes, edges, and features on both.</p>
-<p><a href="images/gnn-molecule.png" class="zoom" target="_blank"><img data-src="images/gnn-molecule.png" class="dw60"></a></p>
+<section id="four-friends" class="slide level2 smaller">
+<h2>Four friends</h2>
+<p>A graph is people, the friendships between them, and a value on each person.</p>
+<p><a href="images/fig-toy-graph.png" class="zoom" target="_blank"><img data-src="images/fig-toy-graph.png" class="dw100"></a></p>
+<p><span class="math display">\[X = \begin{bmatrix} 1 \\ 1 \\ 0 \\ 0 \end{bmatrix}
+\qquad
+A = \begin{bmatrix}
+0 &amp; 1 &amp; 0 &amp; 0 \\
+1 &amp; 0 &amp; 1 &amp; 0 \\
+0 &amp; 1 &amp; 0 &amp; 1 \\
+0 &amp; 0 &amp; 1 &amp; 0
+\end{bmatrix}\]</span></p>
+<p>Row <span class="math inline">\(i\)</span> of <span class="math inline">\(A\)</span> marks who person <span class="math inline">\(i\)</span> is friends with.</p>
 <aside class="notes">
-<p>Caffeine as an example: the nodes are atoms with a one-hot type, the edges are bonds with a type of their own, and the adjacency matrix records who is attached to whom. Predicting toxicity from the atom counts alone cannot work, because the arrangement is the chemistry.</p>
+<p>Alice and Bob like sci-fi, Carol and Dave do not, and the only friendship across the divide is Bob and Carol. Friends mostly agree here, and that is the assumption a graph network leans on: that your neighbors tell you something about you. When neighbors tend to disagree, averaging them points the wrong way, which is one reason a real layer keeps a separate weight for your own value. Notice also that Alice has one friend and Bob has two. The number of neighbors varies from person to person, which a fixed square convolution kernel cannot handle.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -619,12 +667,12 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="why-not-just-flatten-it" class="slide level2 smaller">
-<h2>Why not just flatten it</h2>
-<p><a href="images/gnn-permutation.png" class="zoom" target="_blank"><img data-src="images/gnn-permutation.png" class="dw70"></a></p>
-<p>The same graph, numbered three ways, gives three different matrices.</p>
+<section id="node-order-and-permutation-invariance" class="slide level2 smaller">
+<h2>Node order and permutation invariance</h2>
+<p><a href="images/fig-toy-order.png" class="zoom" target="_blank"><img data-src="images/fig-toy-order.png" class="dw100"></a></p>
+<p>A graph layer has to give each person the same result whatever order the list is in. This is called <strong>permutation invariance</strong>, and an average has it.</p>
 <aside class="notes">
-<p>Feed an adjacency matrix to an MLP and the model learns the numbering rather than the structure. Relabel the nodes and the prediction changes, which is nonsense because nothing about the graph changed. Whatever the layer does, it has to give the same answer under any ordering, and that constraint is what produces message passing.</p>
+<p>Nothing about the four friends changed between the two panels. Only the order we happened to list them in changed, and X and A both changed with it. A graph pulled from a database comes out in whatever order the rows were stored, so a model that depends on the order is learning an accident of storage. An ordinary dense network would treat the two panels as two different inputs and could give Alice two different predictions. An average of a person and their friends does not care what order the friends arrive in, which is why the next slide uses one. Strictly, a layer that returns one value per person is called permutation equivariant, meaning its outputs get reordered along with its inputs; invariant is the word for a single answer about the whole graph. Most people say invariant for both.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -637,12 +685,12 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="a-small-example" class="slide level2 smaller">
-<h2>A small example</h2>
-<p><a href="images/gnn-setup.png" class="zoom" target="_blank"><img data-src="images/gnn-setup.png" class="dw70"></a></p>
-<p>Four nodes, three colours. <strong>X</strong> holds the features, <strong>A</strong> holds the edges.</p>
+<section id="one-layer" class="slide level2 smaller">
+<h2>One layer</h2>
+<p>Each person replaces their value with the average of their own value and their friends’ values.</p>
+<p><a href="images/fig-toy-pass.png" class="zoom" target="_blank"><img data-src="images/fig-toy-pass.png" class="dw100"></a></p>
 <aside class="notes">
-<p>Keep this graph in mind for the next three slides. Node 4 hangs off the end with one neighbor, and nodes 1, 2 and 3 form a triangle. That asymmetry is what makes the worked example readable.</p>
+<p>Read it as a layer of a neural network whose connections are not all-to-all. An arrow only exists where there is a friendship, plus one straight down for your own value. That is the entire difference from a dense layer, and it is the same idea as a convolution only looking at nearby pixels. Bob’s new value is the average of three numbers because he has two friends; Dave’s is the average of two because he has one. The average works for any number of neighbors, and it gives the same answer whatever order they arrive in.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -655,12 +703,14 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="one-graph-convolution" class="slide level2 smaller">
-<h2>One graph convolution</h2>
-<p>Each node’s new vector is its own, plus a sum over its neighbors.</p>
-<p><a href="images/gnn-conv.png" class="zoom" target="_blank"><img data-src="images/gnn-conv.png" class="dw60"></a></p>
+<section id="stacking-graph-layers" class="slide level2 smaller">
+<h2>Stacking graph layers</h2>
+<p><a href="images/fig-toy-hops.png" class="zoom" target="_blank"><img data-src="images/fig-toy-hops.png" class="dw100"></a></p>
+<p>Two layers see friends of friends. Most graph networks stop at two or three.</p>
+<p>How far information travels is set by the number of layers, not the number of training epochs.</p>
 <aside class="notes">
-<p>A sum does not care about order, which is exactly the property two slides ago demanded. Two weight matrices: one for yourself, one shared by every neighbor. That is the whole layer. Look at node 4: it only has node 3 as a neighbor, so its update is the shortest of the four.</p>
+<p>Dave is not Bob’s friend, so one layer cannot carry Bob’s value to him: after one layer Dave still reads zero. The second layer reads Carol’s updated value, which already contained Bob’s, so Bob arrives at Dave in two hops. That is the same receptive-field argument as stacking convolutions. The reason to stop early is visible if you keep going: every layer averages again, and after enough of them every person converges toward the same number and the differences that made the graph useful are gone. That failure is called over-smoothing, and it is why graph networks are shallow.</p>
+<p>Layers and epochs get confused here. An epoch is one pass of training over the data. Every forward pass, in every epoch, runs the same two or three layers, so how far a message can travel is fixed by the architecture. Training for more epochs makes the weights better at using what those layers bring in; it does not bring in anything from further away.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -673,11 +723,13 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="the-same-thing-as-message-passing" class="slide level2 smaller">
-<h2>The same thing, as message passing</h2>
-<p><a href="images/gnn-message.png" class="zoom" target="_blank"><img data-src="images/gnn-message.png" class="dw60"></a></p>
+<section id="a-graph-layer-with-learned-weights" class="slide level2 smaller">
+<h2>A graph layer with learned weights</h2>
+<p><span class="math display">\[h_v' = \sigma\Big( W_{\text{self}}\, h_v \;+\;
+  W_{\text{friends}} \cdot \operatorname{mean}_{u \in N(v)} h_u \Big)\]</span></p>
+<p><a href="images/fig-toy-roles.png" class="zoom" target="_blank"><img data-src="images/fig-toy-roles.png" class="dw100"></a></p>
 <aside class="notes">
-<p>Every edge carries a message in both directions, each node adds up what arrives, and that sum updates it. Written this way the message can be anything differentiable, including something that uses the edge features, and the convolution from the last slide is the special case where the message is just the neighbor’s vector times a shared matrix. The matrix form at the bottom right is the one you would implement.</p>
+<p>The toy rule split the average evenly between you and your friends. A real layer learns that split instead, and learns it per feature: W self says how much to trust your own value, W friends says how much to trust theirs, and sigma is the usual nonlinearity. The same two weight matrices are used at every person, so a graph with a million people has exactly as many parameters as one with four, the same way a convolution kernel is shared across an image. Lab 12 writes this layer with a sum over friends instead of a mean, X W1 plus A X W2. Dividing by the number of friends is the only difference, and it stops a person with hundreds of friends from swamping the layer.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -690,12 +742,15 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="stacking-reaches-further" class="slide level2 smaller">
-<h2>Stacking reaches further</h2>
-<p><a href="images/gnn-twolayers.png" class="zoom" target="_blank"><img data-src="images/gnn-twolayers.png" class="dw70"></a></p>
-<p>One layer sees neighbors. Two layers see neighbors of neighbors.</p>
+<section id="self-loops-and-the-degree-matrix" class="slide level2 smaller">
+<h2>Self-loops and the degree matrix</h2>
+<p><a href="images/fig-gcn-selfloop.png" class="zoom" target="_blank"><img data-src="images/fig-gcn-selfloop.png" class="dw85"></a></p>
+<p><span class="math display">\[\tilde A = A + I = \begin{bmatrix} 1 &amp; 1 &amp; 0 \\ 1 &amp; 1 &amp; 1 \\ 0 &amp; 1 &amp; 1 \end{bmatrix}
+\qquad
+\tilde D = \begin{bmatrix} 2 &amp; 0 &amp; 0 \\ 0 &amp; 3 &amp; 0 \\ 0 &amp; 0 &amp; 2 \end{bmatrix}\]</span></p>
+<p>The <strong>degree matrix</strong> <span class="math inline">\(\tilde D\)</span> holds each person’s number of connections on its diagonal. Dividing by it turns a sum over friends into an average, so Bob does not get bigger numbers just for having more friends.</p>
 <aside class="notes">
-<p>The same receptive-field argument as a CNN. Most graph networks stop at two or three layers, because past that every node’s neighborhood has grown to include most of the graph and all the embeddings start to look alike. That failure has a name, over-smoothing, and it is the reason graph networks are shallow.</p>
+<p>This is the standard GCN layer written with matrices, on three of the four friends. Dave is dropped only to keep the matrices small. A self-loop is an edge from a person to themselves. Adding the identity matrix to A puts a one on the diagonal, so multiplying by A tilde includes each person’s own value along with their friends’. That is the “your own value plus your friends’” part of our toy layer. A person’s degree is how many connections they have, counting the self-loop: Alice 2, Bob 3, Carol 2. Without the division, an account with ten thousand followers would produce enormous numbers. D tilde inverse times A tilde divides each row by that person’s degree, which is exactly the average our toy layer took. GCN uses a symmetric version of the same division, on the next slide.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -708,11 +763,16 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="pooling-to-say-something-about-the-whole-graph" class="slide level2 smaller">
-<h2>Pooling, to say something about the whole graph</h2>
-<p><a href="images/gnn-pooling.png" class="zoom" target="_blank"><img data-src="images/gnn-pooling.png" class="dh420"></a></p>
+<section id="a-gcn-layer-is-two-matrix-multiplications" class="slide level2 smaller">
+<h2>A GCN layer is two matrix multiplications</h2>
+<p><a href="images/fig-gcn-pipeline.png" class="zoom" target="_blank"><img data-src="images/fig-gcn-pipeline.png" class="dw100"></a></p>
+<p><span class="math display">\[H = \operatorname{ReLU}\big(\hat A\, X\, W\big)
+\qquad
+\hat A = \tilde D^{-1/2}\, \tilde A\, \tilde D^{-1/2}\]</span></p>
+<p><span class="math inline">\(\hat A\)</span> is <span class="math inline">\(\tilde A\)</span> with each connection divided by the square root of both people’s degrees. The graph fixes it; only <span class="math inline">\(W\)</span> is learned.</p>
 <aside class="notes">
-<p>Node-level work stops after the convolutions. To predict a property of the whole graph you have to reduce a variable number of node vectors to one, and the simplest answer is to take the mean or the max over all of them. The picture shows the fancier version, clustering first and pooling within clusters, which keeps some structure on the way down.</p>
+<p>This is the layer from Kipf and Welling’s 2017 paper, the one most libraries call GCNConv. The first multiplication, A hat times X, mixes each person’s features with their friends’. It has nothing to learn, because A hat is fixed by who is connected to whom. The second multiplication, times W, is the learned part, and the same W is used for every person, like a convolution kernel. Why the square roots instead of dividing each row by its degree? Dividing by the square root of both people’s degrees keeps A hat symmetric, and it turns down messages from very popular nodes. The numbers come out close to a plain average either way.</p>
+<p>GCN differs from the layer two slides back in one way: there is no separate weight for your own value. The self-loop puts you into the same weighted average as your friends, and one W is used for everyone. Lab 12’s layer, X W1 plus A X W2, keeps the separate weight and skips the division by degree.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -725,25 +785,107 @@ Prof.&nbsp;Ben Houghton
           display:block!important;
       }</style></aside>
 </section>
-<section id="three-kinds-of-prediction" class="slide level2 smaller">
-<h2>Three kinds of prediction</h2>
-<div class="columns">
-<div class="column" style="width:33%;">
-<p><strong>Node</strong></p>
-<p><a href="images/gnn-task-node.png" class="zoom" target="_blank"><img data-src="images/gnn-task-node.png" class="dw100"></a></p>
-<p>is this account fraudulent</p>
-</div><div class="column" style="width:33%;">
-<p><strong>Edge</strong></p>
-<p><a href="images/gnn-task-edge.png" class="zoom" target="_blank"><img data-src="images/gnn-task-edge.png" class="dw80"></a></p>
-<p>recommend a product</p>
-</div><div class="column" style="width:33%;">
-<p><strong>Graph</strong></p>
-<p><a href="images/gnn-task-graph.png" class="zoom" target="_blank"><img data-src="images/gnn-task-graph.png" class="dw100"></a></p>
-<p>is this molecule toxic</p>
-</div>
-</div>
+<section id="a-gcn-layer-with-numbers" class="slide level2 smaller">
+<h2>A GCN layer, with numbers</h2>
+<p><a href="images/fig-gcn-numbers.png" class="zoom" target="_blank"><img data-src="images/fig-gcn-numbers.png" class="dw100"></a></p>
+<p>Alice does not like action, but Bob does, so her action score goes from 0 to 0.41. A second layer repeats both steps on the output: <span class="math inline">\(H^{(2)} = \operatorname{ReLU}\big(\hat A\, H\, W^{(2)}\big)\)</span>.</p>
 <aside class="notes">
-<p>The level decides how you split your data, and that is where the real mistakes happen. For node-level work there is one graph, and your train and test nodes are neighbors, so a message-passing layer reads the test nodes while training. For edge-level work you have to hide the edges you are predicting. Getting this wrong inflates your score quietly and nothing in the code looks broken.</p>
+<p>X has one row per person and two columns, sci-fi and action. Alice likes sci-fi only, Bob likes both, and Carol likes action only. Read Z one row at a time: each row is a weighted mix of that person’s row of X and their friends’ rows, with the weights taken from A hat. Bob is in the middle and mixes all three people, so he ends up even on both features. W is made up for the example; in a real network it is learned by gradient descent like any other weight matrix. ReLU changes nothing here, because every entry of Z W is already positive. The second layer runs the same two steps on H with a new weight matrix, and that is how Carol’s features reach Alice, two hops away.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="one-way-and-two-way-edges" class="slide level2 smaller">
+<h2>One-way and two-way edges</h2>
+<p><a href="images/fig-edge-direction.png" class="zoom" target="_blank"><img data-src="images/fig-edge-direction.png" class="dw100"></a></p>
+<p>An <strong>undirected</strong> edge goes both ways, like a friendship. A <strong>directed</strong> edge goes one way, like a follow.</p>
+<aside class="notes">
+<p>So far every edge has been a friendship, which goes both ways: if Alice is Bob’s friend, Bob is Alice’s friend. That makes A symmetric, equal to its own transpose, and messages travel both ways along every edge. A follow is different. Alice following Bob does not mean Bob follows Alice, so A is no longer symmetric. We use the convention that row i marks whose posts person i sees, so multiplying A by X gives each person what the people they follow posted. Here is the effect. Suppose Carol posts a trailer. After one layer, Bob has it, because he follows Carol. After two layers, Alice has it, through Bob. Carol follows no one, so her row of A is empty and nothing ever reaches her, however many layers you stack. Libraries pick a convention too: in PyTorch Geometric, an edge from Alice to Bob sends Alice’s message to Bob, the opposite of what we drew. Check which way yours goes before you trust a result.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="modeling-edge-direction" class="slide level2 smaller">
+<h2>Modeling edge direction</h2>
+<p><a href="images/fig-edge-choices.png" class="zoom" target="_blank"><img data-src="images/fig-edge-choices.png" class="dw100"></a></p>
+<p>The third option is called a <strong>relational GCN</strong> (R-GCN): every edge type gets its own weight matrix.</p>
+<aside class="notes">
+<p>Direction is a choice you make when you build A, not something the data decides for you. Keep it one-way when direction carries meaning and you want information to flow only that way, like money moving from payer to payee in a fraud graph. Make it two-way with A plus A transpose when you care that two things are connected more than who pointed at whom. If both directions were already there, that entry becomes a 2; set it back to 1. Lab 12 does this to the citation graph: a paper and the papers it cites are probably on the same topic, whichever one did the citing. Keep both directions as separate edge types when direction matters but you still want information to flow both ways. Following someone and being followed by them then get different weights. A knowledge graph takes the same idea further, with a separate weight for every relation: works at, lives in, is the CEO of.</p>
+<p>Bidirectional here is not the same idea as a bidirectional LSTM. A BiLSTM reads a sequence forward and then backward in time. In a graph it only means messages are allowed to cross an edge in both directions.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="molecules-as-graphs" class="slide level2 smaller">
+<h2>Molecules as graphs</h2>
+<p>A molecule is a graph with a type on every atom and every bond.</p>
+<p><a href="images/gnn-molecule.png" class="zoom" target="_blank"><img data-src="images/gnn-molecule.png" class="dw75"></a></p>
+<aside class="notes">
+<p>Same structure as the four friends, with richer values. Each atom is a node with a one-hot type, each bond is an edge with a type of its own, and the adjacency matrix records which atoms are bonded. Predicting toxicity from the atom counts alone cannot work, because the arrangement is the chemistry. Chemistry, such as drug discovery, is one of the main places graph networks are used.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="node-edge-and-graph-prediction" class="slide level2 smaller">
+<h2>Node, edge, and graph prediction</h2>
+<p>All three run the same graph layers. What changes is what you predict: one node, a pair of nodes, or the whole graph.</p>
+<p><a href="images/fig-pred-levels.png" class="zoom" target="_blank"><img data-src="images/fig-pred-levels.png" class="dw100"></a></p>
+<aside class="notes">
+<p>Every graph network runs the same layers first, and each node ends up with a vector. What changes is where the question mark sits, and that decides the last step, the data you need, and how you split it.</p>
+<p>Node-level. One big graph where only some nodes are labeled, such as a payment network where a few accounts are confirmed fraud. Put a small classifier on each node’s final vector and train on the labeled nodes only. The unlabeled nodes still send messages, which is why a handful of labels goes a long way. Ant Financial published this setup for flagging malicious Alipay accounts in 2018, and Lab 12 does the same thing on Cora: 140 labeled papers out of 2,708.</p>
+<p>Edge-level. One big graph, and the question is whether an edge should exist. Score a pair by the dot product of their two vectors, passed through a sigmoid to get a probability. Train with the edges you know as positives and random pairs as negatives. Recommendation is the big use: Pinterest’s PinSage picks which pins to show from a graph of billions of pins and boards, and Uber Eats used the same idea to suggest dishes. Friend suggestions and predicting which pairs of drugs cause side effects are the same task.</p>
+<p>Graph-level. Many small graphs with one label each; the next slide shows the last step. In 2020 an MIT team trained a graph network on molecules labeled by whether they stopped E. coli from growing, used it to screen thousands of existing drug compounds, and found halicin, a new antibiotic.</p>
+<p>The split is where node- and edge-level go wrong. In node-level work the test nodes stay in the graph and keep sending messages; only their labels are hidden. That is the standard setup, but the test nodes were not truly unseen, so the score can be optimistic for brand-new accounts that arrive later. In edge-level work, remove the test edges from the graph before training. If they stay in, the model receives the answer as a message, the score is inflated, and nothing in the code looks broken. Graph-level is the easy case: hold out whole graphs, like rows of a table.</p>
+<style type="text/css">
+        span.MJX_Assistive_MathML {
+          position:absolute!important;
+          clip: rect(1px, 1px, 1px, 1px);
+          padding: 1px 0 0 0!important;
+          border: 0!important;
+          height: 1px!important;
+          width: 1px!important;
+          overflow: hidden!important;
+          display:block!important;
+      }</style></aside>
+</section>
+<section id="pooling-for-graph-level-prediction" class="slide level2 smaller">
+<h2>Pooling for graph-level prediction</h2>
+<p><a href="images/fig-gcn-pool.png" class="zoom" target="_blank"><img data-src="images/fig-gcn-pool.png" class="dw100"></a></p>
+<p><strong>Pooling</strong> combines every node’s vector into one vector for the whole graph. Averaging is the most common way. A molecule works the same way: average the atom vectors, then predict toxic or not.</p>
+<aside class="notes">
+<p>Every layer so far ends with one vector per node. A graph-level question, like whether this friend group picks sci-fi for movie night or whether this molecule is toxic, needs one answer for the whole graph, and graphs come in different sizes. Averaging the node vectors gives a vector of the same length whether the graph has three nodes or three thousand, so an ordinary classifier can sit on top and train on the graph’s label as usual. It is the same move as the global average pooling at the end of a CNN. An average also ignores order, so the graph-level answer is properly invariant to how the nodes were listed. Sum and max are the other two common choices. A sum keeps track of size, which matters when the count of something is the signal, and a max asks whether any node has a feature at all, like a single toxic group anywhere in a molecule. In PyTorch Geometric each one is a single function call, such as global_mean_pool. Fancier versions cluster the graph first and pool within each cluster; Prof.&nbsp;Hickman’s GNN theory notes, linked at the end, work through one.</p>
 <style type="text/css">
         span.MJX_Assistive_MathML {
           position:absolute!important;
@@ -759,14 +901,18 @@ Prof.&nbsp;Ben Houghton
 <section id="wrap-up" class="slide level2 smaller">
 <h2>Wrap-up</h2>
 <ul>
-<li><strong>CLIP</strong> puts images and captions in one space. Search and filtering, not just labels</li>
-<li><strong>Early, late, cross-attention.</strong> Three ways to combine, and they decide what a model can do</li>
-<li><strong>Documents</strong> are the multimodal job you will probably be handed</li>
-<li>A <strong>specialist beats a general VLM</strong> on a narrow task you repeat</li>
-<li>A new layer in a trained network should <strong>start as a no-op</strong></li>
-<li>A <strong>graph</strong> is worth it when the neighbors change the answer</li>
-<li>A <strong>graph convolution</strong> is a sum over neighbors, which is why order does not matter</li>
-<li><strong>Split graph data carefully.</strong> That is where the leakage is</li>
+<li><strong>CLIP</strong> puts images and captions in one space, for search and filtering as well as labels</li>
+<li><strong>Early fusion, late fusion, and cross-attention</strong> are the three ways to combine modalities</li>
+<li><strong>Document AI</strong> reads text, layout, and pixels together to pull fields out of forms</li>
+<li>For a narrow task you repeat, a <strong>specialist model</strong> usually works better than a general VLM</li>
+<li>A layer added to a trained network should <strong>start as a no-op</strong>, like Flamingo’s gates</li>
+<li>Use a <strong>graph model</strong> when a node’s neighbors help predict its label</li>
+<li>A graph layer <strong>averages each person with their friends</strong>, so node order does not matter</li>
+<li><strong>GCN</strong> does it with two matrix multiplications, <span class="math inline">\(\operatorname{ReLU}(\hat A X W)\)</span></li>
+<li><strong>Each layer reaches one friend further</strong>, and most graph networks stop at two or three</li>
+<li><strong>Directed edges</strong> can stay one-way, become two-way (<span class="math inline">\(A + A^\top\)</span>), or get their own weights</li>
+<li><strong>Pooling</strong> averages the node vectors when you need one answer for the whole graph</li>
+<li><strong>Split graph data carefully</strong>: for edge prediction, remove the test edges before training</li>
 </ul>
 <aside class="notes">
 <p>That is the course. Two weeks from today you present. Everything from Week 5 onward is fair game for the project, and the best projects this term have been the ones that picked a small real problem rather than a large famous dataset.</p>
@@ -790,13 +936,14 @@ Prof.&nbsp;Ben Houghton
 <li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/multimodal-ai/flamingo/notes.html">Flamingo</a> and <a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/computer-vision/multimodal-ai/pali/notes.html">PaLI</a></li>
 <li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/data-science/data/introduction-to-graph-data/network-data-fundamentals/notes.html">Network data fundamentals</a>, the prerequisite for the graph half</li>
 <li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/gnn/gnn-introduction/notes.html">GNN introduction</a> and <a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/gnn/gnn-theory/notes.html">GNN theory</a>, which go much deeper than today and come with recorded walkthroughs</li>
-<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/gnn/data-splitting-for-GNN/notes.html">Data splitting for GNNs</a>, which is the leakage problem from the last slide</li>
+<li><a href="https://jfh.georgetown.domains/centralized-lecture-content/content/machine-learning/deep-learning/gnn/data-splitting-for-GNN/notes.html">Data splitting for GNNs</a>, which goes deeper on the train and test leakage problem</li>
 </ul>
 <p>Also optional: Radford et al., <a href="https://arxiv.org/abs/2103.00020">CLIP</a> (2021); Huang et al., <a href="https://arxiv.org/abs/2204.08387">LayoutLMv3</a> (2022); Sanchez-Lengeling et al., <a href="https://distill.pub/2021/gnn-intro/">A Gentle Introduction to Graph Neural Networks</a> (Distill, 2021).</p>
 </section>
-<section id="lab-12-and-the-project" class="slide level2 smaller">
-<h2>Lab 12 and the project</h2>
-<p><strong>Lab 12</strong> is CLIP and a small graph network. You run zero-shot classification and retrieval over a set of images, then train a node classifier on a citation graph and compare it against the same model with the edges removed. Due Wednesday, December 2, the day before presentations.</p>
+<section id="lab-12-quiz-12-and-the-project" class="slide level2 smaller">
+<h2>Lab 12, Quiz 12, and the project</h2>
+<p><strong>Lab 12</strong> is CLIP and a small graph network. You run zero-shot classification and retrieval over a set of images, then train a node classifier on a citation graph and compare it against the same model with the edges removed. Due Wednesday, December 2, the day before presentations. Graded for completion.</p>
+<p><strong>Quiz 12</strong> is now, and it is the last one. Scope is last week: GANs, diffusion, CLIP, and Lab 11. Today’s material is not quizzed.</p>
 <p><strong>Presentations are Thursday, December 3.</strong> Five minutes per group. The final repository is due December 1.</p>
 <div class="quarto-auto-generated-content">
 <div class="footer footer-default">
